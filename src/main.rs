@@ -1,59 +1,19 @@
+use std::cmp::{max, min};
+
+use bracket_lib::color::{BLACK, RED, YELLOW};
+use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, RGB, to_cp437, VirtualKeyCode};
+use bracket_lib::random::RandomNumberGenerator;
+use specs::prelude::*;
+
+use crate::components::{LeftMover, Player, Position, Renderable, Viewshed};
+use crate::map::{Map, TileType};
+use crate::visibility_system::VisibilitySystem;
+
 mod map;
 mod components;
 mod player;
 mod rect;
-use rect::Rect;
-
-use std::cmp::{max, min};
-use bracket_lib::color::{BLACK, RED, YELLOW};
-use bracket_lib::prelude::{BError, BTerm, BTermBuilder, FontCharType, GameState, main_loop, RGB, to_cp437, VirtualKeyCode};
-use bracket_lib::random::RandomNumberGenerator;
-use specs::prelude::*;
-use specs_derive::Component;
-use crate::map::{draw_map, new_map_rooms_and_corridors};
-
-#[derive(Component)]
-struct Position {
-    x: i32,
-    y: i32,
-}
-
-#[derive(Component)]
-struct Renderable {
-    glyph: FontCharType,
-    fg: RGB,
-    bg: RGB
-}
-
-#[derive(Component)]
-struct LeftMover {}
-
-#[derive(Component)]
-struct Player {}
-
-struct LeftWalker{}
-impl<'a> System<'a> for LeftWalker {
-    type SystemData = (
-        ReadStorage<'a, LeftMover>,
-        WriteStorage<'a, Position>
-    );
-
-    fn run(&mut self, (lefty, mut pos): Self::SystemData) {
-        for(_lefty, pos) in (&lefty, &mut pos).join() {
-            pos.x -= 1;
-            if pos.x < 0 { pos.x = 79}
-        }
-    }
-}
-
-#[derive(PartialEq, Copy, Clone)]
-enum TileType {
-    Wall, Floor
-}
-
-pub fn xy_idx(x: i32, y: i32) -> usize {
-    (y as usize * 80) + x as usize
-}
+mod visibility_system;
 
 
 struct State {
@@ -62,8 +22,8 @@ struct State {
 
 impl State {
     fn run_systems(&mut self) {
-        let mut lw = LeftWalker{};
-        lw.run_now(&self.ecs);
+        let mut vis = VisibilitySystem{};
+        vis.run_now(&self.ecs);
         self.ecs.maintain();
     }
 }
@@ -74,8 +34,8 @@ impl GameState for State {
         ctx.print(70, 0, ctx.fps);
         self.run_systems();
         player_input(self, ctx);
-        let map = self.ecs.fetch::<Vec<TileType>>();
-        draw_map(&map, ctx);
+        let map = self.ecs.fetch::<Map>();
+        map.draw_map(ctx);
 
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
@@ -95,9 +55,10 @@ fn main() -> BError {
     state.ecs.register::<Renderable>();
     state.ecs.register::<LeftMover>();
     state.ecs.register::<Player>();
-    let (rooms, map) = new_map_rooms_and_corridors();
+    state.ecs.register::<Viewshed>();
+    let mut map = Map::new_map_rooms_and_corridors();
+    let (player_x, player_y) = map.rooms[0].center();
     state.ecs.insert(map);
-    let (player_x, player_y) = rooms[0].center();
     let mut bterm = BTermBuilder::simple80x50()
         .with_title("Rusty Roguelike V2")
         .with_tile_dimensions(12, 12)
@@ -113,24 +74,8 @@ fn main() -> BError {
             }
         )
         .with(Player{})
+        .with(Viewshed{ visible_tiles: Vec::new(), range: 8, dirty: true})
         .build();
-
-    let mut rng = RandomNumberGenerator::new();
-
-    for i in 0..10 {
-        state.ecs
-            .create_entity()
-            .with(Position{x: i * 7, y: 20})
-            .with(
-                Renderable{
-                    glyph: rng.range(0, 255),
-                    fg: RGB::named(RED),
-                    bg: RGB::named(BLACK),
-                }
-            )
-            .with(LeftMover{})
-            .build();
-    }
 
     main_loop(bterm, state)
 }
@@ -138,13 +83,15 @@ fn main() -> BError {
 fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
-    let map = ecs.fetch::<Vec<TileType>>();
+    let mut viewseheds = ecs.write_storage::<Viewshed>();
+    let map = ecs.fetch::<Map>();
 
-    for (_player, pos) in (&mut players, &mut positions).join() {
-        let destination_idx = xy_idx(pos.x + delta_x, pos.y +delta_y);
-        if map[destination_idx] != TileType::Wall {
-            pos.x = min(79, max(0, pos.x + delta_x));
-            pos.y = min(49, max(0, pos.y + delta_y));
+    for (_player, viewshed, pos) in (&mut players, &mut viewseheds, &mut positions).join() {
+        if map.get_tile_at_pos(pos.x + delta_x, pos.y + delta_y) != TileType::Wall {
+            pos.x = min(map.width-1, max(0, pos.x + delta_x));
+            pos.y = min(map.height-1, max(0, pos.y + delta_y));
+
+            viewshed.dirty = true;
         }
     }
 }
