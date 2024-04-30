@@ -21,6 +21,14 @@ pub struct Renderable {
 pub struct LeftMover {}
 
 #[derive(Component)]
+pub struct Monster {}
+
+#[derive(Component)]
+pub struct Name {
+    pub name: String
+}
+
+#[derive(Component)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
     pub range: i32,
