@@ -1,12 +1,14 @@
+use std::iter::once_with;
 use bracket_lib::color::{BLACK, OLIVE, PERU, YELLOW};
 use bracket_lib::prelude::{BError, BTerm, BTermBuilder, FontCharType, GameState, main_loop, Point, RGB, to_cp437, VirtualKeyCode};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 
-use crate::components::{LeftMover, Monster, Name, Player, Position, Renderable, Viewshed};
+use crate::components::{BlocksTile, CombatStats, LeftMover, Monster, Name, Player, Position, Renderable, Viewshed};
 use crate::map::Map;
+use crate::map_indexing_system::MapIndexingSystem;
 use crate::monster_ai_system::MonsterAI;
-use crate::player::try_move_player;
+use crate::player::{player_input, try_move_player};
 use crate::util::namegen::generate_ogur_name;
 use crate::visibility_system::VisibilitySystem;
 
@@ -16,6 +18,7 @@ mod player;
 mod rect;
 mod visibility_system;
 mod monster_ai_system;
+mod map_indexing_system;
 
 mod util {
     pub mod namegen;
@@ -36,6 +39,8 @@ impl State {
         vis.run_now(&self.ecs);
         let mut mob = MonsterAI{};
         mob.run_now(&self.ecs);
+        let mut mapindex = MapIndexingSystem{};
+        mapindex.run_now(&self.ecs);
         self.ecs.maintain();
     }
 }
@@ -78,6 +83,8 @@ fn main() -> BError {
     state.ecs.register::<Viewshed>();
     state.ecs.register::<Monster>();
     state.ecs.register::<Name>();
+    state.ecs.register::<BlocksTile>();
+    state.ecs.register::<CombatStats>();
     let mut map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
     state.ecs.insert(Point::new(player_x, player_y));
@@ -88,17 +95,30 @@ fn main() -> BError {
         let glyph: FontCharType;
         let color: RGB;
         let name: String;
+        let combat_stats: CombatStats;
         let roll = rng.roll_dice(1, 2);
         match roll {
             1 => {
                 glyph = to_cp437('b');
                 color = RGB::named(PERU);
-                name = generate_ogur_name()
+                name = generate_ogur_name();
+                combat_stats = CombatStats{
+                    max_hp: 12,
+                    hp: 12,
+                    defense: 1,
+                    power: 3
+                }
             }
             _ => {
                 glyph = to_cp437('o');
                 color = RGB::named(OLIVE);
-                name = generate_ogur_name()
+                name = generate_ogur_name();
+                combat_stats = CombatStats{
+                    max_hp: 16,
+                    hp: 16,
+                    defense: 1,
+                    power: 4
+                }
             }
         }
 
@@ -114,6 +134,8 @@ fn main() -> BError {
             .with(Viewshed{ visible_tiles: Vec::new(), range: 8, dirty: true})
             .with(Monster{})
             .with(Name{name})
+            .with(BlocksTile{})
+            .with(combat_stats)
             .build();
     }
     state.ecs.insert(map);
@@ -134,29 +156,10 @@ fn main() -> BError {
         .with(Player{})
         .with(Viewshed{ visible_tiles: Vec::new(), range: 8, dirty: true})
         .with(Name{name: "Player".to_string()})
+        .with(CombatStats{max_hp: 30, hp: 30, defense: 2, power: 5})
         .build();
 
     main_loop(bterm, state)
 }
 
 
-fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
-    match ctx.key {
-        None => { return RunState::Paused }
-        Some(key) => match key {
-            VirtualKeyCode::Left |
-            VirtualKeyCode::H => try_move_player(-1, 0, &mut gs.ecs),
-
-            VirtualKeyCode::Right |
-            VirtualKeyCode::L => try_move_player(1, 0, &mut gs.ecs),
-
-            VirtualKeyCode::Up |
-            VirtualKeyCode::K => try_move_player(0, -1, &mut gs.ecs),
-
-            VirtualKeyCode::Down |
-            VirtualKeyCode::J => try_move_player(0, 1, &mut gs.ecs),
-            _ => { return RunState::Paused }
-        }
-    }
-    RunState::Running
-}
