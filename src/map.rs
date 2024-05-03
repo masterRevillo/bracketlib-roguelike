@@ -187,7 +187,7 @@ impl Map {
 
     }
 
-    fn is_tile_in_bounds(&self, x: i32, y: i32) -> bool {
+    pub fn is_tile_in_bounds(&self, x: i32, y: i32) -> bool {
         x > 0 && x < self.width && y > 0 && y < self.height
     }
 

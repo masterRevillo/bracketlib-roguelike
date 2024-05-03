@@ -4,9 +4,11 @@ use bracket_lib::prelude::{BError, BTerm, BTermBuilder, FontCharType, GameState,
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 
-use crate::components::{BlocksTile, CombatStats, LeftMover, Monster, Name, Player, Position, Renderable, Viewshed};
+use crate::components::{BlocksTile, CombatStats, LeftMover, Monster, Name, Player, Position, Renderable, SufferDamage, Viewshed, WantsToMelee};
+use crate::damage_system::DamageSystem;
 use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
+use crate::melee_combat_system::MeleeCombatSystem;
 use crate::monster_ai_system::MonsterAI;
 use crate::player::{player_input, try_move_player};
 use crate::util::namegen::generate_ogur_name;
@@ -19,6 +21,8 @@ mod rect;
 mod visibility_system;
 mod monster_ai_system;
 mod map_indexing_system;
+mod melee_combat_system;
+mod damage_system;
 
 mod util {
     pub mod namegen;
@@ -26,11 +30,10 @@ mod util {
 }
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum RunState { Paused, Running }
+pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
 
 struct State {
     ecs: World,
-    pub runstate: RunState
 }
 
 impl State {
@@ -41,6 +44,10 @@ impl State {
         mob.run_now(&self.ecs);
         let mut mapindex = MapIndexingSystem{};
         mapindex.run_now(&self.ecs);
+        let mut melee_combat_sys = MeleeCombatSystem{};
+        melee_combat_sys.run_now(&self.ecs);
+        let mut damage_system = DamageSystem{};
+        damage_system.run_now(&self.ecs);
         self.ecs.maintain();
     }
 }
@@ -48,18 +55,38 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
-        if self.runstate == RunState::Running {
-            self.run_systems();
-            self.runstate = RunState::Paused;
-        } else {
-            self.runstate = player_input(self, ctx);
+        let mut new_runstate;
+        {
+            let runstate = self.ecs.fetch::<RunState>();
+            new_runstate = *runstate;
         }
+        match new_runstate {
+            RunState::PreRun => {
+                self.run_systems();
+                new_runstate = RunState::AwaitingInput;
+            }
+            RunState::AwaitingInput => {
+                new_runstate = player_input(self, ctx);
+            }
+            RunState::PlayerTurn => {
+                self.run_systems();
+                new_runstate = RunState::MonsterTurn;
+            }
+            RunState::MonsterTurn => {
+                self.run_systems();
+                new_runstate = RunState::AwaitingInput;
+            }
+        }
+        {
+            let mut runwriter = self.ecs.write_resource::<RunState>();
+            *runwriter = new_runstate;
+        }
+        DamageSystem::delete_the_dead(&mut self.ecs);
         let map = self.ecs.fetch::<Map>();
         map.draw_map(ctx);
 
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
-        let map = self.ecs.fetch::<Map>();
 
         for (pos, render) in (&positions, &renderables).join() {
             if map.visible_tiles[pos.x as usize][pos.y as usize] {
@@ -74,7 +101,6 @@ fn main() -> BError {
     println!("Hello, world!");
     let mut state = State{
         ecs: World::new(),
-        runstate: RunState::Running
     };
     state.ecs.register::<Position>();
     state.ecs.register::<Renderable>();
@@ -85,6 +111,8 @@ fn main() -> BError {
     state.ecs.register::<Name>();
     state.ecs.register::<BlocksTile>();
     state.ecs.register::<CombatStats>();
+    state.ecs.register::<WantsToMelee>();
+    state.ecs.register::<SufferDamage>();
     let mut map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
     state.ecs.insert(Point::new(player_x, player_y));
@@ -143,7 +171,7 @@ fn main() -> BError {
         .with_title("Rusty Roguelike V2")
         .with_tile_dimensions(12, 12)
         .build()?;
-    state.ecs
+    let player_entity = state.ecs
         .create_entity()
         .with(Position{x: player_x, y: player_y})
         .with(
@@ -158,6 +186,9 @@ fn main() -> BError {
         .with(Name{name: "Player".to_string()})
         .with(CombatStats{max_hp: 30, hp: 30, defense: 2, power: 5})
         .build();
+
+    state.ecs.insert(player_entity);
+    state.ecs.insert(RunState::PreRun);
 
     main_loop(bterm, state)
 }
