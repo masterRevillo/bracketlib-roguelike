@@ -1,6 +1,7 @@
 use bracket_lib::prelude::console;
 use specs::prelude::*;
-use crate::components::{CombatStats, Player, SufferDamage};
+use crate::components::{CombatStats, Name, Player, SufferDamage};
+use crate::gamelog::GameLog;
 
 pub struct DamageSystem{}
 
@@ -29,13 +30,21 @@ impl DamageSystem {
             let combat_stats = ecs.read_storage::<CombatStats>();
             let players = ecs.read_storage::<Player>();
             let entities = ecs.entities();
+            let names = ecs.read_storage::<Name>();
+            let mut gamelog = ecs.write_resource::<GameLog>();
             for (entity, stats) in (&entities, &combat_stats).join() {
                 if stats.hp < 1 {
                     if stats.hp < 1 {
                         let player = players.get(entity);
                         match player {
-                            None => dead.push(entity),
-                            Some(_) => console::log("You died")
+                            None => {
+                                let name = names.get(entity);
+                                if let Some(name) = name {
+                                    gamelog.entries.push(format!("{} is dead", name.name));
+                                }
+                                dead.push(entity)
+                            },
+                            Some(_) => gamelog.entries.push("You died!".to_string())
                         }
                     }
 

@@ -1,7 +1,6 @@
 use std::cmp::{max, min};
-use std::os::unix::raw::time_t;
-use bracket_lib::algorithm_traits::SmallVec;
 
+use bracket_lib::algorithm_traits::SmallVec;
 use bracket_lib::color::RGB;
 use bracket_lib::geometry::Point;
 use bracket_lib::prelude::{Algorithm2D, BaseMap, BTerm, DistanceAlg, RandomNumberGenerator, to_cp437};
@@ -10,6 +9,9 @@ use specs::WorldExt;
 
 use crate::rect::Rect;
 
+pub const MAPWIDTH: usize = 100;
+pub const MAPHEIGHT: usize = 73;
+pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
     Wall, Floor
@@ -116,14 +118,14 @@ impl Map {
 
     pub fn new_map_rooms_and_corridors() -> Map {
         let mut map = Map {
-            tiles: vec![vec![TileType::Wall; 50]; 80],
+            tiles: vec![vec![TileType::Wall; MAPHEIGHT]; MAPWIDTH],
             rooms: Vec::new(),
-            width: 80,
-            height: 50,
-            revealed_tiles: vec![vec![false; 50]; 80],
-            visible_tiles: vec![vec![false; 50]; 80],
-            blocked: vec![vec![false; 50]; 80],
-            tile_content: vec![vec![Vec::new(); 50]; 80],
+            width: MAPWIDTH as i32,
+            height: MAPHEIGHT as i32,
+            revealed_tiles: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
+            visible_tiles: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
+            blocked: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
+            tile_content: vec![vec![Vec::new(); MAPHEIGHT]; MAPWIDTH],
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -135,8 +137,8 @@ impl Map {
         for _ in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
             let h = rng.range(MIN_SIZE, MAX_SIZE);
-            let x = rng.roll_dice(1, 80 - w - w - 1);
-            let y = rng.roll_dice(1, 50 - h - w) - 1;
+            let x = rng.roll_dice(1, MAPWIDTH as i32 - w - w - 1);
+            let y = rng.roll_dice(1, MAPHEIGHT as i32 - h - w) - 1;
             let new_room = Rect::new(x, y, w, h);
             let mut ok =true;
             for other_room in map.rooms.iter() {

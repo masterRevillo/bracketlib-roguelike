@@ -6,6 +6,7 @@ use specs::prelude::*;
 
 use crate::components::{BlocksTile, CombatStats, LeftMover, Monster, Name, Player, Position, Renderable, SufferDamage, Viewshed, WantsToMelee};
 use crate::damage_system::DamageSystem;
+use crate::gamelog::GameLog;
 use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
 use crate::melee_combat_system::MeleeCombatSystem;
@@ -23,6 +24,8 @@ mod monster_ai_system;
 mod map_indexing_system;
 mod melee_combat_system;
 mod damage_system;
+mod gui;
+mod gamelog;
 
 mod util {
     pub mod namegen;
@@ -94,6 +97,7 @@ impl GameState for State {
             }
         }
         ctx.print(70, 0, ctx.fps);
+        gui::dwaw_ui(&self.ecs, ctx);
     }
 }
 
@@ -167,10 +171,12 @@ fn main() -> BError {
             .build();
     }
     state.ecs.insert(map);
-    let mut bterm = BTermBuilder::simple80x50()
+    let mut bterm = BTermBuilder::simple(100, 80)?
         .with_title("Rusty Roguelike V2")
         .with_tile_dimensions(12, 12)
+        .with_fps_cap(120.)
         .build()?;
+    bterm.with_post_scanlines(true);
     let player_entity = state.ecs
         .create_entity()
         .with(Position{x: player_x, y: player_y})
@@ -189,6 +195,7 @@ fn main() -> BError {
 
     state.ecs.insert(player_entity);
     state.ecs.insert(RunState::PreRun);
+    state.ecs.insert(GameLog{entries: vec!["Welcome to the Halls of Ruztoo".to_string()]});
 
     main_loop(bterm, state)
 }
