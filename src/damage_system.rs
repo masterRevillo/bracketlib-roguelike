@@ -1,5 +1,5 @@
-use bracket_lib::prelude::console;
 use specs::prelude::*;
+
 use crate::components::{CombatStats, Name, Player, SufferDamage};
 use crate::gamelog::GameLog;
 

@@ -1,4 +1,4 @@
-use bracket_lib::prelude::{a_star_search, DistanceAlg, Point};
+use bracket_lib::prelude::{a_star_search, console, DistanceAlg, Point};
 use specs::prelude::*;
 
 use crate::components::{Monster, Position, Viewshed, WantsToMelee};
@@ -38,8 +38,29 @@ impl <'a> System<'a> for MonsterAI {
                         &mut *map
                     );
                     if path.success && path.steps.len() > 1 {
-                        pos.x = path.steps[1] as i32 / map.width;
-                        pos.y = path.steps[1] as i32 % map.width;
+                        let (new_x, new_y) = (
+                            path.steps[1] as i32 / map.width,
+                            path.steps[1] as i32 % map.width
+                        );
+                        let dir = match (new_x - pos.x, new_y - pos.y) {
+                            (-1, 0) => "west",
+                            (-1, -1) => "northwest",
+                            (0, -1) => "north",
+                            (1, -1) => "northeast",
+                            (1, 0) => "east",
+                            (1, 1) => "southeast",
+                            (0, 1) => "south",
+                            (-1 , 1) => "southwest",
+                            _ =>  "wat"
+                        };
+                        console::log(format!("step: ({},{}), dir={}", new_x, new_y, dir));
+                        let coord_path: Vec<_> = path.steps.iter().map(
+                            |v| (v / map.width as usize, v % map.width as usize)
+                        ).collect();
+                        console::log(format!("the path: {:?}", coord_path));
+
+                        pos.x = new_x;
+                        pos.y = new_y;
                         map.blocked[pos.x as usize][pos.y as usize] = true;
                         viewshed.dirty = true;
 

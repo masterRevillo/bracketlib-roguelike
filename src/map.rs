@@ -3,7 +3,7 @@ use std::cmp::{max, min};
 use bracket_lib::algorithm_traits::SmallVec;
 use bracket_lib::color::RGB;
 use bracket_lib::geometry::Point;
-use bracket_lib::prelude::{Algorithm2D, BaseMap, BTerm, DistanceAlg, RandomNumberGenerator, to_cp437};
+use bracket_lib::prelude::{Algorithm2D, BaseMap, BTerm, console, DistanceAlg, RandomNumberGenerator, to_cp437};
 use specs::prelude::*;
 use specs::WorldExt;
 
@@ -45,14 +45,24 @@ impl BaseMap for Map {
         let y = idx as i32 % self.width;
         let w = self.width as usize;
 
+        // cardinal directions:
+        // west
         if self.is_exit_valid(x-1, y) { exits.push((idx-w, 1.0))};
+        // east
         if self.is_exit_valid(x+1, y) { exits.push((idx+w, 1.0))};
+        // north
         if self.is_exit_valid(x, y-1) { exits.push((idx-1, 1.0))};
+        // south
         if self.is_exit_valid(x, y+1) { exits.push((idx+1, 1.0))};
 
+        // diagonals:
+        // north west
         if self.is_exit_valid(x-1, y-1) { exits.push(((idx-w)-1, 1.45));}
+        // north east
         if self.is_exit_valid(x+1, y-1) { exits.push(((idx+w)-1, 1.45));}
-        if self.is_exit_valid(x-1, y+1) { exits.push(((idx-w)-1, 1.45));}
+        // south west
+        if self.is_exit_valid(x-1, y+1) { exits.push(((idx-w)+1, 1.45));}
+        // south east
         if self.is_exit_valid(x+1, y+1) { exits.push(((idx+w)+1, 1.45));}
 
         exits

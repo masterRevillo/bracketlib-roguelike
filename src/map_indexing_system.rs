@@ -1,4 +1,5 @@
 use specs::prelude::*;
+
 use crate::components::{BlocksTile, Position};
 use crate::map::Map;
 
@@ -18,7 +19,6 @@ impl <'a> System<'a> for MapIndexingSystem {
         map.populate_blocked();
         map.clear_content_index();
         for(entity, position) in (&entities, &position).join() {
-            map.blocked[position.x as usize][position.y as usize] = true;
             let _p: Option<&BlocksTile> = blockers.get(entity);
             if let Some(_p) = _p {
                 map.blocked[position.x as usize][position.y as usize] = true;
