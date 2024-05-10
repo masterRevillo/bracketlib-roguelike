@@ -114,3 +114,15 @@ pub struct WantsToConsumePotion {
 pub struct WantsToDropItem {
     pub item: Entity
 }
+
+
+#[derive(Component, Debug, Clone)]
+pub struct Artefact {
+    pub value: i32
+}
+
+
+#[derive(Component, Debug, Clone)]
+pub struct Food {
+    pub heal_amount: i32
+}

@@ -5,7 +5,7 @@ use bracket_lib::prelude::LineAlg::Vector;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 
-use crate::components::{BlocksTile, CombatStats, InBackpack, Item, LeftMover, Monster, Name, Player, Position, Potion, Renderable, SufferDamage, Viewshed, WantsToConsumePotion, WantsToDropItem, WantsToMelee, WantsToPickUpItem};
+use crate::components::{Artefact, BlocksTile, CombatStats, Food, InBackpack, Item, LeftMover, Monster, Name, Player, Position, Potion, Renderable, SufferDamage, Viewshed, WantsToConsumePotion, WantsToDropItem, WantsToMelee, WantsToPickUpItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{drop_item_menu, ItemMenuResult, show_inventory};
@@ -175,6 +175,8 @@ fn main() -> BError {
     state.ecs.register::<WantsToPickUpItem>();
     state.ecs.register::<WantsToConsumePotion>();
     state.ecs.register::<WantsToDropItem>();
+    state.ecs.register::<Artefact>();
+    state.ecs.register::<Food>();
     let mut map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
     let player_entity = player(&mut state.ecs, player_x, player_y);
