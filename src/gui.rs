@@ -1,10 +1,10 @@
-use bracket_lib::color::{BLACK, GREY, MAGENTA, RED, RGB, WHITE, YELLOW};
-use bracket_lib::prelude::{BTerm, letter_to_option, Point, to_cp437, VirtualKeyCode};
+use bracket_lib::color::{BLACK, BLUE, CYAN, GREY, MAGENTA, RED, RGB, WHITE, YELLOW};
+use bracket_lib::prelude::{BTerm, DistanceAlg, letter_to_option, Point, to_cp437, VirtualKeyCode};
 use bracket_lib::prelude::VirtualKeyCode::N;
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
-use crate::components::{CombatStats, InBackpack, Item, Name, Player, Position};
+use crate::components::{CombatStats, InBackpack, Item, Name, Player, Position, Ranged, Viewshed};
 use crate::gamelog::GameLog;
 use crate::map::{Map, MAPHEIGHT, MAPWIDTH};
 use crate::State;
@@ -190,4 +190,46 @@ pub fn drop_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Optio
             }
         }
     }
+}
+
+pub fn ranged_target(gs: &mut State, ctx: &mut BTerm, range: i32) -> (ItemMenuResult, Option<Point>) {
+    let player = gs.ecs.fetch::<Entity>();
+    let player_pos = gs.ecs.fetch::<Point>();
+    let viewsheds = gs.ecs.read_storage::<Viewshed>();
+
+    ctx.print_color(5, 0, RGB::named(YELLOW), RGB::named(BLACK), "Select Target:");
+
+    let mut available_cells = Vec::new();
+    let visible = viewsheds.get(*player);
+    if let Some(visible) = visible {
+        for point in visible.visible_tiles.iter() {
+            let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, *point);
+            if distance <= range as f32 {
+                ctx.set_bg(point.x, point.y, RGB::named(BLUE));
+                available_cells.push(point);
+            }
+        }
+    } else {
+        return (ItemMenuResult::Cancel, None);
+    }
+    let mouse_pos = ctx.mouse_pos();
+    let mut valid_target = false;
+    for i in available_cells.iter() {
+        if i.x == mouse_pos.0 && i.y == mouse_pos.1 {
+            valid_target = true;
+        }
+    }
+    if valid_target {
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(CYAN));
+        if ctx.left_click {
+            return (ItemMenuResult::Selected, Some(Point::new(mouse_pos.0, mouse_pos.1)));
+        }
+    } else {
+        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(RED));
+        if ctx.left_click {
+            return (ItemMenuResult::Cancel, None);
+        }
+    }
+
+    (ItemMenuResult::NoResponse, None)
 }

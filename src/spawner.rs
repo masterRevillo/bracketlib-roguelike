@@ -1,14 +1,14 @@
-use bracket_lib::color;
-use bracket_lib::color::{BLACK, BROWN1, BROWN2, GOLD, MAGENTA, MAROON, OLIVE, PERU, RGB, YELLOW};
-use bracket_lib::prelude::{FontCharType, to_cp437};
+use bracket_lib::color::{BLACK, CYAN, GOLD, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RGB, YELLOW};
+use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
-use crate::components::{Artefact, BlocksTile, CombatStats, Food, Item, Monster, Name, Player, Position, Potion, Renderable, Viewshed};
+
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, Viewshed};
 use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
 const MAX_MONSTERS: i32 = 4;
-const MAX_ITEMS: i32 = 2;
+const MAX_ITEMS: i32 = 3;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     ecs
@@ -99,13 +99,16 @@ pub fn random_item(ecs: &mut World, x: i32, y: i32) {
     let roll: i32;
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        roll = rng.roll_dice(1,10);
+        roll = rng.roll_dice(1,30);
     }
     match roll {
         1 => { artefact(ecs, x, y) }
-        2 => { food(ecs, to_cp437('='), "Sandwich", RGB::named(BROWN2), 3, x, y)}
-        3 => { food(ecs, to_cp437('q'), "Chicken Leg", RGB::named(BROWN1), 3, x, y)}
-        4 => { food(ecs, to_cp437('u'), "Cup of Wine", RGB::named(MAROON), 1, x, y)}
+        2..=5 => { food(ecs, to_cp437('='), "Sandwich", RGB::named(CHOCOLATE3), 2, x, y)}
+        6..=8 => { food(ecs, to_cp437('q'), "Chicken Leg", RGB::named(CHOCOLATE3), 3, x, y)}
+        9..=10 => { food(ecs, to_cp437('u'), "Cup of Wine", RGB::named(MAROON), 1, x, y)}
+        11..=15 => { magic_missile_stroll(ecs, x, y)},
+        16..=20 => { fireball_stroll(ecs, x, y)},
+        21..=25 => { confusion_stroll(ecs, x, y)},
         _ => { health_potion(ecs, x, y) }
     }
 }
@@ -161,9 +164,9 @@ fn artefact(ecs: &mut World, x: i32, y: i32) {
             bg: RGB::named(BLACK),
             render_order: 2
         })
-        .with(Name{ name: generate_artefact_name() })
+        .with(Name{ name: "Artefact".to_string() })
         .with(Item{})
-        .with(Artefact{ value })
+        .with(Artefact{ name: generate_artefact_name(), value })
         .build();
 }
 
@@ -178,7 +181,8 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
         })
         .with(Name{ name: "Health Potion".to_string()})
         .with(Item{})
-        .with(Potion{ heal_amount: 8})
+        .with(ProvidesHealing { heal_amount: 8})
+        .with(Consumable{})
         .build();
 }
 
@@ -193,6 +197,60 @@ fn food<T: ToString>(ecs: &mut World, glyph: FontCharType, name: T, color: RGB, 
         })
         .with(Name{ name: name.to_string()})
         .with(Item{})
-        .with(Food{ heal_amount })
+        .with(ProvidesHealing{ heal_amount })
+        .with(Consumable{})
+        .build();
+}
+
+fn magic_missile_stroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('~'),
+            fg: RGB::named(CYAN),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Magic Missile Scroll".to_string()})
+        .with(Item{})
+        .with(Consumable{})
+        .with(Ranged{ range: 6 })
+        .with(InflictsDamage{ damage: 8})
+        .build();
+}
+
+fn fireball_stroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('~'),
+            fg: RGB::named(ORANGE),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Fireball Scroll".to_string()})
+        .with(Item{})
+        .with(Consumable{})
+        .with(Ranged{ range: 6 })
+        .with(AreaOfEffect{ radius: 3})
+        .with(InflictsDamage{ damage: 20})
+        .build();
+}
+
+fn confusion_stroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('~'),
+            fg: RGB::named(PINK),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Confusion Scroll".to_string()})
+        .with(Item{})
+        .with(Consumable{})
+        .with(Ranged{ range: 6 })
+        .with(AreaOfEffect{ radius: 3 })
+        .with(Confusion{ turns: 4 })
         .build();
 }
