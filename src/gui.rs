@@ -1,13 +1,13 @@
 use bracket_lib::color::{BLACK, BLUE, CYAN, GREY, MAGENTA, RED, RGB, WHITE, YELLOW};
 use bracket_lib::prelude::{BTerm, DistanceAlg, letter_to_option, Point, to_cp437, VirtualKeyCode};
-use bracket_lib::prelude::VirtualKeyCode::N;
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
-use crate::components::{CombatStats, InBackpack, Item, Name, Player, Position, Ranged, Viewshed};
+use crate::{RunState, State};
+use crate::components::{CombatStats, InBackpack, Name, Player, Position, Viewshed};
 use crate::gamelog::GameLog;
 use crate::map::{Map, MAPHEIGHT, MAPWIDTH};
-use crate::State;
+use crate::saveload_system::does_save_exist;
 
 const GUIY: usize = MAPHEIGHT;
 const GUIHEIGHT: usize = 6;
@@ -19,11 +19,12 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
     let combat_stats = ecs.read_storage::<CombatStats>();
     let players = ecs.read_storage::<Player>();
     let log = ecs.fetch::<GameLog>();
+    let map = ecs.fetch::<Map>();
     for(_p, stats) in (&players, &combat_stats).join() {
         let health = format!(" HP: {} / {} ", stats.hp, stats.max_hp);
-        ctx.print_color(12, GUIY, RGB::named(YELLOW), RGB::named(BLACK), &health);
+        ctx.print_color(20, GUIY, RGB::named(YELLOW), RGB::named(BLACK), &health);
 
-        ctx.draw_bar_horizontal(28, GUIY, 51, stats.hp, stats.max_hp, RGB::named(RED), RGB::named(BLACK))
+        ctx.draw_bar_horizontal(36, GUIY, 51, stats.hp, stats.max_hp, RGB::named(RED), RGB::named(BLACK))
     }
 
     let mut y = GUIY + 1;
@@ -31,6 +32,9 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
         if y < GUIY + GUIHEIGHT {ctx.print(2, y, s);}
         y += 1;
     }
+
+    let dungeon_level = format!("Dungeon Level: {}", map.depth);
+    ctx.print_color(2, GUIY, RGB::named(YELLOW), RGB::named(BLACK), &dungeon_level);
 
     let mouse_pos = ctx.mouse_pos();
     ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(MAGENTA));
@@ -232,4 +236,74 @@ pub fn ranged_target(gs: &mut State, ctx: &mut BTerm, range: i32) -> (ItemMenuRe
     }
 
     (ItemMenuResult::NoResponse, None)
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MainMenuSelection {
+    NewGame, LoadGame, Quit
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MainMenuResult {
+    NoSelection{ selected: MainMenuSelection },
+    Selected { selected: MainMenuSelection }
+}
+
+pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
+    let runstate = gs.ecs.fetch::<RunState>();
+    let save_exists = does_save_exist();
+
+    ctx.print_color_centered(12, RGB::named(YELLOW), RGB::named(BLACK), "The Ruztoo Dungeon");
+
+    if let RunState::MainMenu { menu_selection: selection} = *runstate {
+        ctx.print_color_centered(24, get_option_color(selection, MainMenuSelection::NewGame), RGB::named(BLACK), "Begin New Game");
+        ctx.print_color_centered(25, get_option_color(selection, MainMenuSelection::LoadGame), RGB::named(BLACK), "Load Game");
+        ctx.print_color_centered(26, get_option_color(selection, MainMenuSelection::Quit), RGB::named(BLACK), "Quit");
+
+        match ctx.key {
+            None => return MainMenuResult::NoSelection { selected: selection },
+            Some(key) => {
+                match key {
+                    VirtualKeyCode::Escape => { return MainMenuResult::NoSelection { selected: MainMenuSelection::Quit }},
+                    VirtualKeyCode::Up => {
+                        let mut new_selection;
+                        match selection {
+                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
+                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
+                            MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
+                        }
+                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                            new_selection = MainMenuSelection::NewGame;
+                        }
+                        return MainMenuResult::NoSelection { selected: new_selection }
+                    },
+                    VirtualKeyCode::Down => {
+
+                        let mut new_selection;
+                        match selection {
+                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
+                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
+                            MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
+                        }
+                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                            new_selection = MainMenuSelection::Quit;
+                        }
+                        return MainMenuResult::NoSelection { selected: new_selection }
+                    },
+                    VirtualKeyCode::Return => return MainMenuResult::Selected { selected: selection },
+                    _ => return MainMenuResult::NoSelection { selected: selection }
+                }
+            }
+        }
+
+    }
+    MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
+}
+
+fn get_option_color(selection: MainMenuSelection, option: MainMenuSelection) -> RGB {
+    if selection == option {
+        RGB::named(MAGENTA)
+    } else {
+        RGB::named(WHITE)
+    }
 }

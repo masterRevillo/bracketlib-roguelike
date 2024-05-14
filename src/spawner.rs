@@ -2,8 +2,9 @@ use bracket_lib::color::{BLACK, CYAN, GOLD, MAGENTA, MAROON, OLIVE, ORANGE, PERU
 use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
+use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, Viewshed};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializeMe, Viewshed};
 use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
@@ -26,6 +27,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Viewshed{ visible_tiles: Vec::new(), range: 8, dirty: true})
         .with(Name{name: "Player".to_string()})
         .with(CombatStats{max_hp: 30, hp: 30, defense: 2, power: 5})
+        .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
 
@@ -91,6 +93,7 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: FontCharType, na
         .with(Name{name: name.to_string()})
         .with(BlocksTile{})
         .with(cstats)
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -167,6 +170,7 @@ fn artefact(ecs: &mut World, x: i32, y: i32) {
         .with(Name{ name: "Artefact".to_string() })
         .with(Item{})
         .with(Artefact{ name: generate_artefact_name(), value })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -183,6 +187,7 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
         .with(Item{})
         .with(ProvidesHealing { heal_amount: 8})
         .with(Consumable{})
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -199,6 +204,7 @@ fn food<T: ToString>(ecs: &mut World, glyph: FontCharType, name: T, color: RGB, 
         .with(Item{})
         .with(ProvidesHealing{ heal_amount })
         .with(Consumable{})
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -216,6 +222,7 @@ fn magic_missile_stroll(ecs: &mut World, x: i32, y: i32) {
         .with(Consumable{})
         .with(Ranged{ range: 6 })
         .with(InflictsDamage{ damage: 8})
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -234,6 +241,7 @@ fn fireball_stroll(ecs: &mut World, x: i32, y: i32) {
         .with(Ranged{ range: 6 })
         .with(AreaOfEffect{ radius: 3})
         .with(InflictsDamage{ damage: 20})
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
 
@@ -252,5 +260,6 @@ fn confusion_stroll(ecs: &mut World, x: i32, y: i32) {
         .with(Ranged{ range: 6 })
         .with(AreaOfEffect{ radius: 3 })
         .with(Confusion{ turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

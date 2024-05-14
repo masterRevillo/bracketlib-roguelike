@@ -2,10 +2,10 @@ use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Po
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, InBackpack, InflictsDamage, Item, LeftMover, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, Examinable, InBackpack, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
-use crate::gui::{drop_item_menu, ItemMenuResult, ranged_target, show_inventory};
+use crate::gui::{drop_item_menu, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target, show_inventory};
 use crate::inventory_system::{ItemCollectionSystem, ItemDropSystem, ItemUseSystem};
 use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
@@ -14,6 +14,8 @@ use crate::monster_ai_system::MonsterAI;
 use crate::player::player_input;
 use crate::spawner::{player, spawn_room};
 use crate::visibility_system::VisibilitySystem;
+
+use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 mod map;
 mod components;
@@ -28,6 +30,7 @@ mod gui;
 mod gamelog;
 mod spawner;
 mod inventory_system;
+mod saveload_system;
 
 mod util {
     pub mod namegen;
@@ -42,7 +45,10 @@ pub enum RunState {
     MonsterTurn,
     ShowInventory,
     ShowDropItem,
-    ShowTargeting { range: i32, item: Entity }
+    ShowTargeting { range: i32, item: Entity },
+    MainMenu { menu_selection: MainMenuSelection },
+    SaveGame,
+    NextLevel,
 }
 
 struct State {
@@ -69,33 +75,124 @@ impl State {
         item_drop_system.run_now(&self.ecs);
         self.ecs.maintain();
     }
+
+    fn entities_to_remove_on_level_change(&mut self) -> Vec<Entity> {
+        let entities = self.ecs.entities();
+        let player = self.ecs.read_storage::<Player>();
+        let backpack = self.ecs.read_storage::<InBackpack>();
+        let player_entity = self.ecs.fetch::<Entity>();
+
+        let mut to_delete: Vec<Entity> = Vec::new();
+        for entity in entities.join() {
+            let mut should_delete = true;
+            let p = player.get(entity);
+            if let Some(_p) = p {
+                should_delete = false;
+            }
+            let bp = backpack.get(entity);
+            if let Some(bp) = bp {
+                if bp.owner == *player_entity {
+                    should_delete = false;
+                }
+            }
+            if should_delete {
+                to_delete.push(entity);
+            }
+        }
+        to_delete
+    }
+
+    fn goto_next_level(&mut self) {
+        let to_delete = self.entities_to_remove_on_level_change();
+        for target in to_delete {
+            self.ecs.delete_entity(target).expect("Unable to delete entity");
+        }
+
+        let worldmap;
+        {
+            let mut worldmap_resources = self.ecs.write_resource::<Map>();
+            let current_depth = worldmap_resources.depth;
+            *worldmap_resources = Map::new_map_rooms_and_corridors(current_depth + 1);
+            worldmap = worldmap_resources.clone();
+        }
+
+        for room in worldmap.rooms.iter().skip(1) {
+            spawn_room(&mut self.ecs, room);
+        }
+
+        let (player_x, player_y) = worldmap.rooms[0].center();
+        let mut player_pos = self.ecs.write_resource::<Point>();
+        *player_pos = Point::new(player_x, player_y);
+        let mut position_components = self.ecs.write_storage::<Position>();
+        let player_entity = self.ecs.fetch::<Entity>();
+        let player_pos_comp = position_components.get_mut(*player_entity);
+        if let Some(player_pos_comp) = player_pos_comp {
+            player_pos_comp.x = player_x;
+            player_pos_comp.y = player_y;
+        }
+
+        let mut viewshed_comp = self.ecs.write_storage::<Viewshed>();
+        let vs = viewshed_comp.get_mut(*player_entity);
+        if let Some(vs) = vs {
+            vs.dirty = true;
+        }
+
+        let mut gamelog = self.ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("You rest for a moment and then descend to the next level".to_string());
+        let mut player_health_store = self.ecs.write_storage::<CombatStats>();
+        let player_health = player_health_store.get_mut(*player_entity);
+        if let Some(player_health) = player_health {
+            player_health.hp = i32::max(player_health.hp, player_health.max_hp / 2);
+        }
+    }
 }
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
-        DamageSystem::delete_the_dead(&mut self.ecs);
-        {
-            let map = self.ecs.fetch::<Map>();
-            map.draw_map(ctx);
-            let positions = self.ecs.read_storage::<Position>();
-            let renderables = self.ecs.read_storage::<Renderable>();
-
-            let mut to_render = (&positions, &renderables).join().collect::<Vec<_>>();
-            to_render.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-            for (pos, render) in to_render.iter() {
-                if map.visible_tiles[pos.x as usize][pos.y as usize] {
-                    ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-                }
-            }
-        }
-
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
         }
         match new_runstate {
+            RunState::MainMenu { .. } => {}
+            _ => {
+                let map = self.ecs.fetch::<Map>();
+                map.draw_map(ctx);
+                let positions = self.ecs.read_storage::<Position>();
+                let renderables = self.ecs.read_storage::<Renderable>();
+
+                let mut to_render = (&positions, &renderables).join().collect::<Vec<_>>();
+                to_render.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
+                for (pos, render) in to_render.iter() {
+                    if map.visible_tiles[pos.x as usize][pos.y as usize] {
+                        ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+                    }
+                }
+                ctx.print(70, 0, ctx.fps);
+                gui::dwaw_ui(&self.ecs, ctx);
+            }
+        }
+        DamageSystem::delete_the_dead(&mut self.ecs);
+        match new_runstate {
+            RunState::MainMenu { .. } => {
+                let result = gui::main_menu(self, ctx);
+                match result {
+                    MainMenuResult::NoSelection { selected } => new_runstate = RunState::MainMenu { menu_selection: selected },
+                    MainMenuResult::Selected { selected } => {
+                        match selected {
+                            MainMenuSelection::NewGame => new_runstate = RunState::PreRun,
+                            MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                new_runstate = RunState::AwaitingInput;
+                                saveload_system::delete_save();
+                            }
+                            MainMenuSelection::Quit => { std::process::exit(0); }
+                        }
+                    }
+                }
+            }
             RunState::PreRun => {
                 self.run_systems();
                 self.ecs.maintain();
@@ -158,14 +255,20 @@ impl GameState for State {
                         new_runstate = RunState::PlayerTurn;
                     }
                 }
+            },
+            RunState::SaveGame => {
+                saveload_system::save_game(&mut self.ecs);
+                new_runstate = RunState::MainMenu { menu_selection: MainMenuSelection::LoadGame};
+            }
+            RunState::NextLevel => {
+                self.goto_next_level();
+                new_runstate = RunState::PreRun;
             }
         }
         {
             let mut runwriter = self.ecs.write_resource::<RunState>();
             *runwriter = new_runstate;
         }
-        ctx.print(70, 0, ctx.fps);
-        gui::dwaw_ui(&self.ecs, ctx);
     }
 }
 
@@ -176,7 +279,6 @@ fn main() -> BError {
     };
     state.ecs.register::<Position>();
     state.ecs.register::<Renderable>();
-    state.ecs.register::<LeftMover>();
     state.ecs.register::<Player>();
     state.ecs.register::<Viewshed>();
     state.ecs.register::<Monster>();
@@ -197,7 +299,11 @@ fn main() -> BError {
     state.ecs.register::<InflictsDamage>();
     state.ecs.register::<AreaOfEffect>();
     state.ecs.register::<Confusion>();
-    let mut map = Map::new_map_rooms_and_corridors();
+    state.ecs.register::<SimpleMarker<SerializeMe>>();
+    state.ecs.register::<SerializationHelper>();
+    state.ecs.register::<Examinable>();
+    state.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+    let mut map = Map::new_map_rooms_and_corridors(1);
     let (player_x, player_y) = map.rooms[0].center();
     let player_entity = player(&mut state.ecs, player_x, player_y);
 
@@ -215,7 +321,7 @@ fn main() -> BError {
         .with_fps_cap(120.)
         .build()?;
     bterm.with_post_scanlines(true);
-    state.ecs.insert(RunState::PreRun);
+    state.ecs.insert(RunState::MainMenu { menu_selection: MainMenuSelection::NewGame });
     state.ecs.insert(GameLog{entries: vec!["Welcome to the Halls of Ruztoo".to_string()]});
 
     main_loop(bterm, state)

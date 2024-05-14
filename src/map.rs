@@ -4,6 +4,7 @@ use bracket_lib::algorithm_traits::SmallVec;
 use bracket_lib::color::RGB;
 use bracket_lib::geometry::Point;
 use bracket_lib::prelude::{Algorithm2D, BaseMap, BTerm, console, DistanceAlg, RandomNumberGenerator, to_cp437};
+use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs::WorldExt;
 
@@ -12,11 +13,14 @@ use crate::rect::Rect;
 pub const MAPWIDTH: usize = 100;
 pub const MAPHEIGHT: usize = 73;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
-    Wall, Floor
+    Wall,
+    Floor,
+    DownStairs
 }
 
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct Map {
     pub tiles: Vec<Vec<TileType>>,
     pub rooms: Vec<Rect>,
@@ -25,6 +29,10 @@ pub struct Map {
     pub revealed_tiles: Vec<Vec<bool>>,
     pub visible_tiles: Vec<Vec<bool>>,
     pub blocked: Vec<Vec<bool>>,
+    pub depth: i32,
+
+    #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
     pub tile_content: Vec<Vec<Vec<Entity>>>
 }
 
@@ -126,7 +134,7 @@ impl Map {
         }
     }
 
-    pub fn new_map_rooms_and_corridors() -> Map {
+    pub fn new_map_rooms_and_corridors(new_depth: i32) -> Map {
         let mut map = Map {
             tiles: vec![vec![TileType::Wall; MAPHEIGHT]; MAPWIDTH],
             rooms: Vec::new(),
@@ -136,6 +144,7 @@ impl Map {
             visible_tiles: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
             blocked: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
             tile_content: vec![vec![Vec::new(); MAPHEIGHT]; MAPWIDTH],
+            depth: new_depth,
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -171,6 +180,8 @@ impl Map {
                 map.rooms.push(new_room)
             }
         }
+        let stairs_position = map.rooms[map.rooms.len() - 1usize].center();
+        map.tiles[stairs_position.0 as usize][stairs_position.1 as usize] = TileType::DownStairs;
         map
     }
 
@@ -189,6 +200,10 @@ impl Map {
                         TileType::Wall => {
                             glyph = to_cp437('#');
                             fg = RGB::from_f32(0.6, 0.3, 0.1);
+                        }
+                        TileType::DownStairs => {
+                            glyph = to_cp437('>');
+                            fg = RGB::from_f32(0., 1.0, 1.0);
                         }
                     }
                     if !self.visible_tiles[x as usize][y as usize] { fg = fg.to_greyscale() }

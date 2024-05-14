@@ -1,16 +1,13 @@
 use std::cmp::{max, min};
-use std::fmt::format;
-use std::io::read_to_string;
 
-use bracket_lib::prelude::{BTerm, console, Point, VirtualKeyCode};
+use bracket_lib::prelude::{BTerm, Point, VirtualKeyCode};
 use specs::{Join, World};
 use specs::prelude::*;
 
-use crate::components::{CombatStats, Item, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
-use crate::map::Map;
 use crate::{RunState, State};
+use crate::components::{CombatStats, Item, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
-
+use crate::map::{Map, TileType};
 
 pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     match ctx.key {
@@ -35,10 +32,28 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::D => return RunState::ShowDropItem,
+            VirtualKeyCode::Escape => return RunState::SaveGame,
+            VirtualKeyCode::Period => {
+                if try_next_level(&mut gs.ecs) {
+                    return RunState::NextLevel;
+                }
+            }
             _ => { return RunState::AwaitingInput }
         }
     }
     RunState::MonsterTurn
+}
+
+fn try_next_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    if map.tiles[player_pos.x as usize][player_pos.y as usize] == TileType::DownStairs{
+        true
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog.entries.push("There is no way down from here".to_string());
+        false
+    }
 }
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {

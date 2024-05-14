@@ -1,16 +1,23 @@
+use specs::error::NoError;
+use specs::saveload::ConvertSaveload;
+use specs::saveload::Marker;
 use bracket_lib::color::RGB;
-use bracket_lib::prelude::{console, FontCharType, Point};
-use specs::{Join, ReadStorage, System, WriteStorage};
+use bracket_lib::prelude::{FontCharType, Point};
+use serde::{Deserialize, Serialize};
+use specs::{Join, WriteStorage};
 use specs::prelude::*;
 use specs_derive::*;
+use crate::map::Map;
 
-#[derive(Component)]
+pub struct SerializeMe;
+
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Component)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
     pub glyph: FontCharType,
     pub fg: RGB,
@@ -18,46 +25,29 @@ pub struct Renderable {
     pub render_order: i32
 }
 
-#[derive(Component)]
-pub struct LeftMover {}
-
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Monster {}
 
-#[derive(Component)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String
 }
 
-#[derive(Component)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool
 }
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Player {}
 
-pub struct LeftWalker{}
-impl<'a> System<'a> for LeftWalker {
-    type SystemData = (
-        ReadStorage<'a, LeftMover>,
-        WriteStorage<'a, Position>
-    );
 
-    fn run(&mut self, (lefty, mut pos): Self::SystemData) {
-        for(_lefty, pos) in (&lefty, &mut pos).join() {
-            pos.x -= 1;
-            if pos.x < 0 { pos.x = 79}
-        }
-    }
-}
-
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
 
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct CombatStats {
     pub max_hp: i32,
     pub hp: i32,
@@ -65,12 +55,12 @@ pub struct CombatStats {
     pub power: i32
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToMelee {
     pub target: Entity
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct SufferDamage {
     pub amount: Vec<i32>
 }
@@ -86,64 +76,69 @@ impl SufferDamage {
     }
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Item {}
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct ProvidesHealing {
     pub heal_amount: i32
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InBackpack {
     pub owner: Entity
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToPickUpItem {
     pub collected_by: Entity,
     pub item: Entity
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToUseItem {
     pub item: Entity,
     pub target: Option<Point>
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToDropItem {
     pub item: Entity
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Consumable {}
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Examinable {}
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Artefact {
     pub name: String,
     pub value: i32
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Ranged {
     pub range: i32
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct InflictsDamage {
     pub damage: i32
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct AreaOfEffect {
     pub radius: i32
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Confusion {
     pub turns: i32
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct SerializationHelper {
+    pub map: Map
 }
