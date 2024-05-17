@@ -1,7 +1,9 @@
+use bracket_lib::prelude::console;
 use specs::prelude::*;
 
 use crate::components::{CombatStats, Name, Player, SufferDamage};
 use crate::gamelog::GameLog;
+use crate::RunState;
 
 pub struct DamageSystem{}
 
@@ -44,7 +46,10 @@ impl DamageSystem {
                                 }
                                 dead.push(entity)
                             },
-                            Some(_) => gamelog.entries.push("You died!".to_string())
+                            Some(_) => {
+                                let mut runstate = ecs.write_resource::<RunState>();
+                                *runstate = RunState::GameOver;
+                            }
                         }
                     }
 

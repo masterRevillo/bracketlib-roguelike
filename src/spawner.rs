@@ -1,10 +1,14 @@
-use bracket_lib::color::{BLACK, CYAN, GOLD, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RGB, YELLOW};
+use std::collections::HashMap;
+
+use bracket_lib::color::{BLACK, CYAN, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RGB, YELLOW};
 use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializeMe, Viewshed};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EquipmentSlot, Equippable, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializeMe, Viewshed};
+use crate::random_tables::EntryType::*;
+use crate::random_tables::{EntryType, RandomTable};
 use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
@@ -29,6 +33,24 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(CombatStats{max_hp: 30, hp: 30, defense: 2, power: 5})
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
+}
+
+fn room_table(level: i32) -> RandomTable {
+    RandomTable::new()
+        .add(Bisat, 10)
+        .add(Ogur, 1 + level)
+        .add(HealthPotion, 7)
+        .add(FireballScroll, 2 + level)
+        .add(ConfusionScroll, 2 + level)
+        .add(MagicMissileScroll, 4)
+        .add(ChickenLeg, 4)
+        .add(Sandwich, 5)
+        .add(GobletOfWine, 4)
+        .add(Artefact, (level - 1))
+        .add(Dagger, 3)
+        .add(Shield, 3)
+        .add(Longsword, level - 1)
+        .add(TowerShield, level - 1)
 }
 
 pub fn random_monster(ecs: &mut World, x: i32, y: i32) {
@@ -116,41 +138,46 @@ pub fn random_item(ecs: &mut World, x: i32, y: i32) {
     }
 }
 
-pub fn spawn_room(ecs: &mut World, room: &Rect) {
-    let mut monster_spawn_points: Vec<(usize, usize)> = Vec::new();
-    let mut item_spawn_points: Vec<(usize, usize)> = Vec::new();
+pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
+    let spawn_table = room_table(map_level);
+    let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
     {
         let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let num_monsters = rng.roll_dice(1, MAX_MONSTERS + 2) - 3;
-        let num_items = rng.roll_dice(1, MAX_ITEMS + 2) - 3;
-        for _i in 0 .. num_monsters {
+        let num_spawns = rng.roll_dice(1, MAX_MONSTERS + 3) + (map_level -1) - 3;
+        for _i in 0 ..num_spawns {
             let mut added = false;
-            while !added {
-                let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-                let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-                if !monster_spawn_points.contains(&(x, y)) {
-                    monster_spawn_points.push((x,y));
+            let mut tries = 0;
+            while !added && tries < 20 {
+                let x = room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1));
+                let y = room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1));
+                if !spawn_points.contains_key(&(x, y)) {
+                    spawn_points.insert((x,y), spawn_table.roll(&mut rng));
                     added = true;
-                }
-            }
-        }
-        for _ in 0 .. num_items {
-            let mut added = false;
-            while !added {
-                let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-                let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-                if !item_spawn_points.contains(&(x, y)){
-                    item_spawn_points.push((x, y));
-                    added = true;
+                } else {
+                    tries += 1;
                 }
             }
         }
     }
-    for coords in monster_spawn_points.iter() {
-        random_monster(ecs, coords.0 as i32, coords.1 as i32);
-    }
-    for coords in item_spawn_points.iter() {
-        random_item(ecs, coords.0 as i32, coords.1 as i32)
+    for spawn in spawn_points.iter() {
+        let coords = spawn.0;
+        match spawn.1 {
+            None => {}
+            Bisat => bisat(ecs, coords.0, coords.1),
+            Ogur => ogur(ecs, coords.0, coords.1),
+            HealthPotion => health_potion(ecs, coords.0, coords.1),
+            FireballScroll => fireball_stroll(ecs, coords.0, coords.1),
+            ConfusionScroll => confusion_stroll(ecs, coords.0, coords.1),
+            MagicMissileScroll => magic_missile_stroll(ecs, coords.0, coords.1),
+            Sandwich => food(ecs, to_cp437('='), "Sandwich", RGB::named(CHOCOLATE3), 2,coords.0, coords.1),
+            ChickenLeg=> food(ecs, to_cp437('q'), "Chicken Leg", RGB::named(CHOCOLATE3), 3, coords.0, coords.1),
+            GobletOfWine => food(ecs, to_cp437('u'), "Goblet of Wine", RGB::named(MAROON), 1, coords.0, coords.1),
+            Artefact => artefact(ecs, coords.0, coords.1),
+            Dagger => dagger(ecs, coords.0, coords.1),
+            Shield => shield(ecs, coords.0, coords.1),
+            Longsword => longsword(ecs, coords.0, coords.1),
+            TowerShield => tower_shield(ecs, coords.0, coords.1),
+        }
     }
 }
 
@@ -260,6 +287,72 @@ fn confusion_stroll(ecs: &mut World, x: i32, y: i32) {
         .with(Ranged{ range: 6 })
         .with(AreaOfEffect{ radius: 3 })
         .with(Confusion{ turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn dagger(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('-'),
+            fg: RGB::named(CYAN),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Dagger".to_string()})
+        .with(Item{})
+        .with(Equippable{ slot: EquipmentSlot::Melee })
+        .with(MeleeAttackBonus{ attack: 2 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+fn shield(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('('),
+            fg: RGB::named(CYAN),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Shield".to_string()})
+        .with(Item{})
+        .with(Equippable{ slot: EquipmentSlot::Shield })
+        .with(DefenseBonus{ defense: 1 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn longsword(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('/'),
+            fg: RGB::named(LIGHT_GRAY),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Longsword".to_string()})
+        .with(Item{})
+        .with(Equippable{ slot: EquipmentSlot::Melee })
+        .with(MeleeAttackBonus{ attack: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+fn tower_shield(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('['),
+            fg: RGB::named(CYAN),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Tower Shield".to_string()})
+        .with(Item{})
+        .with(Equippable{ slot: EquipmentSlot::Shield })
+        .with(DefenseBonus{ defense: 3 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

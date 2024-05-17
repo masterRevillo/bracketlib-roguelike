@@ -142,3 +142,32 @@ pub struct Confusion {
 pub struct SerializationHelper {
     pub map: Map
 }
+
+#[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum  EquipmentSlot { Melee, Shield }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Equippable {
+    pub slot: EquipmentSlot
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct Equipped {
+    pub owner: Entity,
+    pub slot: EquipmentSlot
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct MeleeAttackBonus {
+    pub attack: i32
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct DefenseBonus {
+    pub defense: i32
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct WantsToUnequipItem {
+    pub item: Entity
+}

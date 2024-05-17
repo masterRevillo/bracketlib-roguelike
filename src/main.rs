@@ -1,12 +1,13 @@
-use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Point};
+use bracket_lib::prelude::{BError, BTerm, BTermBuilder, console, GameState, main_loop, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
+use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, Examinable, InBackpack, InflictsDamage, Item, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, InBackpack, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
-use crate::gui::{drop_item_menu, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target, show_inventory};
-use crate::inventory_system::{ItemCollectionSystem, ItemDropSystem, ItemUseSystem};
+use crate::gui::{drop_item_menu, GameOverResult, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target, show_inventory};
+use crate::inventory_system::{ItemCollectionSystem, ItemDropSystem, ItemUnequippingSystem, ItemUseSystem};
 use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
 use crate::melee_combat_system::MeleeCombatSystem;
@@ -14,8 +15,6 @@ use crate::monster_ai_system::MonsterAI;
 use crate::player::player_input;
 use crate::spawner::{player, spawn_room};
 use crate::visibility_system::VisibilitySystem;
-
-use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 mod map;
 mod components;
@@ -31,6 +30,7 @@ mod gamelog;
 mod spawner;
 mod inventory_system;
 mod saveload_system;
+mod random_tables;
 
 mod util {
     pub mod namegen;
@@ -49,6 +49,8 @@ pub enum RunState {
     MainMenu { menu_selection: MainMenuSelection },
     SaveGame,
     NextLevel,
+    ShowRemoveItem,
+    GameOver,
 }
 
 struct State {
@@ -73,6 +75,8 @@ impl State {
         potion_use_system.run_now(&self.ecs);
         let mut item_drop_system = ItemDropSystem{};
         item_drop_system.run_now(&self.ecs);
+        let mut item_unequipping_system = ItemUnequippingSystem{};
+        item_unequipping_system.run_now(&self.ecs);
         self.ecs.maintain();
     }
 
@@ -81,6 +85,7 @@ impl State {
         let player = self.ecs.read_storage::<Player>();
         let backpack = self.ecs.read_storage::<InBackpack>();
         let player_entity = self.ecs.fetch::<Entity>();
+        let equipped = self.ecs.read_storage::<Equipped>();
 
         let mut to_delete: Vec<Entity> = Vec::new();
         for entity in entities.join() {
@@ -95,11 +100,54 @@ impl State {
                     should_delete = false;
                 }
             }
+            let eq = equipped.get(entity);
+            if let Some(eq) = eq {
+                if eq.owner == *player_entity {
+                    should_delete = false;
+                }
+            }
             if should_delete {
                 to_delete.push(entity);
             }
         }
         to_delete
+    }
+
+
+    pub fn game_over_cleanup(&mut self) {
+        let mut to_delete = Vec::new();
+        for e in self.ecs.entities().join() {
+            to_delete.push(e);
+        }
+        for del in to_delete.iter() {
+            self.ecs.delete_entity(*del).expect("Could not delete")
+        }
+        let map;
+        {
+            let mut map_resource = self.ecs.write_resource::<Map>();
+            *map_resource = Map::new_map_rooms_and_corridors(1);
+            map = map_resource.clone();
+        }
+        for room in map.rooms.iter().skip(1) {
+            spawn_room(&mut self.ecs, room, 1);
+        }
+        let (p_x, p_y) = map.rooms[0].center();
+        let p_entity = player(&mut self.ecs, p_x, p_y);
+        let mut p_pos = self.ecs.write_resource::<Point>();
+        *p_pos = Point::new(p_x, p_y);
+        let mut pos_components = self.ecs.write_storage::<Position>();
+        let mut player_entity_writer = self.ecs.write_resource::<Entity>();
+        *player_entity_writer = p_entity;
+        let player_pos_comp = pos_components.get_mut(p_entity);
+        if let Some(player_pos_comp) = player_pos_comp {
+            player_pos_comp.x = p_x;
+            player_pos_comp.y = p_y;
+        }
+        let mut viewshed_components = self.ecs.write_storage::<Viewshed>();
+        let vs = viewshed_components.get_mut(p_entity);
+        if let Some(vs) = vs {
+            vs.dirty = true;
+        }
     }
 
     fn goto_next_level(&mut self) {
@@ -109,15 +157,16 @@ impl State {
         }
 
         let worldmap;
+        let current_depth;
         {
             let mut worldmap_resources = self.ecs.write_resource::<Map>();
-            let current_depth = worldmap_resources.depth;
+            current_depth = worldmap_resources.depth;
             *worldmap_resources = Map::new_map_rooms_and_corridors(current_depth + 1);
             worldmap = worldmap_resources.clone();
         }
 
         for room in worldmap.rooms.iter().skip(1) {
-            spawn_room(&mut self.ecs, room);
+            spawn_room(&mut self.ecs, room, current_depth+1);
         }
 
         let (player_x, player_y) = worldmap.rooms[0].center();
@@ -157,6 +206,7 @@ impl GameState for State {
         }
         match new_runstate {
             RunState::MainMenu { .. } => {}
+            RunState::GameOver{ .. } => {}
             _ => {
                 let map = self.ecs.fetch::<Map>();
                 map.draw_map(ctx);
@@ -174,7 +224,6 @@ impl GameState for State {
                 gui::dwaw_ui(&self.ecs, ctx);
             }
         }
-        DamageSystem::delete_the_dead(&mut self.ecs);
         match new_runstate {
             RunState::MainMenu { .. } => {
                 let result = gui::main_menu(self, ctx);
@@ -264,11 +313,37 @@ impl GameState for State {
                 self.goto_next_level();
                 new_runstate = RunState::PreRun;
             }
+            RunState::ShowRemoveItem => {
+                let result = gui::unequip_item_menu(self, ctx);
+                match result.0 {
+                    ItemMenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    ItemMenuResult::NoResponse => {}
+                    ItemMenuResult::Selected => {
+                        let item_entity = result.1.unwrap();
+                        let mut intent = self.ecs.write_storage::<WantsToUnequipItem>();
+                        intent.insert(*self.ecs.fetch::<Entity>(), WantsToUnequipItem{ item: item_entity })
+                            .expect("Unable to insert intent");
+                        new_runstate = RunState::PlayerTurn;
+                    }
+                }
+            }
+            RunState::GameOver => {
+                let result = gui::game_over(ctx);
+                match result {
+                    GameOverResult::NoSelection => {}
+                    GameOverResult::QuitToMenu => {
+                        self.game_over_cleanup();
+                        new_runstate = RunState::MainMenu { menu_selection: MainMenuSelection::NewGame };
+                    }
+                }
+
+            }
         }
         {
             let mut runwriter = self.ecs.write_resource::<RunState>();
             *runwriter = new_runstate;
         }
+        DamageSystem::delete_the_dead(&mut self.ecs);
     }
 }
 
@@ -302,6 +377,12 @@ fn main() -> BError {
     state.ecs.register::<SimpleMarker<SerializeMe>>();
     state.ecs.register::<SerializationHelper>();
     state.ecs.register::<Examinable>();
+    state.ecs.register::<Equippable>();
+    state.ecs.register::<Equipped>();
+    state.ecs.register::<MeleeAttackBonus>();
+    state.ecs.register::<DefenseBonus>();
+    state.ecs.register::<WantsToUnequipItem>();
+
     state.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     let mut map = Map::new_map_rooms_and_corridors(1);
     let (player_x, player_y) = map.rooms[0].center();
@@ -312,7 +393,7 @@ fn main() -> BError {
     let rng = RandomNumberGenerator::new();
     state.ecs.insert(rng);
     for room in map.rooms.iter().skip(1) {
-        spawn_room(&mut state.ecs, room);
+        spawn_room(&mut state.ecs, room, 1);
     }
     state.ecs.insert(map);
     let mut bterm = BTermBuilder::simple(100, 80)?
