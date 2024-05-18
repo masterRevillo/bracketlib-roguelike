@@ -1,8 +1,10 @@
 use std::ptr::eq;
-use bracket_lib::prelude::console;
+use bracket_lib::color::{BLACK, ORANGE, RGB};
+use bracket_lib::prelude::{console, to_cp437};
 use specs::prelude::*;
-use crate::components::{CombatStats, DefenseBonus, Equipped, MeleeAttackBonus, Name, SufferDamage, WantsToMelee};
+use crate::components::{CombatStats, DefenseBonus, Equipped, MeleeAttackBonus, Name, Position, SufferDamage, WantsToMelee};
 use crate::gamelog::GameLog;
+use crate::particle_system::ParticleBuilder;
 
 pub struct MeleeCombatSystem {}
 
@@ -16,7 +18,9 @@ impl <'a> System<'a> for MeleeCombatSystem {
         WriteStorage<'a, SufferDamage>,
         ReadStorage<'a, MeleeAttackBonus>,
         ReadStorage<'a, DefenseBonus>,
-        ReadStorage<'a, Equipped>
+        ReadStorage<'a, Equipped>,
+        WriteExpect<'a, ParticleBuilder>,
+        ReadStorage<'a, Position>
     );
     fn run(&mut self, data: Self::SystemData) {
         let (
@@ -28,7 +32,9 @@ impl <'a> System<'a> for MeleeCombatSystem {
             mut inflict_damage,
             melee_attack_bonus,
             defense_bonus,
-            equipped
+            equipped,
+            mut particle_builder,
+            positions
         ) = data;
 
         for (entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
@@ -48,6 +54,12 @@ impl <'a> System<'a> for MeleeCombatSystem {
                         if equipped_item.owner == wants_melee.target {
                             defensive_bonus += defense_bonus.defense;
                         }
+                    }
+                    let pos = positions.get(wants_melee.target);
+                    if let Some(pos) = pos {
+                        particle_builder.request(
+                            pos.x, pos.y, RGB::named(ORANGE), RGB::named(BLACK), to_cp437('!'), 150.0
+                        );
                     }
                     let damage = i32::max(0, (stats.power + offensive_bonus) - (target_stats.defense + defensive_bonus));
 

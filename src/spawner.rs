@@ -285,7 +285,6 @@ fn confusion_stroll(ecs: &mut World, x: i32, y: i32) {
         .with(Item{})
         .with(Consumable{})
         .with(Ranged{ range: 6 })
-        .with(AreaOfEffect{ radius: 3 })
         .with(Confusion{ turns: 4 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();

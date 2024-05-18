@@ -1,8 +1,10 @@
-use bracket_lib::prelude::console;
+use bracket_lib::color::{BLACK, RGB};
+use bracket_lib::prelude::to_cp437;
 use specs::prelude::*;
 
-use crate::components::{CombatStats, Name, Player, SufferDamage};
+use crate::components::{CombatStats, Monster, Name, Player, Position, Renderable, SufferDamage};
 use crate::gamelog::GameLog;
+use crate::map::Map;
 use crate::RunState;
 
 pub struct DamageSystem{}
@@ -10,14 +12,21 @@ pub struct DamageSystem{}
 impl <'a> System<'a> for DamageSystem {
     type SystemData = (
         WriteStorage<'a, CombatStats>,
-        WriteStorage<'a, SufferDamage>
+        WriteStorage<'a, SufferDamage>,
+        ReadStorage<'a, Position>,
+        WriteExpect<'a, Map>,
+        Entities<'a>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut stats, mut damage) = data;
+        let (mut stats, mut damage, positions, mut map, entities) = data;
 
-        for (mut stats, damage) in (&mut stats, &damage).join() {
+        for (entity, mut stats, damage) in (&entities, &mut stats, &damage).join() {
             stats.hp -= damage.amount.iter().sum::<i32>();
+            let pos = positions.get(entity);
+            if let Some(pos) = pos {
+                map.bloodstains.insert((pos.x, pos.y));
+            }
         }
         damage.clear()
     }
@@ -33,6 +42,7 @@ impl DamageSystem {
             let players = ecs.read_storage::<Player>();
             let entities = ecs.entities();
             let names = ecs.read_storage::<Name>();
+            let mut renderables = ecs.write_storage::<Renderable>();
             let mut gamelog = ecs.write_resource::<GameLog>();
             for (entity, stats) in (&entities, &combat_stats).join() {
                 if stats.hp < 1 {
@@ -44,7 +54,12 @@ impl DamageSystem {
                                 if let Some(name) = name {
                                     gamelog.entries.push(format!("{} is dead", name.name));
                                 }
-                                dead.push(entity)
+                                dead.push(entity);
+                                let r =  renderables.get_mut(entity);
+                                if let Some(r) = r {
+                                    r.glyph = to_cp437('%');
+                                    r.fg = RGB::from_f32(0.75, 0., 0.);
+                                }
                             },
                             Some(_) => {
                                 let mut runstate = ecs.write_resource::<RunState>();
@@ -56,8 +71,10 @@ impl DamageSystem {
                 }
             }
         }
+        let mut monsters = ecs.write_storage::<Monster>();
         for victim in dead {
-            ecs.delete_entity(victim).expect("Unable to delete");
+            monsters.remove(victim);
+            // ecs.delete_entity(victim).expect("Unable to delete");
         }
     }
 }

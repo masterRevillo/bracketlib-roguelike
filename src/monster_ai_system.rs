@@ -1,8 +1,10 @@
-use bracket_lib::prelude::{a_star_search, console, DistanceAlg, Point};
+use bracket_lib::color::BLACK;
+use bracket_lib::prelude::{a_star_search, console, DistanceAlg, MAGENTA, Point, RGB, to_cp437};
 use specs::prelude::*;
 
 use crate::components::{Confusion, Monster, Position, Viewshed, WantsToMelee};
 use crate::map::Map;
+use crate::particle_system::ParticleBuilder;
 use crate::RunState;
 
 pub struct MonsterAI{}
@@ -19,6 +21,7 @@ impl <'a> System<'a> for MonsterAI {
         WriteStorage<'a, Position>,
         WriteStorage<'a, WantsToMelee>,
         WriteStorage<'a, Confusion>,
+        WriteExpect<'a, ParticleBuilder>
     );
     fn run(&mut self, data: Self::SystemData) {
         let (
@@ -31,7 +34,8 @@ impl <'a> System<'a> for MonsterAI {
             monster,
             mut position,
             mut wants_to_melee,
-            mut confusion
+            mut confusion,
+            mut particle_builder
         ) = data;
 
         if *runstate != RunState::MonsterTurn { return; }
@@ -46,6 +50,9 @@ impl <'a> System<'a> for MonsterAI {
                     confusion.remove(entity);
                 }
                 can_act = false;
+                particle_builder.request(
+                    pos.x, pos.y, RGB::named(MAGENTA), RGB::named(BLACK), to_cp437('?'), 200.0
+                );
             }
             if can_act {
                 let distance = DistanceAlg::Pythagoras.distance2d(

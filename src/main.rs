@@ -3,7 +3,7 @@ use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, InBackpack, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, InBackpack, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{drop_item_menu, GameOverResult, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target, show_inventory};
@@ -12,6 +12,7 @@ use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
 use crate::melee_combat_system::MeleeCombatSystem;
 use crate::monster_ai_system::MonsterAI;
+use crate::particle_system::ParticleSpawnSystem;
 use crate::player::player_input;
 use crate::spawner::{player, spawn_room};
 use crate::visibility_system::VisibilitySystem;
@@ -31,6 +32,7 @@ mod spawner;
 mod inventory_system;
 mod saveload_system;
 mod random_tables;
+mod particle_system;
 
 mod util {
     pub mod namegen;
@@ -77,6 +79,8 @@ impl State {
         item_drop_system.run_now(&self.ecs);
         let mut item_unequipping_system = ItemUnequippingSystem{};
         item_unequipping_system.run_now(&self.ecs);
+        let mut particle_system = ParticleSpawnSystem{};
+        particle_system.run_now(&self.ecs);
         self.ecs.maintain();
     }
 
@@ -199,6 +203,7 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
@@ -382,7 +387,9 @@ fn main() -> BError {
     state.ecs.register::<MeleeAttackBonus>();
     state.ecs.register::<DefenseBonus>();
     state.ecs.register::<WantsToUnequipItem>();
+    state.ecs.register::<ParticleLifetime>();
 
+    state.ecs.insert(particle_system::ParticleBuilder::new());
     state.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     let mut map = Map::new_map_rooms_and_corridors(1);
     let (player_x, player_y) = map.rooms[0].center();

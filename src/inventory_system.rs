@@ -1,9 +1,11 @@
-use std::fmt::format;
-use bracket_lib::prelude::field_of_view;
+use bracket_lib::color::{BLACK, GREEN, MAGENTA, ORANGE, RED, RGB};
+use bracket_lib::prelude::{field_of_view, to_cp437};
 use specs::prelude::*;
-use crate::components::{CombatStats, Consumable, InBackpack, Name, Position, ProvidesHealing, WantsToUseItem, WantsToDropItem, WantsToPickUpItem, Examinable, Artefact, InflictsDamage, SufferDamage, AreaOfEffect, Confusion, Equippable, Equipped, WantsToUnequipItem};
+
+use crate::components::{AreaOfEffect, Artefact, CombatStats, Confusion, Consumable, Equippable, Equipped, InBackpack, InflictsDamage, Name, Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::gamelog::GameLog;
 use crate::map::Map;
+use crate::particle_system::ParticleBuilder;
 
 pub struct ItemCollectionSystem {}
 
@@ -54,6 +56,8 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Equippable>,
         WriteStorage<'a, Equipped>,
         WriteStorage<'a, InBackpack>,
+        WriteExpect<'a, ParticleBuilder>,
+        ReadStorage<'a, Position>
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -74,7 +78,9 @@ impl<'a> System<'a> for ItemUseSystem {
             mut confusions,
             equippable,
             mut equipped,
-            mut inBackpack
+            mut inBackpack,
+            mut particle_builder,
+            positions
         ) = data;
 
         for (entity, use_item) in (&entities, &wants_use_item).join() {
@@ -96,6 +102,9 @@ impl<'a> System<'a> for ItemUseSystem {
                                 for mob in map.tile_content[tile.x as usize][tile.y as usize].iter() {
                                     targets.push(*mob);
                                 }
+                                particle_builder.request(
+                                    tile.x, tile.y, RGB::named(ORANGE), RGB::named(BLACK), to_cp437('!'), 200.0
+                                );
                             }
                         }
                     }
@@ -140,6 +149,12 @@ impl<'a> System<'a> for ItemUseSystem {
                             if entity == *player_entity {
                                 gamelog.entries.push(format!("You drink the {}, and it heals {}hp", names.get(use_item.item).unwrap().name, healer.heal_amount));
                             }
+                            let pos = positions.get(*target);
+                            if let Some(pos) = pos {
+                                particle_builder.request(
+                                    pos.x, pos.y, RGB::named(GREEN), RGB::named(BLACK), to_cp437('❤'), 200.0
+                                );
+                            }
                         }
                     }
                 }
@@ -169,7 +184,13 @@ impl<'a> System<'a> for ItemUseSystem {
                                         mob_name.name,
                                         damage.damage
                                 )
-                            )
+                            );
+                            let pos = positions.get(*mob);
+                            if let Some(pos) = pos {
+                                particle_builder.request(
+                                    pos.x, pos.y, RGB::named(RED), RGB::named(BLACK), to_cp437('!'), 200.0
+                                );
+                            }
                         }
                     }
                 }
@@ -190,7 +211,13 @@ impl<'a> System<'a> for ItemUseSystem {
                                             item_name.name,
                                             mob_name.name,
                                     )
-                                )
+                                );
+                                let pos = positions.get(*mob);
+                                if let Some(pos) = pos {
+                                    particle_builder.request(
+                                        pos.x, pos.y, RGB::named(MAGENTA), RGB::named(BLACK), to_cp437('?'), 200.0
+                                    );
+                                }
                             }
                         }
                     }
