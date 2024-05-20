@@ -1,11 +1,15 @@
+use std::fmt::format;
 use bracket_lib::color::{BLACK, GREEN, MAGENTA, ORANGE, RED, RGB};
-use bracket_lib::prelude::{field_of_view, to_cp437};
+use bracket_lib::prelude::{field_of_view, log, to_cp437};
+use bracket_lib::prelude::VirtualKeyCode::P;
 use specs::prelude::*;
 
-use crate::components::{AreaOfEffect, Artefact, CombatStats, Confusion, Consumable, Equippable, Equipped, InBackpack, InflictsDamage, Name, Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, CombatStats, Confusion, Consumable, Equippable, Equipped, HungerClock, HungerState, InBackpack, InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::gamelog::GameLog;
+use crate::hunger_system::HungerSystem;
 use crate::map::Map;
 use crate::particle_system::ParticleBuilder;
+use crate::RunState;
 
 pub struct ItemCollectionSystem {}
 
@@ -42,7 +46,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadExpect<'a, Entity>,
         WriteExpect<'a, GameLog>,
         Entities<'a>,
-        ReadExpect<'a, Map>,
+        WriteExpect<'a, Map>,
         WriteStorage<'a, WantsToUseItem>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, ProvidesHealing>,
@@ -57,7 +61,11 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, Equipped>,
         WriteStorage<'a, InBackpack>,
         WriteExpect<'a, ParticleBuilder>,
-        ReadStorage<'a, Position>
+        ReadStorage<'a, Position>,
+        ReadStorage<'a, ProvidesFood>,
+        WriteStorage<'a, HungerClock>,
+        ReadStorage<'a, MagicMapper>,
+        WriteExpect<'a, RunState>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -65,7 +73,7 @@ impl<'a> System<'a> for ItemUseSystem {
             player_entity,
             mut gamelog,
             entities,
-            map,
+            mut map,
             mut wants_use_item,
             names,
             healing,
@@ -80,7 +88,11 @@ impl<'a> System<'a> for ItemUseSystem {
             mut equipped,
             mut inBackpack,
             mut particle_builder,
-            positions
+            positions,
+            provides_food,
+            mut hunger_clock,
+            magic_mapper,
+            mut runsatate
         ) = data;
 
         for (entity, use_item) in (&entities, &wants_use_item).join() {
@@ -135,6 +147,21 @@ impl<'a> System<'a> for ItemUseSystem {
                     if target == *player_entity {
                         gamelog.entries.push(format!("You equip {}", names.get(use_item.item).unwrap().name));
                     }
+                }
+            }
+            let item_provides_food = provides_food.get(use_item.item);
+            if let Some(item_provides_food) = item_provides_food {
+                let target = targets[0];
+                let hc = hunger_clock.get_mut(target);
+                if let Some(hc) = hc {
+                    let updated_state = HungerSystem::calculate_new_hunger_state(
+                        hc.hunger_points, hc.state, item_provides_food.points
+                    );
+                    hc.hunger_points = updated_state.1;
+                    hc.state = updated_state.0;
+                    gamelog.entries.push(format!(
+                        "You eat the {}. It fills you up.", names.get(use_item.item).unwrap().name
+                    ))
                 }
             }
 
@@ -223,6 +250,11 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             }
+            let is_mapper = magic_mapper.get(use_item.item);
+            if let Some(is_mapper) = is_mapper {
+                gamelog.entries.push("You use the scroll, which reveals the map to you".to_string());
+                *runsatate = RunState::MagicMapReveal{ row: 0 };
+            };
             for mob in add_confusion.iter() {
                 confusions.insert(mob.0, Confusion{ turns: mob.1})
                     .expect("Unable to insert status");

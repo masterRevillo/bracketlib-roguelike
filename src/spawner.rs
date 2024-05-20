@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use bracket_lib::color::{BLACK, CYAN, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RGB, YELLOW};
+use bracket_lib::color::{BLACK, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RGB, YELLOW};
 use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EquipmentSlot, Equippable, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesHealing, Ranged, Renderable, SerializeMe, Viewshed};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EquipmentSlot, Equippable, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializeMe, Viewshed};
 use crate::random_tables::EntryType::*;
 use crate::random_tables::{EntryType, RandomTable};
 use crate::rect::Rect;
@@ -31,6 +31,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Viewshed{ visible_tiles: Vec::new(), range: 8, dirty: true})
         .with(Name{name: "Player".to_string()})
         .with(CombatStats{max_hp: 30, hp: 30, defense: 2, power: 5})
+        .with(HungerClock{ state: HungerState::WellFed, hunger_points: 20 })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }
@@ -51,18 +52,7 @@ fn room_table(level: i32) -> RandomTable {
         .add(Shield, 3)
         .add(Longsword, level - 1)
         .add(TowerShield, level - 1)
-}
-
-pub fn random_monster(ecs: &mut World, x: i32, y: i32) {
-    let roll: i32;
-    {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        roll = rng.roll_dice(1,2);
-    }
-    match roll {
-        1 => { ogur(ecs, x, y) }
-        _ => { bisat(ecs, x, y) }
-    }
+        .add(MagicMappingScroll, 400)
 }
 
 fn ogur(ecs: &mut World, x: i32, y: i32) {
@@ -119,25 +109,6 @@ fn monster<S: ToString>(ecs: &mut World, x: i32, y: i32, glyph: FontCharType, na
         .build();
 }
 
-
-pub fn random_item(ecs: &mut World, x: i32, y: i32) {
-    let roll: i32;
-    {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        roll = rng.roll_dice(1,30);
-    }
-    match roll {
-        1 => { artefact(ecs, x, y) }
-        2..=5 => { food(ecs, to_cp437('='), "Sandwich", RGB::named(CHOCOLATE3), 2, x, y)}
-        6..=8 => { food(ecs, to_cp437('q'), "Chicken Leg", RGB::named(CHOCOLATE3), 3, x, y)}
-        9..=10 => { food(ecs, to_cp437('u'), "Cup of Wine", RGB::named(MAROON), 1, x, y)}
-        11..=15 => { magic_missile_stroll(ecs, x, y)},
-        16..=20 => { fireball_stroll(ecs, x, y)},
-        21..=25 => { confusion_stroll(ecs, x, y)},
-        _ => { health_potion(ecs, x, y) }
-    }
-}
-
 pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
     let spawn_table = room_table(map_level);
     let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
@@ -169,14 +140,15 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
             FireballScroll => fireball_stroll(ecs, coords.0, coords.1),
             ConfusionScroll => confusion_stroll(ecs, coords.0, coords.1),
             MagicMissileScroll => magic_missile_stroll(ecs, coords.0, coords.1),
-            Sandwich => food(ecs, to_cp437('='), "Sandwich", RGB::named(CHOCOLATE3), 2,coords.0, coords.1),
-            ChickenLeg=> food(ecs, to_cp437('q'), "Chicken Leg", RGB::named(CHOCOLATE3), 3, coords.0, coords.1),
-            GobletOfWine => food(ecs, to_cp437('u'), "Goblet of Wine", RGB::named(MAROON), 1, coords.0, coords.1),
+            Sandwich => food(ecs, to_cp437('='), "Sandwich", RGB::named(CHOCOLATE3), 2, 200, coords.0, coords.1),
+            ChickenLeg=> food(ecs, to_cp437('q'), "Chicken Leg", RGB::named(CHOCOLATE3), 3, 150, coords.0, coords.1),
+            GobletOfWine => food(ecs, to_cp437('u'), "Goblet of Wine", RGB::named(MAROON), 1, 25, coords.0, coords.1),
             Artefact => artefact(ecs, coords.0, coords.1),
             Dagger => dagger(ecs, coords.0, coords.1),
             Shield => shield(ecs, coords.0, coords.1),
             Longsword => longsword(ecs, coords.0, coords.1),
             TowerShield => tower_shield(ecs, coords.0, coords.1),
+            MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1)
         }
     }
 }
@@ -218,7 +190,16 @@ fn health_potion(ecs: &mut World, x: i32, y: i32) {
         .build();
 }
 
-fn food<T: ToString>(ecs: &mut World, glyph: FontCharType, name: T, color: RGB, heal_amount: i32, x: i32, y: i32) {
+fn food<T: ToString>(
+    ecs: &mut World,
+    glyph: FontCharType,
+    name: T,
+    color: RGB,
+    heal_amount: i32,
+    food_amount: i32,
+    x: i32,
+    y: i32
+) {
     ecs.create_entity()
         .with(Position{ x, y })
         .with(Renderable{
@@ -230,6 +211,7 @@ fn food<T: ToString>(ecs: &mut World, glyph: FontCharType, name: T, color: RGB, 
         .with(Name{ name: name.to_string()})
         .with(Item{})
         .with(ProvidesHealing{ heal_amount })
+        .with(ProvidesFood{ points: food_amount })
         .with(Consumable{})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
@@ -352,6 +334,23 @@ fn tower_shield(ecs: &mut World, x: i32, y: i32) {
         .with(Item{})
         .with(Equippable{ slot: EquipmentSlot::Shield })
         .with(DefenseBonus{ defense: 3 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn magic_mapping_stroll(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('~'),
+            fg: RGB::named(CYAN3),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Magic Mapping Scroll".to_string()})
+        .with(Item{})
+        .with(Consumable{})
+        .with(MagicMapper{})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

@@ -2,7 +2,7 @@ use bracket_lib::color::{BLACK, RGB};
 use bracket_lib::prelude::to_cp437;
 use specs::prelude::*;
 
-use crate::components::{CombatStats, Monster, Name, Player, Position, Renderable, SufferDamage};
+use crate::components::{BlocksTile, CombatStats, Monster, Name, Player, Position, Renderable, SufferDamage};
 use crate::gamelog::GameLog;
 use crate::map::Map;
 use crate::RunState;
@@ -35,13 +35,13 @@ impl <'a> System<'a> for DamageSystem {
 
 impl DamageSystem {
 
-    pub fn delete_the_dead(ecs: &mut World) {
+    pub fn delete_the_dead(ecs: &mut World) -> bool {
         let mut dead: Vec<Entity> = Vec::new();
+        let mut combat_stats = ecs.write_storage::<CombatStats>();
         {
-            let combat_stats = ecs.read_storage::<CombatStats>();
             let players = ecs.read_storage::<Player>();
             let entities = ecs.entities();
-            let names = ecs.read_storage::<Name>();
+            let mut names = ecs.write_storage::<Name>();
             let mut renderables = ecs.write_storage::<Renderable>();
             let mut gamelog = ecs.write_resource::<GameLog>();
             for (entity, stats) in (&entities, &combat_stats).join() {
@@ -50,9 +50,12 @@ impl DamageSystem {
                         let player = players.get(entity);
                         match player {
                             None => {
-                                let name = names.get(entity);
+                                let mut name = names.get_mut(entity);
                                 if let Some(name) = name {
                                     gamelog.entries.push(format!("{} is dead", name.name));
+                                    let mut corpse_name = "Remains of ".to_owned();
+                                    corpse_name.push_str(&name.name);
+                                    name.name = corpse_name;
                                 }
                                 dead.push(entity);
                                 let r =  renderables.get_mut(entity);
@@ -72,9 +75,12 @@ impl DamageSystem {
             }
         }
         let mut monsters = ecs.write_storage::<Monster>();
-        for victim in dead {
-            monsters.remove(victim);
-            // ecs.delete_entity(victim).expect("Unable to delete");
+        let mut blockers = ecs.write_storage::<BlocksTile>();
+        for victim in &dead {
+            monsters.remove(*victim);
+            blockers.remove(*victim);
+            combat_stats.remove(*victim);
         }
+        !&dead.is_empty()
     }
 }

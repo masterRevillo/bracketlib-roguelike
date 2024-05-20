@@ -3,10 +3,11 @@ use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, InBackpack, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{drop_item_menu, GameOverResult, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target, show_inventory};
+use crate::hunger_system::HungerSystem;
 use crate::inventory_system::{ItemCollectionSystem, ItemDropSystem, ItemUnequippingSystem, ItemUseSystem};
 use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
@@ -33,6 +34,7 @@ mod inventory_system;
 mod saveload_system;
 mod random_tables;
 mod particle_system;
+mod hunger_system;
 
 mod util {
     pub mod namegen;
@@ -53,6 +55,7 @@ pub enum RunState {
     NextLevel,
     ShowRemoveItem,
     GameOver,
+    MagicMapReveal { row: i32 },
 }
 
 struct State {
@@ -81,6 +84,8 @@ impl State {
         item_unequipping_system.run_now(&self.ecs);
         let mut particle_system = ParticleSpawnSystem{};
         particle_system.run_now(&self.ecs);
+        let mut hunger_system = HungerSystem{};
+        hunger_system.run_now(&self.ecs);
         self.ecs.maintain();
     }
 
@@ -258,7 +263,10 @@ impl GameState for State {
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
-                new_runstate = RunState::MonsterTurn;
+                match *self.ecs.fetch::<RunState>() {
+                    RunState::MagicMapReveal { .. } => new_runstate = RunState::MagicMapReveal { row: 0 },
+                    _ => new_runstate = RunState::MonsterTurn
+                }
             }
             RunState::MonsterTurn => {
                 self.run_systems();
@@ -343,12 +351,26 @@ impl GameState for State {
                 }
 
             }
+            RunState::MagicMapReveal {row} => {
+               let mut map = self.ecs.fetch_mut::<Map>();
+                for x in 0..map.width {
+                    map.revealed_tiles[x as usize][row as usize] = true;
+                }
+                if row == map.height - 1 {
+                    new_runstate = RunState::MonsterTurn;
+                } else {
+                    new_runstate = RunState::MagicMapReveal { row: row+1}
+                }
+            }
         }
         {
             let mut runwriter = self.ecs.write_resource::<RunState>();
             *runwriter = new_runstate;
         }
-        DamageSystem::delete_the_dead(&mut self.ecs);
+        if DamageSystem::delete_the_dead(&mut self.ecs) {
+            let mut mapindex = MapIndexingSystem{};
+            mapindex.run_now(&self.ecs);
+        }
     }
 }
 
@@ -388,6 +410,9 @@ fn main() -> BError {
     state.ecs.register::<DefenseBonus>();
     state.ecs.register::<WantsToUnequipItem>();
     state.ecs.register::<ParticleLifetime>();
+    state.ecs.register::<HungerClock>();
+    state.ecs.register::<ProvidesFood>();
+    state.ecs.register::<MagicMapper>();
 
     state.ecs.insert(particle_system::ParticleBuilder::new());
     state.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());

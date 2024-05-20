@@ -5,7 +5,7 @@ use bracket_lib::prelude::Point;
 use specs::saveload::{SerializeComponents, SimpleMarkerAllocator, MarkedBuilder, SimpleMarker, DeserializeComponents};
 use specs::error::NoError;
 use specs::{Builder, Entity, Join, World, WorldExt};
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, InBackpack, InflictsDamage, Item, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 
 
 macro_rules! serialize_individually {
@@ -82,7 +82,10 @@ pub fn save_game(ecs: &mut World) {
             MeleeAttackBonus,
             DefenseBonus,
             WantsToUnequipItem,
-            ParticleLifetime
+            ParticleLifetime,
+            HungerClock,
+            ProvidesFood,
+            MagicMapper
         );
     }
     ecs.delete_entity(savehelper).expect("Couldn't clean up helper")
@@ -143,7 +146,10 @@ pub fn load_game(ecs: &mut World) {
             MeleeAttackBonus,
             DefenseBonus,
             WantsToUnequipItem,
-            ParticleLifetime
+            ParticleLifetime,
+            HungerClock,
+            ProvidesFood,
+            MagicMapper
         );
     }
     let mut deleteme: Option<Entity> = None;

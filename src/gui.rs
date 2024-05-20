@@ -1,11 +1,11 @@
 use std::path::Iter;
-use bracket_lib::color::{BLACK, BLUE, CYAN, GREY, MAGENTA, RED, RGB, WHITE, YELLOW};
+use bracket_lib::color::{BLACK, BLUE, CYAN, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHITE, YELLOW};
 use bracket_lib::prelude::{BTerm, DistanceAlg, letter_to_option, Point, to_cp437, VirtualKeyCode};
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{CombatStats, Equipped, InBackpack, Name, Player, Position, Viewshed};
+use crate::components::{CombatStats, Equipped, HungerClock, HungerState, InBackpack, Name, Player, Position, Viewshed};
 use crate::gamelog::GameLog;
 use crate::map::{Map, MAPHEIGHT, MAPWIDTH};
 use crate::saveload_system::does_save_exist;
@@ -19,13 +19,24 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
 
     let combat_stats = ecs.read_storage::<CombatStats>();
     let players = ecs.read_storage::<Player>();
+    let hunger = ecs.read_storage::<HungerClock>();
     let log = ecs.fetch::<GameLog>();
     let map = ecs.fetch::<Map>();
-    for(_p, stats) in (&players, &combat_stats).join() {
+    for(_p, stats, hc) in (&players, &combat_stats, &hunger).join() {
         let health = format!(" HP: {} / {} ", stats.hp, stats.max_hp);
         ctx.print_color(20, GUIY, RGB::named(YELLOW), RGB::named(BLACK), &health);
 
-        ctx.draw_bar_horizontal(36, GUIY, 51, stats.hp, stats.max_hp, RGB::named(RED), RGB::named(BLACK))
+        ctx.draw_bar_horizontal(36, GUIY, 51, stats.hp, stats.max_hp, RGB::named(RED), RGB::named(BLACK));
+
+        match match hc.state {
+            HungerState::WellFed => Some((RGB::named(GREEN), "Well Fed")),
+            HungerState::Normal => None,
+            HungerState::Hungry => Some((RGB::named(ORANGE), "Hungry")),
+            HungerState::Starving => Some((RGB::named(RED), "Starving"))
+        } {
+            Some(h) => ctx.print_color(GUIWIDTH-10, GUIY-1, h.0, RGB::named(BLACK), h.1),
+            None => {}
+        }
     }
 
     let mut y = GUIY + 1;

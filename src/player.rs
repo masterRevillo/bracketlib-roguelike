@@ -5,7 +5,7 @@ use specs::{Join, World};
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{CombatStats, Item, Monster, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
+use crate::components::{CombatStats, HungerClock, HungerState, Item, Monster, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
 use crate::map::{Map, TileType};
 
@@ -43,7 +43,7 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             _ => { return RunState::AwaitingInput }
         }
     }
-    RunState::MonsterTurn
+    RunState::PlayerTurn
 }
 
 fn skip_turn(ecs: &mut World) -> RunState {
@@ -61,6 +61,18 @@ fn skip_turn(ecs: &mut World) -> RunState {
             match mob {
                 None => {}
                 Some(_) => { can_heal = false;}
+            }
+        }
+    }
+
+    if can_heal {
+        let hunger_clock = ecs.read_storage::<HungerClock>();
+        let hc = hunger_clock.get(*player_entity);
+        if let Some(hc) = hc {
+            match hc.state {
+                HungerState::Hungry | HungerState::Starving => can_heal = false,
+                _ => {}
+
             }
         }
     }

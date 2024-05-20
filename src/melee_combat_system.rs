@@ -2,7 +2,7 @@ use std::ptr::eq;
 use bracket_lib::color::{BLACK, ORANGE, RGB};
 use bracket_lib::prelude::{console, to_cp437};
 use specs::prelude::*;
-use crate::components::{CombatStats, DefenseBonus, Equipped, MeleeAttackBonus, Name, Position, SufferDamage, WantsToMelee};
+use crate::components::{CombatStats, DefenseBonus, Equipped, HungerClock, HungerState, MeleeAttackBonus, Name, Position, SufferDamage, WantsToMelee};
 use crate::gamelog::GameLog;
 use crate::particle_system::ParticleBuilder;
 
@@ -20,7 +20,8 @@ impl <'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, DefenseBonus>,
         ReadStorage<'a, Equipped>,
         WriteExpect<'a, ParticleBuilder>,
-        ReadStorage<'a, Position>
+        ReadStorage<'a, Position>,
+        ReadStorage<'a, HungerClock>
     );
     fn run(&mut self, data: Self::SystemData) {
         let (
@@ -34,7 +35,8 @@ impl <'a> System<'a> for MeleeCombatSystem {
             defense_bonus,
             equipped,
             mut particle_builder,
-            positions
+            positions,
+            hunger_clock
         ) = data;
 
         for (entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
@@ -43,6 +45,12 @@ impl <'a> System<'a> for MeleeCombatSystem {
                 for (_item_entity, attack_bonus, equipped_item) in (&entities, &melee_attack_bonus, &equipped).join() {
                     if equipped_item.owner == entity {
                         offensive_bonus += attack_bonus.attack
+                    }
+                }
+                let hc = hunger_clock.get(entity);
+                if let Some(hc) = hc {
+                    if hc.state == HungerState::WellFed {
+                        offensive_bonus += 1;
                     }
                 }
                 let target_stats = combat_stats.get(wants_melee.target).unwrap();
