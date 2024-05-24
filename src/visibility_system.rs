@@ -1,6 +1,8 @@
 use bracket_lib::prelude::{field_of_view, Point};
+use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
-use crate::components::Player;
+use crate::components::{Hidden, Name, Player};
+use crate::gamelog::GameLog;
 use crate::map::Map;
 use super::{Viewshed, Position};
 
@@ -12,10 +14,14 @@ impl<'a> System<'a> for VisibilitySystem {
         Entities<'a>,
         WriteStorage<'a, Viewshed>,
         WriteStorage<'a, Position>,
-        ReadStorage<'a, Player>
+        ReadStorage<'a, Player>,
+        WriteStorage<'a, Hidden>,
+        WriteExpect<'a,  RandomNumberGenerator>,
+        WriteExpect<'a, GameLog>,
+        ReadStorage<'a, Name>
     );
     fn run(&mut self, data: Self::SystemData) {
-        let (mut map, entities, mut viewshed, pos, player) = data;
+        let (mut map, entities, mut viewshed, pos, player, mut hidden_things, mut rng, mut log, names) = data;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.visible_tiles.clear();
@@ -31,6 +37,19 @@ impl<'a> System<'a> for VisibilitySystem {
                     for vis in viewshed.visible_tiles.iter() {
                         map.revealed_tiles[vis.x as usize][vis.y as usize] = true;
                         map.visible_tiles[vis.x as usize][vis.y as usize] = true;
+
+                        for e in map.tile_content[vis.x as usize][vis.y as usize].iter() {
+                            let maybe_hidden = hidden_things.get(*e);
+                            if let Some(_h) = maybe_hidden {
+                                if rng.roll_dice(1,24)==1 {
+                                    let name = names.get(*e);
+                                    if let Some(name) = name {
+                                        log.entries.push(format!("You spotted a {}", &name.name));
+                                    }
+                                    hidden_things.remove(*e);
+                                }
+                            }
+                        }
                     }
                 }
             }

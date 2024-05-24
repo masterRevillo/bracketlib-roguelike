@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use bracket_lib::color::{BLACK, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RGB, YELLOW};
+use bracket_lib::color::{BLACK, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RED, RGB, YELLOW};
 use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EquipmentSlot, Equippable, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializeMe, Viewshed};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializeMe, SingleActivation, Viewshed};
 use crate::random_tables::EntryType::*;
 use crate::random_tables::{EntryType, RandomTable};
 use crate::rect::Rect;
@@ -52,7 +52,8 @@ fn room_table(level: i32) -> RandomTable {
         .add(Shield, 3)
         .add(Longsword, level - 1)
         .add(TowerShield, level - 1)
-        .add(MagicMappingScroll, 400)
+        .add(MagicMappingScroll, 2)
+        .add(BearTrap, 100)
 }
 
 fn ogur(ecs: &mut World, x: i32, y: i32) {
@@ -148,7 +149,8 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
             Shield => shield(ecs, coords.0, coords.1),
             Longsword => longsword(ecs, coords.0, coords.1),
             TowerShield => tower_shield(ecs, coords.0, coords.1),
-            MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1)
+            MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1),
+            BearTrap => bear_trap(ecs, coords.0, coords.1)
         }
     }
 }
@@ -351,6 +353,24 @@ fn magic_mapping_stroll(ecs: &mut World, x: i32, y: i32) {
         .with(Item{})
         .with(Consumable{})
         .with(MagicMapper{})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn bear_trap(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable {
+            glyph: to_cp437('^'),
+            fg: RGB::named(RED),
+            bg: RGB::named(BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Bear Trap".to_string()})
+        .with(Hidden{})
+        .with(EntryTrigger{})
+        .with(InflictsDamage{ damage: 6 })
+        .with(SingleActivation{})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

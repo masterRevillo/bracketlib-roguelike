@@ -212,6 +212,7 @@ dependencies = [
 name = "bracketlib-rougelike"
 version = "0.1.0"
 dependencies = [
+ "bracket-embedding",
  "bracket-lib",
  "serde",
  "serde_json",

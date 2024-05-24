@@ -2,7 +2,7 @@ use bracket_lib::color::BLACK;
 use bracket_lib::prelude::{a_star_search, console, DistanceAlg, MAGENTA, Point, RGB, to_cp437};
 use specs::prelude::*;
 
-use crate::components::{Confusion, Monster, Position, Viewshed, WantsToMelee};
+use crate::components::{Confusion, EntityMoved, Monster, Position, Viewshed, WantsToMelee};
 use crate::map::Map;
 use crate::particle_system::ParticleBuilder;
 use crate::RunState;
@@ -21,7 +21,8 @@ impl <'a> System<'a> for MonsterAI {
         WriteStorage<'a, Position>,
         WriteStorage<'a, WantsToMelee>,
         WriteStorage<'a, Confusion>,
-        WriteExpect<'a, ParticleBuilder>
+        WriteExpect<'a, ParticleBuilder>,
+        WriteStorage<'a, EntityMoved>
     );
     fn run(&mut self, data: Self::SystemData) {
         let (
@@ -35,7 +36,8 @@ impl <'a> System<'a> for MonsterAI {
             mut position,
             mut wants_to_melee,
             mut confusion,
-            mut particle_builder
+            mut particle_builder,
+            mut entity_moved
         ) = data;
 
         if *runstate != RunState::MonsterTurn { return; }
@@ -92,6 +94,7 @@ impl <'a> System<'a> for MonsterAI {
                         pos.y = new_y;
                         map.blocked[pos.x as usize][pos.y as usize] = true;
                         viewshed.dirty = true;
+                        entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
                     }
                 }
             }

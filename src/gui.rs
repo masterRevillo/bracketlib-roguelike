@@ -1,13 +1,14 @@
 use std::path::Iter;
-use bracket_lib::color::{BLACK, BLUE, CYAN, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHITE, YELLOW};
+use bracket_lib::color::{BLACK, BLUE, CYAN, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHEAT, WHITE, YELLOW};
 use bracket_lib::prelude::{BTerm, DistanceAlg, letter_to_option, Point, to_cp437, VirtualKeyCode};
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{CombatStats, Equipped, HungerClock, HungerState, InBackpack, Name, Player, Position, Viewshed};
+use crate::components::{CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Name, Player, Position, Viewshed};
 use crate::gamelog::GameLog;
 use crate::map::{Map, MAPHEIGHT, MAPWIDTH};
+use crate::rex_assets::RexAssets;
 use crate::saveload_system::does_save_exist;
 
 const GUIY: usize = MAPHEIGHT;
@@ -57,11 +58,12 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
+    let hidden = ecs.read_storage::<Hidden>();
 
     let mouse_pos = ctx.mouse_pos();
     if !map.is_tile_in_bounds(mouse_pos.0, mouse_pos.1) {return;}
     let mut tooltip: Vec<String> = Vec::new();
-    for (name, postion) in (&names, &positions).join() {
+    for (name, postion, _h) in (&names, &positions, !&hidden).join() {
         if postion.x == mouse_pos.0 && postion.y == mouse_pos.1 && map.visible_tiles[postion.x as usize][postion.y as usize] {
             tooltip.push(name.name.to_string());
         }
@@ -247,7 +249,14 @@ pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
     let runstate = gs.ecs.fetch::<RunState>();
     let save_exists = does_save_exist();
 
-    ctx.print_color_centered(12, RGB::named(YELLOW), RGB::named(BLACK), "The Ruztoo Dungeon");
+    let assets = gs.ecs.fetch::<RexAssets>();
+    // ctx.render_xp_sprite(&assets.menu, -60, -50);
+    ctx.render_xp_sprite(&assets.menu, 0, 0);
+
+    ctx.draw_box_double(34, 18, 31, 10, RGB::named(WHEAT), RGB::named(BLACK));
+    ctx.print_color_centered(20, RGB::named(YELLOW), RGB::named(BLACK), "The Ruztoo Dungeon");
+    ctx.print_color_centered(21, RGB::named(CYAN), RGB::named(BLACK), "By Rev");
+    ctx.print_color_centered(22, RGB::named(GREY), RGB::named(BLACK), "Use the arrow keys and Enter");
 
     if let RunState::MainMenu { menu_selection: selection} = *runstate {
         ctx.print_color_centered(24, get_option_color(selection, MainMenuSelection::NewGame), RGB::named(BLACK), "Begin New Game");

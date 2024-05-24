@@ -5,7 +5,7 @@ use specs::{Join, World};
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{CombatStats, HungerClock, HungerState, Item, Monster, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
+use crate::components::{CombatStats, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
 use crate::map::{Map, TileType};
 
@@ -105,6 +105,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let combat_stats = ecs.read_storage::<CombatStats>();
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let map = ecs.fetch::<Map>();
 
     for (entity, _p, viewshed, pos) in (&entities, &players, &mut viewseheds, &mut positions)
@@ -131,6 +132,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
                 ppos.y = pos.y;
 
                 viewshed.dirty = true;
+                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
             }
         }
 }

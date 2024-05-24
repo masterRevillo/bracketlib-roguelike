@@ -3,7 +3,7 @@ use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, Equippable, Equipped, Examinable, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{drop_item_menu, GameOverResult, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target, show_inventory};
@@ -15,7 +15,9 @@ use crate::melee_combat_system::MeleeCombatSystem;
 use crate::monster_ai_system::MonsterAI;
 use crate::particle_system::ParticleSpawnSystem;
 use crate::player::player_input;
+use crate::rex_assets::RexAssets;
 use crate::spawner::{player, spawn_room};
+use crate::trigger_system::TriggerSystem;
 use crate::visibility_system::VisibilitySystem;
 
 mod map;
@@ -35,6 +37,8 @@ mod saveload_system;
 mod random_tables;
 mod particle_system;
 mod hunger_system;
+mod rex_assets;
+mod trigger_system;
 
 mod util {
     pub mod namegen;
@@ -68,6 +72,8 @@ impl State {
         vis.run_now(&self.ecs);
         let mut mob = MonsterAI{};
         mob.run_now(&self.ecs);
+        let mut triggers = TriggerSystem{};
+        triggers.run_now(&self.ecs);
         let mut mapindex = MapIndexingSystem{};
         mapindex.run_now(&self.ecs);
         let mut melee_combat_sys = MeleeCombatSystem{};
@@ -222,10 +228,11 @@ impl GameState for State {
                 map.draw_map(ctx);
                 let positions = self.ecs.read_storage::<Position>();
                 let renderables = self.ecs.read_storage::<Renderable>();
+                let hidden = self.ecs.read_storage::<Hidden>();
 
-                let mut to_render = (&positions, &renderables).join().collect::<Vec<_>>();
+                let mut to_render = (&positions, &renderables, !&hidden).join().collect::<Vec<_>>();
                 to_render.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                for (pos, render) in to_render.iter() {
+                for (pos, render, _h) in to_render.iter() {
                     if map.visible_tiles[pos.x as usize][pos.y as usize] {
                         ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
                     }
@@ -413,9 +420,14 @@ fn main() -> BError {
     state.ecs.register::<HungerClock>();
     state.ecs.register::<ProvidesFood>();
     state.ecs.register::<MagicMapper>();
+    state.ecs.register::<Hidden>();
+    state.ecs.register::<EntryTrigger>();
+    state.ecs.register::<EntityMoved>();
+    state.ecs.register::<SingleActivation>();
 
     state.ecs.insert(particle_system::ParticleBuilder::new());
     state.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+    state.ecs.insert(RexAssets::new());
     let mut map = Map::new_map_rooms_and_corridors(1);
     let (player_x, player_y) = map.rooms[0].center();
     let player_entity = player(&mut state.ecs, player_x, player_y);
