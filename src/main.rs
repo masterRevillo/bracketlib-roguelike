@@ -1,4 +1,4 @@
-use bracket_lib::prelude::{BError, BTerm, BTermBuilder, console, GameState, main_loop, Point};
+use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
@@ -39,6 +39,7 @@ mod particle_system;
 mod hunger_system;
 mod rex_assets;
 mod trigger_system;
+pub mod map_builders;
 
 mod util {
     pub mod namegen;
@@ -138,25 +139,27 @@ impl State {
             self.ecs.delete_entity(*del).expect("Could not delete")
         }
         let map;
+        let player_start;
+        let mut builder;
         {
             let mut map_resource = self.ecs.write_resource::<Map>();
-            *map_resource = Map::new_map_rooms_and_corridors(1);
+            builder = map_builders::random_builder(1);
+            builder.build_map();
+            *map_resource = builder.get_map();
+            player_start = builder.get_starting_position();
             map = map_resource.clone();
         }
-        for room in map.rooms.iter().skip(1) {
-            spawn_room(&mut self.ecs, room, 1);
-        }
-        let (p_x, p_y) = map.rooms[0].center();
-        let p_entity = player(&mut self.ecs, p_x, p_y);
+        builder.spawn_entities(&mut self.ecs);
+        let p_entity = player(&mut self.ecs, player_start.x, player_start.y);
         let mut p_pos = self.ecs.write_resource::<Point>();
-        *p_pos = Point::new(p_x, p_y);
+        *p_pos = Point::new(player_start.x, player_start.y);
         let mut pos_components = self.ecs.write_storage::<Position>();
         let mut player_entity_writer = self.ecs.write_resource::<Entity>();
         *player_entity_writer = p_entity;
         let player_pos_comp = pos_components.get_mut(p_entity);
         if let Some(player_pos_comp) = player_pos_comp {
-            player_pos_comp.x = p_x;
-            player_pos_comp.y = p_y;
+            player_pos_comp.x = player_start.x;
+            player_pos_comp.y = player_start.y;
         }
         let mut viewshed_components = self.ecs.write_storage::<Viewshed>();
         let vs = viewshed_components.get_mut(p_entity);
@@ -173,26 +176,27 @@ impl State {
 
         let worldmap;
         let current_depth;
+        let player_start;
+        let mut builder;
         {
             let mut worldmap_resources = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resources.depth;
-            *worldmap_resources = Map::new_map_rooms_and_corridors(current_depth + 1);
+            builder = map_builders::random_builder(current_depth + 1);
+            builder.build_map();
+            *worldmap_resources = builder.get_map();
+            player_start = builder.get_starting_position();
             worldmap = worldmap_resources.clone();
         }
+        builder.spawn_entities(&mut self.ecs);
 
-        for room in worldmap.rooms.iter().skip(1) {
-            spawn_room(&mut self.ecs, room, current_depth+1);
-        }
-
-        let (player_x, player_y) = worldmap.rooms[0].center();
         let mut player_pos = self.ecs.write_resource::<Point>();
-        *player_pos = Point::new(player_x, player_y);
+        *player_pos = Point::new(player_start.x, player_start.y);
         let mut position_components = self.ecs.write_storage::<Position>();
         let player_entity = self.ecs.fetch::<Entity>();
         let player_pos_comp = position_components.get_mut(*player_entity);
         if let Some(player_pos_comp) = player_pos_comp {
-            player_pos_comp.x = player_x;
-            player_pos_comp.y = player_y;
+            player_pos_comp.x = player_pos.x;
+            player_pos_comp.y = player_pos.y;
         }
 
         let mut viewshed_comp = self.ecs.write_storage::<Viewshed>();
@@ -428,17 +432,18 @@ fn main() -> BError {
     state.ecs.insert(particle_system::ParticleBuilder::new());
     state.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     state.ecs.insert(RexAssets::new());
-    let mut map = Map::new_map_rooms_and_corridors(1);
-    let (player_x, player_y) = map.rooms[0].center();
-    let player_entity = player(&mut state.ecs, player_x, player_y);
+
+    let mut builder = map_builders::random_builder(1);
+    builder.build_map();
+    let map = builder.get_map();
+    let player_start = builder.get_starting_position();
+    let player_entity = player(&mut state.ecs, player_start.x, player_start.y);
 
     state.ecs.insert(player_entity);
-    state.ecs.insert(Point::new(player_x, player_y));
+    state.ecs.insert(Point::new(player_start.x, player_start.y));
     let rng = RandomNumberGenerator::new();
     state.ecs.insert(rng);
-    for room in map.rooms.iter().skip(1) {
-        spawn_room(&mut state.ecs, room, 1);
-    }
+    builder.spawn_entities(&mut state.ecs);
     state.ecs.insert(map);
     let mut bterm = BTermBuilder::simple(100, 80)?
         .with_title("Rusty Roguelike V2")
