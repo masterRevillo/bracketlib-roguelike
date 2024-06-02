@@ -41,8 +41,8 @@ impl BspInteriorBuilder {
         for r in rooms.iter() {
             let room = *r;
             self.rooms.push(room);
-            for y in room.y1 .. room.y2 {
-                for x in room.x1 .. room.x2 {
+            for y in room.y1+1 ..= room.y2 {
+                for x in room.x1+1 ..= room.x2 {
                     if x > 0 && x < self.map.width -1 && y > 0 && y < self.map.height - 1{
                         self.map.tiles[x as usize][y as usize] = TileType::Floor;
                     }
