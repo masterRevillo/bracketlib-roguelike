@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bracket_lib::color::{BLACK, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RED, RGB, YELLOW};
-use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
+use bracket_lib::prelude::{CHOCOLATE3, console, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
@@ -53,7 +53,7 @@ fn room_table(level: i32) -> RandomTable {
         .add(Longsword, level - 1)
         .add(TowerShield, level - 1)
         .add(MagicMappingScroll, 2)
-        .add(BearTrap, 100)
+        .add(BearTrap, 5)
 }
 
 fn ogur(ecs: &mut World, x: i32, y: i32) {
@@ -133,6 +133,9 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
     }
     for spawn in spawn_points.iter() {
         let coords = spawn.0;
+        console::log(format!("spawning stuff at {:?} in room with boundaries x{},x{},y{},y{}",
+            coords, room.x1, room.x2, room.y1, room.y2
+        ));
         match spawn.1 {
             None => {}
             Bisat => bisat(ecs, coords.0, coords.1),

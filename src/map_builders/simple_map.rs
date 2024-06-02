@@ -6,13 +6,14 @@ use crate::components::Position;
 use crate::map::TileType;
 use crate::map_builders::common::{apply_horizontal_tunnel, apply_room_to_map, apply_vertical_tunnel};
 use crate::rect::Rect;
-use crate::spawner;
+use crate::{SHOW_MAPGEN_VISUALIZATION, spawner};
 
 pub struct SimpleMapBuilder {
     map: Map,
     starting_position: Position,
     depth: i32,
-    rooms: Vec<Rect>
+    rooms: Vec<Rect>,
+    history: Vec<Map>
 }
 
 impl SimpleMapBuilder {
@@ -37,6 +38,7 @@ impl SimpleMapBuilder {
             }
             if ok {
                 apply_room_to_map(&mut self.map, &new_room);
+                self.take_snapshot();
 
                 if !self.rooms.is_empty() {
                     let (new_x, new_y) = new_room.center();
@@ -49,7 +51,8 @@ impl SimpleMapBuilder {
                         apply_horizontal_tunnel(&mut self.map, prev_x, new_x, new_y);
                     }
                 }
-                self.rooms.push(new_room)
+                self.rooms.push(new_room);
+                self.take_snapshot();
             }
         }
         let stairs_position = self.rooms[self.rooms.len() - 1usize].center();
@@ -62,7 +65,8 @@ impl SimpleMapBuilder {
             map: Map::new(new_depth),
             starting_position: Position{x: 0, y: 0},
             depth: new_depth,
-            rooms: Vec::new()
+            rooms: Vec::new(),
+            history: Vec::new()
         }
     }
 }
@@ -84,5 +88,21 @@ impl MapBuilder for SimpleMapBuilder {
 
     fn get_starting_position(&mut self) -> Position {
         self.starting_position.clone()
+    }
+
+    fn take_snapshot(&mut self) {
+        if SHOW_MAPGEN_VISUALIZATION {
+            let mut snapshot = self.map.clone();
+            for x in snapshot.revealed_tiles.iter_mut() {
+                for v in x.iter_mut() {
+                    *v = true;
+                }
+            }
+            self.history.push(snapshot);
+        }
+    }
+
+    fn get_snapshot_history(&self) -> Vec<Map> {
+        self.history.clone()
     }
 }
