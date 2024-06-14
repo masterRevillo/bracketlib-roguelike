@@ -4,7 +4,10 @@ use std::collections::HashSet;
 use bracket_lib::algorithm_traits::SmallVec;
 use bracket_lib::color::RGB;
 use bracket_lib::geometry::Point;
-use bracket_lib::prelude::{Algorithm2D, BaseMap, BTerm, console, DistanceAlg, FontCharType, RandomNumberGenerator, to_cp437};
+use bracket_lib::prelude::{
+    console, to_cp437, Algorithm2D, BTerm, BaseMap, DistanceAlg, FontCharType,
+    RandomNumberGenerator,
+};
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs::WorldExt;
@@ -18,7 +21,7 @@ pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 pub enum TileType {
     Wall,
     Floor,
-    DownStairs
+    DownStairs,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
@@ -34,7 +37,7 @@ pub struct Map {
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
-    pub tile_content: Vec<Vec<Vec<Entity>>>
+    pub tile_content: Vec<Vec<Vec<Entity>>>,
 }
 
 impl Algorithm2D for Map {
@@ -50,38 +53,78 @@ impl BaseMap for Map {
 
     fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
         let mut exits = SmallVec::new();
-        let x = idx as i32 / self.width;
-        let y = idx as i32 % self.width;
+        let x = idx as i32 % self.width;
+        let y = idx as i32 / self.width;
         let w = self.width as usize;
+        let h = self.height as usize;
+
+        /*
+        0 0 0 0 0
+        0 0 0 x 0
+        0 0 0 0 0
+        (3, 1)
+
+        0 0 0
+        0 0 0
+        0 0 0
+        0 x 0
+        0 0 0
+        (1, 3)
+
+        (x - 1, y) = idx - 3 = idx - w
+
+
+        w = 5
+        h = 3
+        idx = x * w + y
+        (x -1, y) = (x-1) * w + y = (x * w) - w + y = idx - w
+
+        */
 
         // cardinal directions:
         // west
-        if self.is_exit_valid(x-1, y) { exits.push((idx-w, 1.0))};
+        if self.is_exit_valid(x - 1, y) {
+            exits.push((idx - 1, 1.0))
+        };
         // east
-        if self.is_exit_valid(x+1, y) { exits.push((idx+w, 1.0))};
+        if self.is_exit_valid(x + 1, y) {
+            exits.push((idx + 1, 1.0))
+        };
         // north
-        if self.is_exit_valid(x, y-1) { exits.push((idx-1, 1.0))};
+        if self.is_exit_valid(x, y - 1) {
+            exits.push((idx - w, 1.0))
+        };
         // south
-        if self.is_exit_valid(x, y+1) { exits.push((idx+1, 1.0))};
+        if self.is_exit_valid(x, y + 1) {
+            exits.push((idx + w, 1.0))
+        };
 
         // diagonals:
         // north west
-        if self.is_exit_valid(x-1, y-1) { exits.push(((idx-w)-1, 1.45));}
+        if self.is_exit_valid(x - 1, y - 1) {
+            exits.push(((idx - w) - 1, 1.45));
+        }
         // north east
-        if self.is_exit_valid(x+1, y-1) { exits.push(((idx+w)-1, 1.45));}
+        if self.is_exit_valid(x + 1, y - 1) {
+            exits.push(((idx - w) + 1, 1.45));
+        }
         // south west
-        if self.is_exit_valid(x-1, y+1) { exits.push(((idx-w)+1, 1.45));}
+        if self.is_exit_valid(x - 1, y + 1) {
+            exits.push(((idx + w) - 1, 1.45));
+        }
         // south east
-        if self.is_exit_valid(x+1, y+1) { exits.push(((idx+w)+1, 1.45));}
+        if self.is_exit_valid(x + 1, y + 1) {
+            exits.push(((idx + w) + 1, 1.45));
+        }
 
         exits
     }
 
-
     fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
         let w = self.width as usize;
-        let p1 = Point::new(idx1 / w, idx1 % w);
-        let p2 = Point::new(idx2 / w, idx2 % w);
+        let h = self.height as usize;
+        let p1 = Point::new(idx1 % w, idx1 / w);
+        let p2 = Point::new(idx2 % w, idx2 / w);
         DistanceAlg::Pythagoras.distance2d(p1, p2)
     }
 }
@@ -101,7 +144,7 @@ impl Map {
         }
     }
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
-        (x as usize * self.width as usize) + y as usize
+        (y as usize * self.width as usize) + x as usize
     }
 
     pub fn get_tile_at_pos(&self, x: i32, y: i32) -> TileType {
@@ -130,7 +173,7 @@ impl Map {
                 if self.revealed_tiles[x as usize][y as usize] {
                     let glyph;
                     let mut fg;
-                    let mut bg = RGB::from_f32(0., 0.,0.);
+                    let mut bg = RGB::from_f32(0., 0., 0.);
                     match self.tiles[x as usize][y as usize] {
                         TileType::Floor => {
                             glyph = to_cp437('.');
@@ -146,16 +189,17 @@ impl Map {
                             fg = RGB::from_f32(0., 1.0, 1.0);
                         }
                     }
-                    if self.bloodstains.contains(&(x, y)) { bg = RGB::from_f32(0.75, 0., 0.); }
+                    if self.bloodstains.contains(&(x, y)) {
+                        bg = RGB::from_f32(0.75, 0., 0.);
+                    }
                     if !self.visible_tiles[x as usize][y as usize] {
                         fg = fg.to_greyscale();
-                        bg = RGB::from_f32(0., 0.,0.);
+                        bg = RGB::from_f32(0., 0., 0.);
                     }
                     ctx.set(x, y, fg, bg, glyph)
                 }
             }
         }
-
     }
 
     pub fn is_tile_in_bounds(&self, x: i32, y: i32) -> bool {
@@ -163,36 +207,48 @@ impl Map {
     }
 
     fn is_exit_valid(&self, x: i32, y: i32) -> bool {
-        if !self.is_tile_in_bounds(x, y) {return false;}
+        if !self.is_tile_in_bounds(x, y) {
+            return false;
+        }
         !self.blocked[x as usize][y as usize]
     }
     fn wall_glyph(&self, x: i32, y: i32) -> FontCharType {
-        if x < 1 || x > self.width-2 || y < 1 || y > self.height- 2i32 { return 35; }
+        if x < 1 || x > self.width - 2 || y < 1 || y > self.height - 2i32 {
+            return 35;
+        }
         let mut mask: u8 = 0;
 
-        if self.is_revealed_and_wall(x, y - 1) { mask += 1; }
-        if self.is_revealed_and_wall(x, y + 1) { mask += 2; }
-        if self.is_revealed_and_wall(x - 1, y) { mask += 4; }
-        if self.is_revealed_and_wall(x + 1, y) { mask += 8; }
+        if self.is_revealed_and_wall(x, y - 1) {
+            mask += 1;
+        }
+        if self.is_revealed_and_wall(x, y + 1) {
+            mask += 2;
+        }
+        if self.is_revealed_and_wall(x - 1, y) {
+            mask += 4;
+        }
+        if self.is_revealed_and_wall(x + 1, y) {
+            mask += 8;
+        }
 
         match mask {
-            0 => { 9 }
-            1 => { 186 }
-            2 => { 186 }
-            3 => { 186 }
-            4 => { 205 }
-            5 => { 188 }
-            6 => { 187 }
-            7 => { 185 }
-            8 => { 205 }
-            9 => { 200 }
-            10 => { 201 }
-            11 => { 204 }
-            12 => { 205 }
-            13 => { 202 }
-            14 => { 203 }
-            15 => { 206 }
-            _ => { 35 }
+            0 => 9,
+            1 => 186,
+            2 => 186,
+            3 => 186,
+            4 => 205,
+            5 => 188,
+            6 => 187,
+            7 => 185,
+            8 => 205,
+            9 => 200,
+            10 => 201,
+            11 => 204,
+            12 => 205,
+            13 => 202,
+            14 => 203,
+            15 => 206,
+            _ => 35,
         }
     }
     fn is_revealed_and_wall(&self, x: i32, y: i32) -> bool {

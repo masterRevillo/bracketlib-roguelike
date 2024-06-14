@@ -65,6 +65,7 @@ impl BspInteriorBuilder {
         console::log(format!("total rooms: {}", self.rooms.len() ));
         let stairs = self.rooms[self.rooms.len()-1].center();
         self.map.tiles[stairs.0 as usize][stairs.1 as usize] = TileType::DownStairs;
+        self.take_snapshot();
 
         let start = self.rooms[0].center();
         self.starting_position = Position{ x: start.0, y: start.1}

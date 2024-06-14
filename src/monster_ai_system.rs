@@ -1,5 +1,5 @@
 use bracket_lib::color::BLACK;
-use bracket_lib::prelude::{a_star_search, console, DistanceAlg, MAGENTA, Point, RGB, to_cp437};
+use bracket_lib::prelude::{a_star_search, console, to_cp437, DistanceAlg, Point, MAGENTA, RGB};
 use specs::prelude::*;
 
 use crate::components::{Confusion, EntityMoved, Monster, Position, Viewshed, WantsToMelee};
@@ -7,9 +7,9 @@ use crate::map::Map;
 use crate::particle_system::ParticleBuilder;
 use crate::RunState;
 
-pub struct MonsterAI{}
+pub struct MonsterAI {}
 
-impl <'a> System<'a> for MonsterAI {
+impl<'a> System<'a> for MonsterAI {
     type SystemData = (
         WriteExpect<'a, Map>,
         ReadExpect<'a, Point>,
@@ -22,7 +22,7 @@ impl <'a> System<'a> for MonsterAI {
         WriteStorage<'a, WantsToMelee>,
         WriteStorage<'a, Confusion>,
         WriteExpect<'a, ParticleBuilder>,
-        WriteStorage<'a, EntityMoved>
+        WriteStorage<'a, EntityMoved>,
     );
     fn run(&mut self, data: Self::SystemData) {
         let (
@@ -37,12 +37,16 @@ impl <'a> System<'a> for MonsterAI {
             mut wants_to_melee,
             mut confusion,
             mut particle_builder,
-            mut entity_moved
+            mut entity_moved,
         ) = data;
 
-        if *runstate != RunState::MonsterTurn { return; }
+        if *runstate != RunState::MonsterTurn {
+            return;
+        }
 
-        for (entity, mut viewshed, _monster, mut pos) in (&entities, &mut viewshed, &monster, &mut position).join() {
+        for (entity, mut viewshed, _monster, mut pos) in
+            (&entities, &mut viewshed, &monster, &mut position).join()
+        {
             let mut can_act = true;
 
             let is_confused = confusion.get_mut(entity);
@@ -53,25 +57,36 @@ impl <'a> System<'a> for MonsterAI {
                 }
                 can_act = false;
                 particle_builder.request(
-                    pos.x, pos.y, RGB::named(MAGENTA), RGB::named(BLACK), to_cp437('?'), 200.0
+                    pos.x,
+                    pos.y,
+                    RGB::named(MAGENTA),
+                    RGB::named(BLACK),
+                    to_cp437('?'),
+                    200.0,
                 );
             }
             if can_act {
-                let distance = DistanceAlg::Pythagoras.distance2d(
-                    Point::new(pos.x, pos.y), *player_pos
-                );
+                let distance =
+                    DistanceAlg::Pythagoras.distance2d(Point::new(pos.x, pos.y), *player_pos);
                 if distance < 1.5 {
-                    wants_to_melee.insert(entity, WantsToMelee { target: *player_entity }).expect("Failed to insert attack");
+                    wants_to_melee
+                        .insert(
+                            entity,
+                            WantsToMelee {
+                                target: *player_entity,
+                            },
+                        )
+                        .expect("Failed to insert attack");
                 } else if viewshed.visible_tiles.contains(&*player_pos) {
                     let path = a_star_search(
                         map.xy_idx(pos.x, pos.y) as i32,
                         map.xy_idx(player_pos.x, player_pos.y) as i32,
-                        &mut *map
+                        &mut *map,
                     );
                     if path.success && path.steps.len() > 1 {
                         let (new_x, new_y) = (
+                            path.steps[1] as i32 % map.width,
                             path.steps[1] as i32 / map.width,
-                            path.steps[1] as i32 % map.width
                         );
                         let dir = match (new_x - pos.x, new_y - pos.y) {
                             (-1, 0) => "west",
@@ -82,19 +97,23 @@ impl <'a> System<'a> for MonsterAI {
                             (1, 1) => "southeast",
                             (0, 1) => "south",
                             (-1, 1) => "southwest",
-                            _ => "wat"
+                            _ => "wat",
                         };
                         console::log(format!("step: ({},{}), dir={}", new_x, new_y, dir));
-                        let coord_path: Vec<_> = path.steps.iter().map(
-                            |v| (v / map.width as usize, v % map.width as usize)
-                        ).collect();
+                        let coord_path: Vec<_> = path
+                            .steps
+                            .iter()
+                            .map(|v| (v % map.width as usize, v / map.width as usize))
+                            .collect();
                         console::log(format!("the path: {:?}", coord_path));
 
                         pos.x = new_x;
                         pos.y = new_y;
                         map.blocked[pos.x as usize][pos.y as usize] = true;
                         viewshed.dirty = true;
-                        entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+                        entity_moved
+                            .insert(entity, EntityMoved {})
+                            .expect("Unable to insert marker");
                     }
                 }
             }

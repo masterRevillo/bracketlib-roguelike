@@ -1,17 +1,19 @@
-mod simple_map;
-mod common;
 mod bsp_dungeon;
 mod bsp_interior;
+mod cellular_automata;
+mod common;
+mod simple_map;
 
-use std::arch::aarch64::vbic_s8;
-use bracket_lib::prelude::console;
-use bracket_lib::random::RandomNumberGenerator;
-use specs::World;
+use super::Map;
 use crate::components::Position;
 use crate::map_builders::bsp_dungeon::BspDungeonBuilder;
 use crate::map_builders::bsp_interior::BspInteriorBuilder;
+use crate::map_builders::cellular_automata::CellularAutomataBuilder;
 use crate::map_builders::simple_map::SimpleMapBuilder;
-use super::Map;
+use bracket_lib::prelude::console;
+use bracket_lib::random::RandomNumberGenerator;
+use specs::World;
+use std::arch::aarch64::vbic_s8;
 
 pub trait MapBuilder {
     fn build_map(&mut self);
@@ -29,5 +31,6 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     //     1 => Box::new(BspDungeonBuilder::new(new_depth)),
     //     _ => Box::new(SimpleMapBuilder::new(new_depth)),
     // }
-    Box::new(BspInteriorBuilder::new(new_depth))
+    // Box::new(CellularAutomataBuilder::new(new_depth))
+    Box::new(CellularAutomataBuilder::new(new_depth))
 }
