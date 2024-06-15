@@ -58,29 +58,6 @@ impl BaseMap for Map {
         let w = self.width as usize;
         let h = self.height as usize;
 
-        /*
-        0 0 0 0 0
-        0 0 0 x 0
-        0 0 0 0 0
-        (3, 1)
-
-        0 0 0
-        0 0 0
-        0 0 0
-        0 x 0
-        0 0 0
-        (1, 3)
-
-        (x - 1, y) = idx - 3 = idx - w
-
-
-        w = 5
-        h = 3
-        idx = x * w + y
-        (x -1, y) = (x-1) * w + y = (x * w) - w + y = idx - w
-
-        */
-
         // cardinal directions:
         // west
         if self.is_exit_valid(x - 1, y) {

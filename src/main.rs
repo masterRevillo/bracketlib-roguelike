@@ -60,6 +60,7 @@ mod util {
 }
 
 const SHOW_MAPGEN_VISUALIZATION: bool = true;
+const DEBUGGING: bool = true;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -121,7 +122,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut builder = map_builders::random_builder(new_depth);
-        builder.build_map();
+        builder.build_map(&mut self.ecs);
         self.mapgen_history = builder.get_snapshot_history();
         let player_start;
         {

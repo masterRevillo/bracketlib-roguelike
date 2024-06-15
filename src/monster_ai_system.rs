@@ -5,7 +5,7 @@ use specs::prelude::*;
 use crate::components::{Confusion, EntityMoved, Monster, Position, Viewshed, WantsToMelee};
 use crate::map::Map;
 use crate::particle_system::ParticleBuilder;
-use crate::RunState;
+use crate::{RunState, DEBUGGING};
 
 pub struct MonsterAI {}
 
@@ -88,24 +88,26 @@ impl<'a> System<'a> for MonsterAI {
                             path.steps[1] as i32 % map.width,
                             path.steps[1] as i32 / map.width,
                         );
-                        let dir = match (new_x - pos.x, new_y - pos.y) {
-                            (-1, 0) => "west",
-                            (-1, -1) => "northwest",
-                            (0, -1) => "north",
-                            (1, -1) => "northeast",
-                            (1, 0) => "east",
-                            (1, 1) => "southeast",
-                            (0, 1) => "south",
-                            (-1, 1) => "southwest",
-                            _ => "wat",
-                        };
-                        console::log(format!("step: ({},{}), dir={}", new_x, new_y, dir));
-                        let coord_path: Vec<_> = path
-                            .steps
-                            .iter()
-                            .map(|v| (v % map.width as usize, v / map.width as usize))
-                            .collect();
-                        console::log(format!("the path: {:?}", coord_path));
+                        if DEBUGGING {
+                            let dir = match (new_x - pos.x, new_y - pos.y) {
+                                (-1, 0) => "west",
+                                (-1, -1) => "northwest",
+                                (0, -1) => "north",
+                                (1, -1) => "northeast",
+                                (1, 0) => "east",
+                                (1, 1) => "southeast",
+                                (0, 1) => "south",
+                                (-1, 1) => "southwest",
+                                _ => "wat",
+                            };
+                            console::log(format!("step: ({},{}), dir={}", new_x, new_y, dir));
+                            let coord_path: Vec<_> = path
+                                .steps
+                                .iter()
+                                .map(|v| (v % map.width as usize, v / map.width as usize))
+                                .collect();
+                            console::log(format!("the path: {:?}", coord_path));
+                        }
 
                         pos.x = new_x;
                         pos.y = new_y;

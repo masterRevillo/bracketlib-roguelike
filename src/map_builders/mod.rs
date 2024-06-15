@@ -13,10 +13,9 @@ use crate::map_builders::simple_map::SimpleMapBuilder;
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::World;
-use std::arch::aarch64::vbic_s8;
 
 pub trait MapBuilder {
-    fn build_map(&mut self);
+    fn build_map(&mut self, ecs: &mut World);
     fn spawn_entities(&mut self, ecs: &mut World);
     fn get_map(&mut self) -> Map;
     fn get_starting_position(&mut self) -> Position;

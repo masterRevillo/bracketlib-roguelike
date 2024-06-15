@@ -1,14 +1,14 @@
+use std::fs::File;
+use std::io::Write;
+
+use bracket_lib::prelude::{console, DijkstraMap};
+use bracket_lib::random::RandomNumberGenerator;
+use specs::{World, WorldExt};
+
 use crate::components::Position;
 use crate::map::{Map, TileType};
 use crate::map_builders::MapBuilder;
-use crate::SHOW_MAPGEN_VISUALIZATION;
-use bracket_lib::prelude::{console, DijkstraMap};
-use bracket_lib::random::RandomNumberGenerator;
-use specs::World;
-use std::ffi::c_ushort;
-use std::fs::File;
-use std::io::Write;
-use std::os::unix::raw::time_t;
+use crate::{DEBUGGING, SHOW_MAPGEN_VISUALIZATION};
 
 const MIN_ROOM_SIZE: i32 = 8;
 
@@ -31,13 +31,13 @@ impl CellularAutomataBuilder {
 }
 
 impl MapBuilder for CellularAutomataBuilder {
-    fn build_map(&mut self) {
+    fn build_map(&mut self, ecs: &mut World) {
         let mut rng = RandomNumberGenerator::new();
 
         for y in 1..self.map.height - 1 {
             for x in 1..self.map.width - 1 {
                 let roll = rng.roll_dice(1, 100);
-                self.map.tiles[x as usize][y as usize] = if roll > 65 {
+                self.map.tiles[x as usize][y as usize] = if roll > 55 {
                     TileType::Floor
                 } else {
                     TileType::Wall
@@ -101,12 +101,14 @@ impl MapBuilder for CellularAutomataBuilder {
             }
         }
 
+        self.map.populate_blocked();
+
         let map_starts: Vec<usize> = vec![self
             .map
             .xy_idx(self.starting_position.x, self.starting_position.y)];
         let dijkstra_map = DijkstraMap::new(
-            self.map.height,
             self.map.width,
+            self.map.height,
             &map_starts,
             &self.map,
             200.0,
@@ -142,27 +144,18 @@ impl MapBuilder for CellularAutomataBuilder {
         }
         self.take_snapshot();
         self.map.tiles[exit_tile.0][exit_tile.1] = TileType::DownStairs;
-        console::log(format!("Exit tile: {} {}", exit_tile.0, exit_tile.1));
-        console::log(format!("Exit tile distance: {}", exit_tile.2));
-        console::log(format!(
-            "starting position: {} {}",
-            self.starting_position.x, self.starting_position.y
-        ));
-        console::log(format!(
-            "Dijkstra map: {}",
-            dijkstra_map.map[(self.starting_position.y as usize * self.map.width as usize)
-                + self.starting_position.x as usize]
-        ));
 
         let mut file = File::create("dijkstra_map.txt").unwrap();
 
-        for x in 0..self.map.width {
-            let mut vec = Vec::new();
+        if DEBUGGING {
             for y in 0..self.map.height {
-                vec.push(dijkstra_map.map[(x * self.map.height) as usize + y as usize]);
+                let mut vec = Vec::new();
+                for x in 0..self.map.width {
+                    vec.push(dijkstra_map.map[(y * self.map.width) as usize + x as usize]);
+                }
+                file.write_all(format!("{:?}\n", vec).as_bytes()).unwrap();
             }
-            file.write_all(format!("{:?}\n", vec).as_bytes()).unwrap();
-            // console::log(format!("{:?}", vec));
+            ecs.insert(dijkstra_map)
         }
         self.take_snapshot();
     }
