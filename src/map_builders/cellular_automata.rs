@@ -1,3 +1,5 @@
+use bracket_lib::noise::{CellularDistanceFunction, FastNoise, NoiseType};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 
@@ -8,6 +10,7 @@ use specs::{World, WorldExt};
 use crate::components::Position;
 use crate::map::{Map, TileType};
 use crate::map_builders::MapBuilder;
+use crate::spawner::spawn_region;
 use crate::{DEBUGGING, SHOW_MAPGEN_VISUALIZATION};
 
 const MIN_ROOM_SIZE: i32 = 8;
@@ -17,6 +20,7 @@ pub struct CellularAutomataBuilder {
     starting_position: Position,
     depth: i32,
     history: Vec<Map>,
+    noise_areas: HashMap<i32, Vec<(i32, i32)>>,
 }
 
 impl CellularAutomataBuilder {
@@ -26,12 +30,11 @@ impl CellularAutomataBuilder {
             starting_position: Position { x: 0, y: 0 },
             depth,
             history: Vec::new(),
+            noise_areas: HashMap::new(),
         }
     }
-}
 
-impl MapBuilder for CellularAutomataBuilder {
-    fn build_map(&mut self, ecs: &mut World) {
+    pub fn build(&mut self, ecs: &mut World) {
         let mut rng = RandomNumberGenerator::new();
 
         for y in 1..self.map.height - 1 {
@@ -158,10 +161,38 @@ impl MapBuilder for CellularAutomataBuilder {
             ecs.insert(dijkstra_map)
         }
         self.take_snapshot();
+
+        let mut noise = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
+        noise.set_noise_type(NoiseType::Cellular);
+        noise.set_frequency(0.08);
+        noise.set_cellular_distance_function(CellularDistanceFunction::Manhattan);
+
+        for y in 1..self.map.height - 1 {
+            for x in 1..self.map.width - 1 {
+                if self.map.tiles[x as usize][y as usize] == TileType::Floor {
+                    let cell_value_f = noise.get_noise(x as f32, y as f32) * 1024.0;
+                    let cell_value = cell_value_f as i32;
+
+                    if self.noise_areas.contains_key(&cell_value) {
+                        self.noise_areas.get_mut(&cell_value).unwrap().push((x, y));
+                    } else {
+                        self.noise_areas.insert(cell_value, vec![(x, y)]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+impl MapBuilder for CellularAutomataBuilder {
+    fn build_map(&mut self, ecs: &mut World) {
+        self.build(ecs)
     }
 
     fn spawn_entities(&mut self, ecs: &mut World) {
-        // todo!()
+        for area in self.noise_areas.iter() {
+            spawn_region(ecs, area.1, self.depth);
+        }
     }
 
     fn get_map(&mut self) -> Map {

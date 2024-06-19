@@ -30,6 +30,6 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     //     1 => Box::new(BspDungeonBuilder::new(new_depth)),
     //     _ => Box::new(SimpleMapBuilder::new(new_depth)),
     // }
-    // Box::new(CellularAutomataBuilder::new(new_depth))
     Box::new(CellularAutomataBuilder::new(new_depth))
+    // Box::new(SimpleMapBuilder::new(new_depth))
 }
