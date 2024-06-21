@@ -23,6 +23,7 @@ use crate::random_tables::EntryType::*;
 use crate::random_tables::{EntryType, RandomTable};
 use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
+use crate::DEBUGGING;
 
 const MAX_MONSTERS: i32 = 4;
 const MAX_ITEMS: i32 = 3;
@@ -198,7 +199,7 @@ fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntryType)) {
     }
 }
 
-pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
+pub fn spawn_room(ecs: &mut World, starting_position: Position, room: &Rect, map_level: i32) {
     let mut possible_targets: Vec<(i32, i32)> = Vec::new();
     {
         let map = ecs.fetch::<Map>();
@@ -210,7 +211,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
             }
         }
     }
-    spawn_region(ecs, &possible_targets, map_level);
+    spawn_region(ecs, starting_position, &possible_targets, map_level);
 
     // let spawn_table = room_table(map_level);
     // let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
@@ -241,9 +242,20 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_level: i32) {
     // }
 }
 
-pub fn spawn_region(ecs: &mut World, area: &[(i32, i32)], map_depth: i32) {
+pub fn spawn_region(
+    ecs: &mut World,
+    starting_position: Position,
+    area: &[(i32, i32)],
+    map_depth: i32,
+) {
     let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
+    if DEBUGGING {
+        spawn_points.insert(
+            (starting_position.x, starting_position.y),
+            MagicMappingScroll,
+        );
+    }
     let mut areas: Vec<(i32, i32)> = Vec::from(area);
 
     {
