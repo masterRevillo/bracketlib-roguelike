@@ -43,10 +43,6 @@ pub fn find_most_distant_tile(map: &mut Map, start_idx: usize) -> (usize, usize)
         for (y, tile) in row.iter_mut().enumerate() {
             if *tile == TileType::Floor {
                 let distance_to_start = dijkstra_map.map[y * map.width as usize + x];
-                console::log(format!(
-                    "checking {} {} with val {}",
-                    x, y, distance_to_start
-                ));
                 if distance_to_start == f32::MAX {
                     *tile == TileType::Wall;
                 } else {
@@ -54,10 +50,6 @@ pub fn find_most_distant_tile(map: &mut Map, start_idx: usize) -> (usize, usize)
                         exit_tile.0 = x;
                         exit_tile.1 = y;
                         exit_tile.2 = distance_to_start;
-                        console::log(format!(
-                            "Relocating exit tile: {} {} {}",
-                            exit_tile.0, exit_tile.1, exit_tile.2
-                        ));
                     }
                 }
             }
