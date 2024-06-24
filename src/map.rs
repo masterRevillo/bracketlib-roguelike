@@ -232,4 +232,11 @@ impl Map {
         self.tiles[x as usize][y as usize] == TileType::Wall
             && self.revealed_tiles[x as usize][y as usize]
     }
+
+    pub fn get_total_floor_tiles(&self) -> usize {
+        self.tiles
+            .iter()
+            .map(|x| x.iter().filter(|y| **y == TileType::Floor).count())
+            .sum()
+    }
 }

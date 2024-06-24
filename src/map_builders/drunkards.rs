@@ -136,12 +136,8 @@ impl DrunkardsWalkBuilder {
 
         let total_tiles = self.map.width * self.map.height;
         let desired_floor_tiles = (self.settings.floor_percentage * total_tiles as f32) as usize;
-        let mut floor_tile_count: usize = self
-            .map
-            .tiles
-            .iter()
-            .map(|x| x.iter().filter(|y| **y == TileType::Floor).count())
-            .sum();
+        let mut floor_tile_count = self.map.get_total_floor_tiles();
+
         let mut digger_count = 0;
         let mut active_digger_count = 0;
 
@@ -210,12 +206,7 @@ impl DrunkardsWalkBuilder {
                     }
                 }
             }
-            floor_tile_count = self
-                .map
-                .tiles
-                .iter()
-                .map(|x| x.iter().filter(|y| **y == TileType::Floor).count())
-                .sum();
+            floor_tile_count = self.map.get_total_floor_tiles();
         }
 
         let start_idx = self
