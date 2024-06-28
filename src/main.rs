@@ -266,7 +266,7 @@ impl GameState for State {
                 self.mapgen_history[self.mapgen_index].draw_map(ctx);
 
                 self.mapgen_timer += ctx.frame_time_ms;
-                if self.mapgen_timer > 50.0 {
+                if self.mapgen_timer > 200.0 {
                     self.mapgen_timer = 0.0;
                     self.mapgen_index += 1;
                     if self.mapgen_index >= self.mapgen_history.len() {
@@ -275,11 +275,11 @@ impl GameState for State {
                 }
             }
 
-            RunState::MainMenu { .. } => {
+            MainMenu { .. } => {
                 let result = gui::main_menu(self, ctx);
                 match result {
                     MainMenuResult::NoSelection { selected } => {
-                        new_runstate = RunState::MainMenu {
+                        new_runstate = MainMenu {
                             menu_selection: selected,
                         }
                     }
