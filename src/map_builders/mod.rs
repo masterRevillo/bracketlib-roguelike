@@ -6,6 +6,7 @@ mod dla;
 mod drunkards;
 mod maze;
 mod simple_map;
+mod voronoi;
 
 use super::Map;
 use crate::components::Position;
@@ -16,6 +17,7 @@ use crate::map_builders::dla::DLABuilder;
 use crate::map_builders::drunkards::{DrunkSpawnMode, DrunkardSettings, DrunkardsWalkBuilder};
 use crate::map_builders::maze::MazeBuilder;
 use crate::map_builders::simple_map::SimpleMapBuilder;
+use crate::map_builders::voronoi::VoronoiCellBuilder;
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::World;
@@ -49,7 +51,10 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
         14 => Box::new(DLABuilder::central_attractor(new_depth)),
         15 => Box::new(DLABuilder::walk_inwards_symmetry(new_depth)),
         16 => Box::new(DLABuilder::walk_outward_symmetry(new_depth)),
+        17 => Box::new(VoronoiCellBuilder::pythagoras(new_depth)),
+        18 => Box::new(VoronoiCellBuilder::manhattan(new_depth)),
+        19 => Box::new(VoronoiCellBuilder::chebyshev(new_depth)),
         _ => Box::new(SimpleMapBuilder::new(new_depth)),
     }
-    // Box::new(DrunkardsWalkBuilder::crazy_beer_goggles(new_depth))
+    // Box::new(VoronoiCellBuilder::pythagoras(new_depth))
 }

@@ -7,7 +7,9 @@ use specs::World;
 
 use crate::components::Position;
 use crate::map::{Map, TileType};
-use crate::map_builders::common::{paint, Symmetry};
+use crate::map_builders::common::{
+    find_most_distant_tile, generate_voroni_spawn_regions, paint, Symmetry,
+};
 use crate::map_builders::MapBuilder;
 use crate::spawner::spawn_region;
 use crate::SHOW_MAPGEN_VISUALIZATION;
@@ -17,14 +19,6 @@ pub enum DLAAlgoritm {
     WalkInwards,
     WalkOutwards,
     CentralAttractor,
-}
-
-#[derive(PartialEq, Copy, Clone)]
-pub enum DLASymmetry {
-    None,
-    Horizontal,
-    Vertical,
-    Both,
 }
 
 pub struct DLABuilder {
@@ -305,6 +299,17 @@ impl DLABuilder {
             }
             floor_tile_count = self.map.get_total_floor_tiles();
             self.take_snapshot();
+
+            let start_idx = self
+                .map
+                .xy_idx(self.starting_position.x, self.starting_position.y);
+            let exit_tile = find_most_distant_tile(&mut self.map, start_idx);
+            self.take_snapshot();
+
+            self.map.tiles[exit_tile.0][exit_tile.1] = TileType::DownStairs;
+            self.take_snapshot();
+
+            self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
         }
     }
 }

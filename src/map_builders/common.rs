@@ -1,15 +1,15 @@
-use crate::map::{Map, TileType};
-use crate::map_builders::dla::DLASymmetry;
-use crate::rect::Rect;
-use crate::DEBUGGING;
-use bracket_lib::noise::{CellularDistanceFunction, FastNoise, NoiseType};
-use bracket_lib::pathfinding::DijkstraMap;
-use bracket_lib::prelude::console;
-use bracket_lib::random::RandomNumberGenerator;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
+
+use bracket_lib::noise::{CellularDistanceFunction, FastNoise, NoiseType};
+use bracket_lib::pathfinding::DijkstraMap;
+use bracket_lib::random::RandomNumberGenerator;
+
+use crate::map::{Map, TileType};
+use crate::rect::Rect;
+use crate::DEBUGGING;
 
 pub fn apply_room_to_map(map: &mut Map, room: &Rect) {
     for x in room.x1 + 1..=room.x2 {
