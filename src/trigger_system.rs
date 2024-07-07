@@ -1,7 +1,7 @@
 use bracket_lib::color::{BLACK, ORANGE, RGB};
-use bracket_lib::prelude::{log, to_cp437};
+use bracket_lib::prelude::to_cp437;
 use specs::prelude::*;
-use specs::world::EntityResBuilder;
+
 use crate::components::{EntityMoved, EntryTrigger, Hidden, InflictsDamage, Name, Position, SingleActivation, SufferDamage};
 use crate::gamelog::GameLog;
 use crate::map::Map;

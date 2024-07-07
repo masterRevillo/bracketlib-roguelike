@@ -1,15 +1,15 @@
+use std::collections::HashMap;
+
+use bracket_lib::prelude::console;
+use bracket_lib::random::RandomNumberGenerator;
+use specs::World;
+
 use crate::components::Position;
 use crate::map::{Map, TileType};
 use crate::map_builders::common::{find_most_distant_tile, generate_voroni_spawn_regions};
 use crate::map_builders::MapBuilder;
-use crate::spawner::spawn_region;
 use crate::SHOW_MAPGEN_VISUALIZATION;
-use bracket_lib::prelude::console;
-use bracket_lib::random::RandomNumberGenerator;
-use specs::World;
-use std::collections::HashMap;
-use std::os::unix::raw::off_t;
-use std::thread::current;
+use crate::spawner::spawn_region;
 
 const TOP: usize = 0;
 const RIGHT: usize = 1;

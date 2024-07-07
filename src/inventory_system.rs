@@ -1,10 +1,8 @@
-use std::fmt::format;
 use bracket_lib::color::{BLACK, GREEN, MAGENTA, ORANGE, RED, RGB};
-use bracket_lib::prelude::{field_of_view, log, to_cp437};
-use bracket_lib::prelude::VirtualKeyCode::P;
+use bracket_lib::prelude::{field_of_view, to_cp437};
 use specs::prelude::*;
 
-use crate::components::{AreaOfEffect, Artefact, CombatStats, Confusion, Consumable, Equippable, Equipped, HungerClock, HungerState, InBackpack, InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, CombatStats, Confusion, Consumable, Equippable, Equipped, HungerClock, InBackpack, InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::gamelog::GameLog;
 use crate::hunger_system::HungerSystem;
 use crate::map::Map;

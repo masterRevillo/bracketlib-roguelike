@@ -1,6 +1,7 @@
 use bracket_lib::color::RGB;
-use bracket_lib::prelude::{BTerm, FontCharType, LineAlg};
+use bracket_lib::prelude::{BTerm, FontCharType};
 use specs::prelude::*;
+
 use crate::components::{ParticleLifetime, Position, Renderable};
 
 pub fn cull_dead_particles(ecs: &mut World, ctx: &BTerm) {

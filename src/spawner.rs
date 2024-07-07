@@ -1,4 +1,3 @@
-use std::any::Any;
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -6,8 +5,7 @@ use bracket_lib::color::{
     BLACK, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RED, RGB,
     YELLOW,
 };
-use bracket_lib::prelude::VirtualKeyCode::M;
-use bracket_lib::prelude::{console, to_cp437, FontCharType, CHOCOLATE3};
+use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
@@ -18,12 +16,12 @@ use crate::components::{
     Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood,
     ProvidesHealing, Ranged, Renderable, SerializeMe, SingleActivation, Viewshed,
 };
-use crate::map::{Map, TileType, MAPWIDTH};
-use crate::random_tables::EntryType::*;
+use crate::DEBUGGING;
+use crate::map::{Map, TileType};
 use crate::random_tables::{EntryType, RandomTable};
+use crate::random_tables::EntryType::*;
 use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
-use crate::DEBUGGING;
 
 const MAX_MONSTERS: i32 = 4;
 const MAX_ITEMS: i32 = 3;

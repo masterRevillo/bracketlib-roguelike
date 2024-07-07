@@ -1,4 +1,4 @@
-use bracket_lib::color::{BLACK, RGB};
+use bracket_lib::color::RGB;
 use bracket_lib::prelude::to_cp437;
 use specs::prelude::*;
 

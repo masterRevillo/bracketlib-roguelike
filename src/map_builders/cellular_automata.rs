@@ -7,10 +7,8 @@ use crate::components::Position;
 use crate::map::{Map, TileType};
 use crate::map_builders::common::{find_most_distant_tile, generate_voroni_spawn_regions};
 use crate::map_builders::MapBuilder;
-use crate::spawner::spawn_region;
 use crate::SHOW_MAPGEN_VISUALIZATION;
-
-const MIN_ROOM_SIZE: i32 = 8;
+use crate::spawner::spawn_region;
 
 pub struct CellularAutomataBuilder {
     map: Map,
@@ -31,7 +29,7 @@ impl CellularAutomataBuilder {
         }
     }
 
-    pub fn build(&mut self, ecs: &mut World) {
+    pub fn build(&mut self, _ecs: &mut World) {
         let mut rng = RandomNumberGenerator::new();
 
         for y in 1..self.map.height - 1 {

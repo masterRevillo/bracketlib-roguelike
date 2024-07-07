@@ -1,12 +1,13 @@
-use specs::error::NoError;
-use specs::saveload::ConvertSaveload;
-use specs::saveload::Marker;
 use bracket_lib::color::RGB;
 use bracket_lib::prelude::{FontCharType, Point};
 use serde::{Deserialize, Serialize};
 use specs::{Join, WriteStorage};
+use specs::error::NoError;
 use specs::prelude::*;
+use specs::saveload::ConvertSaveload;
+use specs::saveload::Marker;
 use specs_derive::*;
+
 use crate::map::Map;
 
 pub struct SerializeMe;

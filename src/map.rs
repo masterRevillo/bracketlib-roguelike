@@ -1,23 +1,20 @@
-use std::cmp::{max, min};
 use std::collections::HashSet;
 
 use bracket_lib::algorithm_traits::SmallVec;
 use bracket_lib::color::RGB;
 use bracket_lib::geometry::Point;
 use bracket_lib::prelude::{
-    console, to_cp437, Algorithm2D, BTerm, BaseMap, DistanceAlg, FontCharType,
-    RandomNumberGenerator,
+    Algorithm2D, BaseMap, BTerm, DistanceAlg, FontCharType, to_cp437
+    ,
 };
 use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs::WorldExt;
 
-use crate::rect::Rect;
-
 pub const MAPWIDTH: usize = 100;
 pub const MAPHEIGHT: usize = 73;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
-#[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
     Floor,

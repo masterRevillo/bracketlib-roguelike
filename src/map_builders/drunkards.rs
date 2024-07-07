@@ -36,7 +36,7 @@ pub struct DrunkardsWalkBuilder {
 }
 
 impl MapBuilder for DrunkardsWalkBuilder {
-    fn build_map(&mut self, ecs: &mut World) {
+    fn build_map(&mut self, _ecs: &mut World) {
         self.build()
     }
 
@@ -72,6 +72,7 @@ impl MapBuilder for DrunkardsWalkBuilder {
 }
 
 impl DrunkardsWalkBuilder {
+    #[allow(dead_code)]
     pub fn new(depth: i32, settings: DrunkardSettings) -> Self {
         Self {
             map: Map::new(depth),
@@ -200,7 +201,6 @@ impl DrunkardsWalkBuilder {
         let mut floor_tile_count = self.map.get_total_floor_tiles();
 
         let mut digger_count = 0;
-        let mut active_digger_count = 0;
 
         while floor_tile_count < desired_floor_tiles {
             let mut did_something = false;
@@ -263,7 +263,6 @@ impl DrunkardsWalkBuilder {
             }
             if did_something {
                 self.take_snapshot();
-                active_digger_count += 1;
             }
 
             digger_count += 1;

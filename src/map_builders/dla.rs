@@ -34,7 +34,7 @@ pub struct DLABuilder {
 }
 
 impl MapBuilder for DLABuilder {
-    fn build_map(&mut self, ecs: &mut World) {
+    fn build_map(&mut self, _ecs: &mut World) {
         self.build()
     }
 
@@ -70,6 +70,7 @@ impl MapBuilder for DLABuilder {
 }
 
 impl DLABuilder {
+    #[allow(dead_code)]
     pub fn new(depth: i32) -> Self {
         Self {
             map: Map::new(depth),

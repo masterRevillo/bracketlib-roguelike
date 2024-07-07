@@ -2,12 +2,12 @@ use bracket_lib::color::{
     BLACK, BLUE, CYAN, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHEAT, WHITE, YELLOW,
 };
 use bracket_lib::prelude::{
-    letter_to_option, to_cp437, BTerm, DijkstraMap, DistanceAlg, Point, VirtualKeyCode,
+    BTerm, DijkstraMap, DistanceAlg, letter_to_option, Point, to_cp437, VirtualKeyCode,
 };
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
-use std::path::Iter;
 
+use crate::{DEBUGGING, RunState, State};
 use crate::components::{
     CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Name, Player, Position,
     Viewshed,
@@ -16,7 +16,6 @@ use crate::gamelog::GameLog;
 use crate::map::{Map, MAPHEIGHT, MAPWIDTH};
 use crate::rex_assets::RexAssets;
 use crate::saveload_system::does_save_exist;
-use crate::{RunState, State, DEBUGGING};
 
 const GUIY: usize = MAPHEIGHT;
 const GUIHEIGHT: usize = 6;

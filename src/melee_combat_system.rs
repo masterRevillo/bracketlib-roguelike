@@ -1,7 +1,7 @@
-use std::ptr::eq;
 use bracket_lib::color::{BLACK, ORANGE, RGB};
-use bracket_lib::prelude::{console, to_cp437};
+use bracket_lib::prelude::to_cp437;
 use specs::prelude::*;
+
 use crate::components::{CombatStats, DefenseBonus, Equipped, HungerClock, HungerState, MeleeAttackBonus, Name, Position, SufferDamage, WantsToMelee};
 use crate::gamelog::GameLog;
 use crate::particle_system::ParticleBuilder;

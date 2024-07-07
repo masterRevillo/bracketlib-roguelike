@@ -29,7 +29,7 @@ pub struct VoronoiCellBuilder {
 }
 
 impl MapBuilder for VoronoiCellBuilder {
-    fn build_map(&mut self, ecs: &mut World) {
+    fn build_map(&mut self, _ecs: &mut World) {
         self.build()
     }
 

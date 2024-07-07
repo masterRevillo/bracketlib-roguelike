@@ -1,6 +1,7 @@
 use std::cmp::min;
-use bracket_lib::prelude::console;
+
 use specs::prelude::*;
+
 use crate::components::{HungerClock, HungerState, SufferDamage};
 use crate::gamelog::GameLog;
 use crate::RunState;

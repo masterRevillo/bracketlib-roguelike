@@ -1,3 +1,19 @@
+use bracket_lib::random::RandomNumberGenerator;
+use specs::World;
+
+use crate::components::Position;
+use crate::map_builders::bsp_dungeon::BspDungeonBuilder;
+use crate::map_builders::bsp_interior::BspInteriorBuilder;
+use crate::map_builders::cellular_automata::CellularAutomataBuilder;
+use crate::map_builders::dla::DLABuilder;
+use crate::map_builders::drunkards::DrunkardsWalkBuilder;
+use crate::map_builders::maze::MazeBuilder;
+use crate::map_builders::simple_map::SimpleMapBuilder;
+use crate::map_builders::voronoi::VoronoiCellBuilder;
+use crate::map_builders::waveform_collapse::WaveformCollapseBuilder;
+
+use super::Map;
+
 mod bsp_dungeon;
 mod bsp_interior;
 mod cellular_automata;
@@ -7,20 +23,7 @@ mod drunkards;
 mod maze;
 mod simple_map;
 mod voronoi;
-
-use super::Map;
-use crate::components::Position;
-use crate::map_builders::bsp_dungeon::BspDungeonBuilder;
-use crate::map_builders::bsp_interior::BspInteriorBuilder;
-use crate::map_builders::cellular_automata::CellularAutomataBuilder;
-use crate::map_builders::dla::DLABuilder;
-use crate::map_builders::drunkards::{DrunkSpawnMode, DrunkardSettings, DrunkardsWalkBuilder};
-use crate::map_builders::maze::MazeBuilder;
-use crate::map_builders::simple_map::SimpleMapBuilder;
-use crate::map_builders::voronoi::VoronoiCellBuilder;
-use bracket_lib::prelude::console;
-use bracket_lib::random::RandomNumberGenerator;
-use specs::World;
+mod waveform_collapse;
 
 pub trait MapBuilder {
     fn build_map(&mut self, ecs: &mut World);
@@ -34,7 +37,8 @@ pub trait MapBuilder {
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     let mut rng = RandomNumberGenerator::new();
     let builder = rng.roll_dice(1, 17);
-    match builder {
+    let mut result: Box<dyn MapBuilder>;
+    result = match builder {
         1 => Box::new(BspDungeonBuilder::new(new_depth)),
         2 => Box::new(BspInteriorBuilder::new(new_depth)),
         3 => Box::new(CellularAutomataBuilder::new(new_depth)),
@@ -55,6 +59,9 @@ pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
         18 => Box::new(VoronoiCellBuilder::manhattan(new_depth)),
         19 => Box::new(VoronoiCellBuilder::chebyshev(new_depth)),
         _ => Box::new(SimpleMapBuilder::new(new_depth)),
+    };
+    if rng.roll_dice(1,3) == 1 {
+        result = Box::new(WaveformCollapseBuilder::derived_map(new_depth, result));
     }
-    // Box::new(VoronoiCellBuilder::pythagoras(new_depth))
+    result
 }
