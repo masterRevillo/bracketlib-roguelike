@@ -9,6 +9,8 @@ use crate::rect::Rect;
 use crate::{spawner, SHOW_MAPGEN_VISUALIZATION};
 use bracket_lib::prelude::RandomNumberGenerator;
 use specs::prelude::*;
+use crate::random_tables::EntryType;
+use crate::spawner::SpawnList;
 
 pub struct SimpleMapBuilder {
     map: Map,
@@ -16,6 +18,7 @@ pub struct SimpleMapBuilder {
     depth: i32,
     rooms: Vec<Rect>,
     history: Vec<Map>,
+    spawn_list: SpawnList
 }
 
 impl SimpleMapBuilder {
@@ -65,6 +68,10 @@ impl SimpleMapBuilder {
             x: start_pos.0,
             y: start_pos.1,
         };
+
+        for room in self.rooms.iter().skip(1) {
+            spawner::spawn_room(&self.map, &mut rng, room, self.depth, &mut self.spawn_list);
+        }
     }
     pub fn new(new_depth: i32) -> Self {
         SimpleMapBuilder {
@@ -73,6 +80,7 @@ impl SimpleMapBuilder {
             depth: new_depth,
             rooms: Vec::new(),
             history: Vec::new(),
+            spawn_list: Vec::new()
         }
     }
 }
@@ -80,12 +88,6 @@ impl SimpleMapBuilder {
 impl MapBuilder for SimpleMapBuilder {
     fn build_map(&mut self, _ecs: &mut World) {
         self.rooms_and_corridors();
-    }
-
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(ecs, self.starting_position.clone(), room, self.depth);
-        }
     }
 
     fn get_map(&mut self) -> Map {
@@ -110,5 +112,8 @@ impl MapBuilder for SimpleMapBuilder {
 
     fn get_snapshot_history(&self) -> Vec<Map> {
         self.history.clone()
+    }
+    fn get_spawn_list(&self) -> &SpawnList {
+       &self.spawn_list
     }
 }

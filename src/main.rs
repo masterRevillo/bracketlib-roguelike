@@ -207,7 +207,7 @@ impl State {
 
         let current_depth;
         {
-            let mut worldmap_resources = self.ecs.write_resource::<Map>();
+            let worldmap_resources = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resources.depth;
         }
         self.generate_world_map(current_depth + 1);
@@ -266,7 +266,7 @@ impl GameState for State {
                 self.mapgen_history[self.mapgen_index].draw_map(ctx);
 
                 self.mapgen_timer += ctx.frame_time_ms;
-                if self.mapgen_timer > 200.0 {
+                if self.mapgen_timer > 1000.0 {
                     self.mapgen_timer = 0.0;
                     self.mapgen_index += 1;
                     if self.mapgen_index >= self.mapgen_history.len() {
@@ -514,12 +514,11 @@ fn main() -> BError {
 
     state.generate_world_map(1);
 
-    let mut bterm = BTermBuilder::simple(100, 80)?
+    let bterm = BTermBuilder::simple(100, 80)?
         .with_title("Rusty Roguelike V2")
         .with_tile_dimensions(12, 12)
         .with_fps_cap(120.)
         .build()?;
-    // bterm.with_post_scanlines(true);
 
     main_loop(bterm, state)
 }

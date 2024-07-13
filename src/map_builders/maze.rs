@@ -9,7 +9,7 @@ use crate::map::{Map, TileType};
 use crate::map_builders::common::{find_most_distant_tile, generate_voroni_spawn_regions};
 use crate::map_builders::MapBuilder;
 use crate::SHOW_MAPGEN_VISUALIZATION;
-use crate::spawner::spawn_region;
+use crate::spawner::{spawn_region, SpawnList};
 
 const TOP: usize = 0;
 const RIGHT: usize = 1;
@@ -193,17 +193,16 @@ pub struct MazeBuilder {
     depth: i32,
     history: Vec<Map>,
     noise_areas: HashMap<i32, Vec<(i32, i32)>>,
+    spawn_list: SpawnList
 }
 
 impl MapBuilder for MazeBuilder {
-    fn build_map(&mut self, ecs: &mut World) {
+    fn build_map(&mut self, _ecs: &mut World) {
         self.build()
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawn_region(ecs, self.starting_position.clone(), area.1, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
 
     fn get_map(&mut self) -> Map {
@@ -239,6 +238,7 @@ impl MazeBuilder {
             depth,
             history: Vec::new(),
             noise_areas: HashMap::new(),
+            spawn_list: Vec::new(),
         }
     }
 
@@ -264,5 +264,9 @@ impl MazeBuilder {
         self.take_snapshot();
 
         self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
+
+        for area in self.noise_areas.iter() {
+            spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
+        }
     }
 }

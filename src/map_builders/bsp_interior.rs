@@ -6,6 +6,7 @@ use crate::map::{Map, TileType};
 use crate::map_builders::MapBuilder;
 use crate::rect::Rect;
 use crate::{spawner, SHOW_MAPGEN_VISUALIZATION};
+use crate::spawner::SpawnList;
 
 const MIN_ROOM_SIZE: i32 = 10;
 pub struct BspInteriorBuilder {
@@ -15,6 +16,7 @@ pub struct BspInteriorBuilder {
     rooms: Vec<Rect>,
     history: Vec<Map>,
     rects: Vec<Rect>,
+    spawn_list: SpawnList
 }
 
 impl BspInteriorBuilder {
@@ -26,6 +28,7 @@ impl BspInteriorBuilder {
             rooms: Vec::new(),
             history: Vec::new(),
             rects: Vec::new(),
+            spawn_list: Vec::new()
         }
     }
 
@@ -74,6 +77,9 @@ impl BspInteriorBuilder {
         self.starting_position = Position {
             x: start.0,
             y: start.1,
+        };
+        for room in self.rooms.iter().skip(1) {
+            spawner::spawn_room(&self.map, &mut rng, room, self.depth, &mut self.spawn_list);
         }
     }
 
@@ -138,10 +144,8 @@ impl MapBuilder for BspInteriorBuilder {
         self.build()
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(ecs, self.starting_position.clone(), room, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
 
     fn get_map(&mut self) -> Map {

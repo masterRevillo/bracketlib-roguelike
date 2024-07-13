@@ -24,7 +24,8 @@ use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
 const MAX_MONSTERS: i32 = 4;
-const MAX_ITEMS: i32 = 3;
+
+pub type SpawnList = Vec<((i32, i32), EntryType)>;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     ecs.create_entity()
@@ -147,7 +148,7 @@ fn monster<S: ToString>(
         .build();
 }
 
-fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntryType)) {
+pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntryType)) {
     let coords = spawn.0;
     match spawn.1 {
         None => {}
@@ -197,10 +198,9 @@ fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntryType)) {
     }
 }
 
-pub fn spawn_room(ecs: &mut World, starting_position: Position, room: &Rect, map_level: i32) {
+pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_level: i32, spawn_list: &mut SpawnList) {
     let mut possible_targets: Vec<(i32, i32)> = Vec::new();
     {
-        let map = ecs.fetch::<Map>();
         for y in room.y1 + 1..room.y2 {
             for x in room.x1 + 1..room.x2 {
                 if map.tiles[x as usize][y as usize] == TileType::Floor {
@@ -209,7 +209,7 @@ pub fn spawn_room(ecs: &mut World, starting_position: Position, room: &Rect, map
             }
         }
     }
-    spawn_region(ecs, starting_position, &possible_targets, map_level);
+    spawn_region(map, rng, &possible_targets, map_level, spawn_list);
 
     // let spawn_table = room_table(map_level);
     // let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
@@ -240,24 +240,27 @@ pub fn spawn_room(ecs: &mut World, starting_position: Position, room: &Rect, map
     // }
 }
 
+pub fn spawn_debug_items(ecs: &mut World, starting_position: Position) {
+    if DEBUGGING {
+        spawn_entity(
+            ecs,
+            &(&(starting_position.x, starting_position.y), &MagicMappingScroll),
+        );
+    }
+}
+
 pub fn spawn_region(
-    ecs: &mut World,
-    starting_position: Position,
+    map: &Map,
+    rng: &mut RandomNumberGenerator,
     area: &[(i32, i32)],
     map_depth: i32,
+    spawn_list: &mut SpawnList
 ) {
     let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
-    if DEBUGGING {
-        spawn_points.insert(
-            (starting_position.x, starting_position.y),
-            MagicMappingScroll,
-        );
-    }
     let mut areas: Vec<(i32, i32)> = Vec::from(area);
 
     {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         let num_spawns = i32::min(
             areas.len() as i32,
             rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3,
@@ -271,13 +274,13 @@ pub fn spawn_region(
             } else {
                 (rng.roll_dice(1, areas.len() as i32) - 1) as usize
             };
-            spawn_points.insert(areas[idx], spawn_table.roll(&mut rng));
+            spawn_points.insert(areas[idx], spawn_table.roll(rng));
             areas.remove(idx);
         }
     }
 
     for spawn in spawn_points.iter() {
-        spawn_entity(ecs, &spawn);
+        spawn_list.push((*spawn.0, *spawn.1))
     }
 }
 
@@ -437,6 +440,7 @@ fn dagger(ecs: &mut World, x: i32, y: i32) {
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
+
 fn shield(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
@@ -478,6 +482,7 @@ fn longsword(ecs: &mut World, x: i32, y: i32) {
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
+
 fn tower_shield(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })

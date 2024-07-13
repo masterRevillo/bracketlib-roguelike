@@ -13,7 +13,6 @@ use specs::WorldExt;
 
 pub const MAPWIDTH: usize = 100;
 pub const MAPHEIGHT: usize = 73;
-pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 #[derive(PartialEq, Eq, Hash, Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
@@ -53,7 +52,7 @@ impl BaseMap for Map {
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
         let w = self.width as usize;
-        let h = self.height as usize;
+        let _h = self.height as usize;
 
         // cardinal directions:
         // west
@@ -96,7 +95,7 @@ impl BaseMap for Map {
 
     fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
         let w = self.width as usize;
-        let h = self.height as usize;
+        let _h = self.height as usize;
         let p1 = Point::new(idx1 % w, idx1 / w);
         let p2 = Point::new(idx2 % w, idx2 / w);
         DistanceAlg::Pythagoras.distance2d(p1, p2)

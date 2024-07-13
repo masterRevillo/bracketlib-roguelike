@@ -11,7 +11,7 @@ use crate::map_builders::common::{
     find_most_distant_tile, generate_voroni_spawn_regions, paint, Symmetry,
 };
 use crate::map_builders::MapBuilder;
-use crate::spawner::spawn_region;
+use crate::spawner::{spawn_region, SpawnList};
 use crate::SHOW_MAPGEN_VISUALIZATION;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -31,6 +31,7 @@ pub struct DLABuilder {
     brush_size: i32,
     symmetry: Symmetry,
     floor_percent: f32,
+    spawn_list: SpawnList
 }
 
 impl MapBuilder for DLABuilder {
@@ -38,11 +39,10 @@ impl MapBuilder for DLABuilder {
         self.build()
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawn_region(ecs, self.starting_position.clone(), area.1, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
+
 
     fn get_map(&mut self) -> Map {
         self.map.clone()
@@ -82,6 +82,7 @@ impl DLABuilder {
             brush_size: 2,
             symmetry: Symmetry::None,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -96,6 +97,7 @@ impl DLABuilder {
             brush_size: 1,
             symmetry: Symmetry::None,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -110,6 +112,7 @@ impl DLABuilder {
             brush_size: 2,
             symmetry: Symmetry::None,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -124,6 +127,7 @@ impl DLABuilder {
             brush_size: 2,
             symmetry: Symmetry::None,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -138,6 +142,7 @@ impl DLABuilder {
             brush_size: 2,
             symmetry: Symmetry::Horizontal,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -152,6 +157,7 @@ impl DLABuilder {
             brush_size: 2,
             symmetry: Symmetry::Both,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -166,6 +172,7 @@ impl DLABuilder {
             brush_size: 2,
             symmetry: Symmetry::Vertical,
             floor_percent: 0.25,
+            spawn_list: Vec::new()
         }
     }
 
@@ -301,16 +308,21 @@ impl DLABuilder {
             floor_tile_count = self.map.get_total_floor_tiles();
             self.take_snapshot();
 
-            let start_idx = self
-                .map
-                .xy_idx(self.starting_position.x, self.starting_position.y);
-            let exit_tile = find_most_distant_tile(&mut self.map, start_idx);
-            self.take_snapshot();
+        }
 
-            self.map.tiles[exit_tile.0][exit_tile.1] = TileType::DownStairs;
-            self.take_snapshot();
+        let start_idx = self
+            .map
+            .xy_idx(self.starting_position.x, self.starting_position.y);
+        let exit_tile = find_most_distant_tile(&mut self.map, start_idx);
+        self.take_snapshot();
 
-            self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
+        self.map.tiles[exit_tile.0][exit_tile.1] = TileType::DownStairs;
+        self.take_snapshot();
+
+        self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
+        for area in self.noise_areas.iter() {
+            spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
         }
     }
+
 }

@@ -6,6 +6,7 @@ use crate::rect::Rect;
 use crate::{spawner, SHOW_MAPGEN_VISUALIZATION};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::World;
+use crate::spawner::SpawnList;
 
 pub struct BspDungeonBuilder {
     map: Map,
@@ -14,6 +15,7 @@ pub struct BspDungeonBuilder {
     rooms: Vec<Rect>,
     history: Vec<Map>,
     rects: Vec<Rect>,
+    spawn_list: SpawnList
 }
 
 impl BspDungeonBuilder {
@@ -25,6 +27,7 @@ impl BspDungeonBuilder {
             rooms: Vec::new(),
             history: Vec::new(),
             rects: Vec::new(),
+            spawn_list: Vec::new()
         }
     }
 
@@ -72,6 +75,9 @@ impl BspDungeonBuilder {
         self.starting_position = Position {
             x: start.0,
             y: start.1,
+        };
+        for room in self.rooms.iter().skip(1) {
+            spawner::spawn_room(&self.map, &mut rng, room, self.depth, &mut self.spawn_list);
         }
     }
 
@@ -185,10 +191,8 @@ impl MapBuilder for BspDungeonBuilder {
         self.build()
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(ecs, self.starting_position.clone(), room, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
 
     fn get_map(&mut self) -> Map {
@@ -214,4 +218,6 @@ impl MapBuilder for BspDungeonBuilder {
             self.history.push(snapshot);
         }
     }
+
+
 }

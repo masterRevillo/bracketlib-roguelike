@@ -100,7 +100,7 @@ fn try_next_level(ecs: &mut World) -> bool {
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
-    let mut players = ecs.write_storage::<Player>();
+    let players = ecs.write_storage::<Player>();
     let mut viewseheds = ecs.write_storage::<Viewshed>();
     let combat_stats = ecs.read_storage::<CombatStats>();
     let entities = ecs.entities();
@@ -117,7 +117,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
                 let target = combat_stats.get(*potential_target);
                 match target {
                     None => {}
-                    Some(t) => {
+                    Some(_t) => {
                         wants_to_melee.insert(entity, WantsToMelee{target: *potential_target})
                             .expect("Failed to add target");
                         return;

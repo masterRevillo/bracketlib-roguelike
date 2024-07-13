@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bracket_lib::prelude::{RandomNumberGenerator, XpFile};
+use bracket_lib::prelude::RandomNumberGenerator;
 use specs::World;
 
 use crate::components::Position;
@@ -9,12 +9,10 @@ use crate::map_builders::common::{find_most_distant_tile, generate_voroni_spawn_
 use crate::map_builders::MapBuilder;
 use crate::map_builders::waveform_collapse::common::MapChunk;
 use crate::map_builders::waveform_collapse::constraints::{build_patterns, patterns_to_constraints, render_pattern_to_map};
-use crate::map_builders::waveform_collapse::image_loader::load_rex_map;
 use crate::map_builders::waveform_collapse::solver::Solver;
 use crate::SHOW_MAPGEN_VISUALIZATION;
-use crate::spawner::spawn_region;
+use crate::spawner::{spawn_region, SpawnList};
 
-mod image_loader;
 mod constraints;
 mod common;
 mod solver;
@@ -28,8 +26,8 @@ pub struct WaveformCollapseBuilder {
     depth: i32,
     history: Vec<Map>,
     noise_areas: HashMap<i32, Vec<(i32, i32)>>,
-    mode: WaveformMode,
-    derive_from: Option<Box<dyn MapBuilder>>
+    derive_from: Option<Box<dyn MapBuilder>>,
+    spawn_list: SpawnList
 }
 
 impl MapBuilder for WaveformCollapseBuilder {
@@ -37,11 +35,10 @@ impl MapBuilder for WaveformCollapseBuilder {
         self.build(ecs)
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawn_region(ecs, self.starting_position.clone(), area.1, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
+
 
     fn get_map(&mut self) -> Map {
         self.map.clone()
@@ -69,41 +66,35 @@ impl MapBuilder for WaveformCollapseBuilder {
 }
 
 impl WaveformCollapseBuilder {
-    pub fn new(depth: i32, mode: WaveformMode, derive_from: Option<Box<dyn MapBuilder>>) -> Self {
+    pub fn new(depth: i32, derive_from: Option<Box<dyn MapBuilder>>) -> Self {
         Self {
             map: Map::new(depth),
             starting_position: Position { x: 0, y: 0 },
             depth,
             history: Vec::new(),
             noise_areas: HashMap::new(),
-            mode,
-            derive_from
+            derive_from,
+            spawn_list: Vec::new()
         }
     }
 
+    #[allow(dead_code)]
     pub fn test_map(new_depth: i32) -> Self {
-        WaveformCollapseBuilder::new(new_depth, WaveformMode::TestMap, None)
+        WaveformCollapseBuilder::new(new_depth, None)
     }
 
     pub fn derived_map(new_depth: i32, builder: Box<dyn MapBuilder>) -> Self {
-        WaveformCollapseBuilder::new(new_depth, WaveformMode::Derived, Some(builder))
+        WaveformCollapseBuilder::new(new_depth, Some(builder))
     }
 
     fn build(&mut self, ecs: &mut World) {
-        if self.mode == WaveformMode::TestMap {
-           self.map = load_rex_map(
-               self.depth,
-               &XpFile::from_resource("../resources/wfc-demo1.xp").unwrap(),
-           );
-        } else  {
-            let prebuilder = &mut self.derive_from.as_mut().unwrap();
-            prebuilder.build_map(ecs);
-            self.map = prebuilder.get_map();
-            for y in self.map.tiles.iter_mut() {
-                for t in y.iter_mut() {
-                    if *t == TileType::DownStairs {
-                        *t = TileType::Floor;
-                    }
+        let prebuilder = &mut self.derive_from.as_mut().unwrap();
+        prebuilder.build_map(ecs);
+        self.map = prebuilder.get_map();
+        for y in self.map.tiles.iter_mut() {
+            for t in y.iter_mut() {
+                if *t == TileType::DownStairs {
+                    *t = TileType::Floor;
                 }
             }
         }
@@ -155,6 +146,10 @@ impl WaveformCollapseBuilder {
         self.take_snapshot();
 
         self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
+
+        for area in self.noise_areas.iter() {
+            spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
+        }
     }
 
     fn render_tile_gallery(&mut self, constraints: &Vec<MapChunk>, chunk_size: i32) {

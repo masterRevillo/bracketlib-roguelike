@@ -71,7 +71,7 @@ impl<'a> System<'a> for ItemUseSystem {
             player_entity,
             mut gamelog,
             entities,
-            mut map,
+            map,
             mut wants_use_item,
             names,
             healing,
@@ -84,7 +84,7 @@ impl<'a> System<'a> for ItemUseSystem {
             mut confusions,
             equippable,
             mut equipped,
-            mut inBackpack,
+            mut in_backpack,
             mut particle_builder,
             positions,
             provides_food,
@@ -137,11 +137,11 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                     for item in to_unequip.iter() {
                         equipped.remove(*item);
-                        inBackpack.insert(*item, InBackpack{ owner: target }).expect("Unable to insert item in backpack");
+                        in_backpack.insert(*item, InBackpack{ owner: target }).expect("Unable to insert item in backpack");
                     }
 
                     equipped.insert(use_item.item, Equipped { owner: target, slot: target_slot}).expect("Unable to equip item");
-                    inBackpack.remove(use_item.item);
+                    in_backpack.remove(use_item.item);
                     if target == *player_entity {
                         gamelog.entries.push(format!("You equip {}", names.get(use_item.item).unwrap().name));
                     }
@@ -249,7 +249,7 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
             let is_mapper = magic_mapper.get(use_item.item);
-            if let Some(is_mapper) = is_mapper {
+            if let Some(_m) = is_mapper {
                 gamelog.entries.push("You use the scroll, which reveals the map to you".to_string());
                 *runsatate = RunState::MagicMapReveal{ row: 0 };
             };

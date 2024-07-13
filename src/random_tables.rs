@@ -26,12 +26,6 @@ pub struct RandomEntry {
     weight: i32
 }
 
-impl RandomEntry {
-    pub fn new(entry: EntryType, weight: i32) -> Self {
-        Self { entry, weight }
-    }
-}
-
 #[derive(Default)]
 pub struct RandomTable {
     entries: Vec<RandomEntry>,

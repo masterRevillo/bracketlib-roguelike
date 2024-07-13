@@ -8,7 +8,7 @@ use crate::components::Position;
 use crate::map::{Map, TileType};
 use crate::map_builders::common::{find_most_distant_tile, generate_voroni_spawn_regions};
 use crate::map_builders::MapBuilder;
-use crate::spawner::spawn_region;
+use crate::spawner::{spawn_region, SpawnList};
 use crate::{DEBUGGING, SHOW_MAPGEN_VISUALIZATION};
 
 #[derive(PartialEq, Copy, Clone)]
@@ -26,6 +26,7 @@ pub struct VoronoiCellBuilder {
     noise_areas: HashMap<i32, Vec<(i32, i32)>>,
     n_seeds: usize,
     distance_algorithm: DistanceAlgorithm,
+    spawn_list: SpawnList
 }
 
 impl MapBuilder for VoronoiCellBuilder {
@@ -33,10 +34,8 @@ impl MapBuilder for VoronoiCellBuilder {
         self.build()
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawn_region(ecs, self.starting_position.clone(), area.1, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
 
     fn get_map(&mut self) -> Map {
@@ -74,6 +73,7 @@ impl VoronoiCellBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 128,
             distance_algorithm: DistanceAlgorithm::Pythagoras,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -86,6 +86,7 @@ impl VoronoiCellBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 128,
             distance_algorithm: DistanceAlgorithm::Manhattan,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -98,6 +99,7 @@ impl VoronoiCellBuilder {
             noise_areas: HashMap::new(),
             n_seeds: 64,
             distance_algorithm: DistanceAlgorithm::Chebyshev,
+            spawn_list: Vec::new(),
         }
     }
 
@@ -187,5 +189,9 @@ impl VoronoiCellBuilder {
         self.take_snapshot();
 
         self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
+
+        for area in self.noise_areas.iter() {
+            spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
+        }
     }
 }

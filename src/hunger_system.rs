@@ -59,8 +59,8 @@ impl <'a> System<'a> for HungerSystem {
             mut gamelog
         ) = data;
 
-        for (entity, mut clock) in (&entities, &mut hunger_clock).join() {
-            let mut proceed = match *runstate {
+        for (entity, clock) in (&entities, &mut hunger_clock).join() {
+            let proceed = match *runstate {
                 RunState::PlayerTurn if entity == *player_entity => true,
                 RunState::MonsterTurn if entity != *player_entity => true,
                 _ => false

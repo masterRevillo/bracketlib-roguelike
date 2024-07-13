@@ -9,7 +9,7 @@ use crate::map_builders::common::{
     find_most_distant_tile, generate_voroni_spawn_regions, paint, Symmetry,
 };
 use crate::map_builders::MapBuilder;
-use crate::spawner::spawn_region;
+use crate::spawner::{spawn_region, SpawnList};
 use crate::SHOW_MAPGEN_VISUALIZATION;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -33,6 +33,7 @@ pub struct DrunkardsWalkBuilder {
     history: Vec<Map>,
     noise_areas: HashMap<i32, Vec<(i32, i32)>>,
     settings: DrunkardSettings,
+    spawn_list: SpawnList
 }
 
 impl MapBuilder for DrunkardsWalkBuilder {
@@ -40,10 +41,8 @@ impl MapBuilder for DrunkardsWalkBuilder {
         self.build()
     }
 
-    fn spawn_entities(&mut self, ecs: &mut World) {
-        for area in self.noise_areas.iter() {
-            spawn_region(ecs, self.starting_position.clone(), area.1, self.depth);
-        }
+    fn get_spawn_list(&self) -> &SpawnList {
+        &self.spawn_list
     }
 
     fn get_map(&mut self) -> Map {
@@ -81,6 +80,7 @@ impl DrunkardsWalkBuilder {
             history: Vec::new(),
             noise_areas: HashMap::new(),
             settings,
+            spawn_list: Vec::new()
         }
     }
 
@@ -98,6 +98,7 @@ impl DrunkardsWalkBuilder {
                 brush_size: 1,
                 symmetry: Symmetry::None,
             },
+            spawn_list: Vec::new()
         }
     }
 
@@ -115,6 +116,7 @@ impl DrunkardsWalkBuilder {
                 brush_size: 1,
                 symmetry: Symmetry::None,
             },
+            spawn_list: Vec::new()
         }
     }
 
@@ -132,6 +134,7 @@ impl DrunkardsWalkBuilder {
                 brush_size: 2,
                 symmetry: Symmetry::None,
             },
+            spawn_list: Vec::new()
         }
     }
 
@@ -149,6 +152,7 @@ impl DrunkardsWalkBuilder {
                 brush_size: 1,
                 symmetry: Symmetry::None,
             },
+            spawn_list: Vec::new()
         }
     }
 
@@ -166,6 +170,7 @@ impl DrunkardsWalkBuilder {
                 brush_size: 1,
                 symmetry: Symmetry::Horizontal,
             },
+            spawn_list: Vec::new()
         }
     }
 
@@ -183,6 +188,7 @@ impl DrunkardsWalkBuilder {
                 brush_size: 2,
                 symmetry: Symmetry::Both,
             },
+            spawn_list: Vec::new()
         }
     }
 
@@ -286,5 +292,9 @@ impl DrunkardsWalkBuilder {
         self.take_snapshot();
 
         self.noise_areas = generate_voroni_spawn_regions(&self.map, &mut rng);
+
+        for area in self.noise_areas.iter() {
+            spawn_region(&self.map, &mut rng, area.1, self.depth, &mut self.spawn_list);
+        }
     }
 }
