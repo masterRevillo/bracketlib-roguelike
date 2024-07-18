@@ -91,6 +91,7 @@ impl WaveformCollapseBuilder {
         let prebuilder = &mut self.derive_from.as_mut().unwrap();
         prebuilder.build_map(ecs);
         self.map = prebuilder.get_map();
+        self.history.append(&mut prebuilder.get_snapshot_history());
         for y in self.map.tiles.iter_mut() {
             for t in y.iter_mut() {
                 if *t == TileType::DownStairs {
