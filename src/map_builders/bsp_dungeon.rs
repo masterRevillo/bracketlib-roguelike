@@ -1,103 +1,64 @@
-use crate::components::Position;
-use crate::map::{Map, TileType};
-use crate::map_builders::common::apply_room_to_map;
-use crate::map_builders::MapBuilder;
-use crate::rect::Rect;
-use crate::{spawner, SHOW_MAPGEN_VISUALIZATION};
 use bracket_lib::random::RandomNumberGenerator;
-use specs::World;
-use crate::spawner::SpawnList;
+
+use crate::map::{Map, TileType};
+use crate::map_builders::{BuilderMap, InitialMapBuilder};
+use crate::map_builders::common::{apply_room_to_map, draw_corridor};
+use crate::rect::Rect;
 
 pub struct BspDungeonBuilder {
-    map: Map,
-    starting_position: Position,
-    depth: i32,
-    rooms: Vec<Rect>,
-    history: Vec<Map>,
     rects: Vec<Rect>,
-    spawn_list: SpawnList
+}
+
+impl InitialMapBuilder for BspDungeonBuilder {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+        self.build(rng, build_data)
+    }
 }
 
 impl BspDungeonBuilder {
-    pub fn new(depth: i32) -> Self {
-        Self {
-            map: Map::new(depth),
-            starting_position: Position { x: 0, y: 0 },
-            depth,
-            rooms: Vec::new(),
-            history: Vec::new(),
-            rects: Vec::new(),
-            spawn_list: Vec::new()
-        }
+
+    pub fn new() -> Box<Self> {
+        Box::new(Self {
+            rects: Vec::new()
+        })
     }
-
-    fn build(&mut self) {
-        let mut rng = RandomNumberGenerator::new();
-
+    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+        let mut rooms: Vec<Rect> = Vec::new();
         self.rects.clear();
         self.rects
-            .push(Rect::new(2, 2, self.map.width - 5, self.map.height - 5));
+            .push(Rect::new(2, 2, build_data.map.width - 5, build_data.map.height - 5));
         let first_room = self.rects[0];
         self.add_subrects(first_room);
 
         // attempt 240 times to get a random rectangle and divide it. If it fits, we place the room
         let mut n_rooms = 0;
         while n_rooms < 240 {
-            let rect = self.get_random_rect(&mut rng);
-            let candidate = self.get_random_sub_rect(rect, &mut rng);
+            let rect = self.get_random_rect(rng);
+            let candidate = self.get_random_sub_rect(rect, rng);
 
-            if self.is_possible(candidate) {
-                apply_room_to_map(&mut self.map, &candidate);
-                self.rooms.push(candidate);
+            if self.is_possible(candidate, &mut build_data.map) {
+                apply_room_to_map(&mut build_data.map, &candidate);
+                rooms.push(candidate);
                 self.add_subrects(rect);
-                self.take_snapshot();
+                build_data.take_snapshot();
             }
             n_rooms += 1;
         }
-        self.rooms.sort_by(|a, b| a.x1.cmp(&b.x1));
-        for i in 0..self.rooms.len() - 1 {
-            let room = self.rooms[i];
-            let next_room = self.rooms[i + 1];
+        rooms.sort_by(|a, b| a.x1.cmp(&b.x1));
+        for i in 0..rooms.len() - 1 {
+            let room = rooms[i];
+            let next_room = rooms[i + 1];
             let start_x = room.x1 + (rng.roll_dice(1, i32::abs(room.x1 - room.x2)) - 1);
             let start_y = room.y1 + (rng.roll_dice(1, i32::abs(room.y1 - room.y2)) - 1);
             let end_x =
                 next_room.x1 + (rng.roll_dice(1, i32::abs(next_room.x1 - next_room.x2)) - 1);
             let end_y =
                 next_room.y1 + (rng.roll_dice(1, i32::abs(next_room.y1 - next_room.y2)) - 1);
-            self.draw_corridor(start_x, start_y, end_x, end_y);
-            self.take_snapshot();
-        }
-
-        let stairs = self.rooms[self.rooms.len() - 1].center();
-        self.map.tiles[stairs.0 as usize][stairs.1 as usize] = TileType::DownStairs;
-
-        let start = self.rooms[0].center();
-        self.starting_position = Position {
-            x: start.0,
-            y: start.1,
-        };
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(&self.map, &mut rng, room, self.depth, &mut self.spawn_list);
+            draw_corridor(&mut build_data.map, start_x, start_y, end_x, end_y);
+            build_data.take_snapshot();
         }
     }
 
-    fn draw_corridor(&mut self, x1: i32, y1: i32, x2: i32, y2: i32) {
-        let mut x = x1;
-        let mut y = y1;
-
-        while x != x2 || y != y2 {
-            if x < x2 {
-                x += 1;
-            } else if x > x2 {
-                x -= 1;
-            } else if y < y2 {
-                y += 1;
-            } else if y > y2 {
-                y -= 1;
-            }
-            self.map.tiles[x as usize][y as usize] = TileType::Floor;
-        }
-    }
 
     fn add_subrects(&mut self, rect: Rect) {
         let width = i32::abs(rect.x1 - rect.x2);
@@ -151,7 +112,7 @@ impl BspDungeonBuilder {
         result
     }
 
-    fn is_possible(&self, rect: Rect) -> bool {
+    fn is_possible(&self, rect: Rect, map: &Map) -> bool {
         let mut expanded = rect;
         expanded.x1 -= 2;
         expanded.x2 += 2;
@@ -162,10 +123,10 @@ impl BspDungeonBuilder {
 
         for y in expanded.y1..=expanded.y2 {
             for x in expanded.x1..=expanded.x2 {
-                if x > self.map.width - 2 {
+                if x > map.width - 2 {
                     can_build = false;
                 }
-                if y > self.map.height - 2 {
+                if y > map.height - 2 {
                     can_build = false;
                 }
                 if x < 1 {
@@ -175,7 +136,7 @@ impl BspDungeonBuilder {
                     can_build = false;
                 }
                 if can_build {
-                    if self.map.tiles[x as usize][y as usize] != TileType::Wall {
+                    if map.tiles[x as usize][y as usize] != TileType::Wall {
                         can_build = false;
                     }
                 }
@@ -184,40 +145,4 @@ impl BspDungeonBuilder {
 
         can_build
     }
-}
-
-impl MapBuilder for BspDungeonBuilder {
-    fn build_map(&mut self, _ecs: &mut World) {
-        self.build()
-    }
-
-    fn get_spawn_list(&self) -> &SpawnList {
-        &self.spawn_list
-    }
-
-    fn get_map(&mut self) -> Map {
-        self.map.clone()
-    }
-
-    fn get_starting_position(&mut self) -> Position {
-        self.starting_position.clone()
-    }
-
-    fn get_snapshot_history(&self) -> Vec<Map> {
-        self.history.clone()
-    }
-
-    fn take_snapshot(&mut self) {
-        if SHOW_MAPGEN_VISUALIZATION {
-            let mut snapshot = self.map.clone();
-            for x in snapshot.revealed_tiles.iter_mut() {
-                for v in x.iter_mut() {
-                    *v = true;
-                }
-            }
-            self.history.push(snapshot);
-        }
-    }
-
-
 }

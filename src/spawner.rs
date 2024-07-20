@@ -240,7 +240,7 @@ pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_l
     // }
 }
 
-pub fn spawn_debug_items(ecs: &mut World, starting_position: Position) {
+pub fn spawn_debug_items(ecs: &mut World, starting_position: &Position) {
     if DEBUGGING {
         spawn_entity(
             ecs,

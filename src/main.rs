@@ -1,4 +1,4 @@
-use bracket_lib::prelude::{main_loop, BError, BTerm, BTermBuilder, GameState, Point};
+use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
@@ -14,8 +14,8 @@ use crate::components::{
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
-    drop_item_menu, ranged_target, show_inventory, GameOverResult, ItemMenuResult, MainMenuResult,
-    MainMenuSelection,
+    drop_item_menu, GameOverResult, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target,
+    show_inventory,
 };
 use crate::hunger_system::HungerSystem;
 use crate::inventory_system::{
@@ -28,10 +28,10 @@ use crate::monster_ai_system::MonsterAI;
 use crate::particle_system::ParticleSpawnSystem;
 use crate::player::player_input;
 use crate::rex_assets::RexAssets;
+use crate::RunState::MainMenu;
 use crate::spawner::player;
 use crate::trigger_system::TriggerSystem;
 use crate::visibility_system::VisibilitySystem;
-use crate::RunState::MainMenu;
 
 mod components;
 mod damage_system;
@@ -121,14 +121,16 @@ impl State {
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
-        let mut builder = map_builders::random_builder(new_depth);
-        builder.build_map(&mut self.ecs);
-        self.mapgen_history = builder.get_snapshot_history();
+        let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
+        let mut builder = map_builders::random_builder(new_depth, &mut rng);
+        builder.build_map(&mut rng);
+        drop(rng);
+        self.mapgen_history = builder.build_data.history.clone();
         let player_start;
         {
             let mut map_resource = self.ecs.write_resource::<Map>();
-            *map_resource = builder.get_map();
-            player_start = builder.get_starting_position();
+            *map_resource = builder.build_data.map.clone();
+            player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
         }
         builder.spawn_entities(&mut self.ecs);
         let (player_x, player_y) = (player_start.x, player_start.y);
