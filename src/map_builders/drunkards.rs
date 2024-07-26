@@ -2,7 +2,7 @@ use bracket_lib::random::RandomNumberGenerator;
 
 use crate::components::Position;
 use crate::map::TileType;
-use crate::map_builders::{BuilderMap, InitialMapBuilder};
+use crate::map_builders::{BuilderMap, InitialMapBuilder, MetaMapBuilder};
 use crate::map_builders::common::{
     paint, Symmetry,
 };
@@ -28,6 +28,12 @@ pub struct DrunkardsWalkBuilder {
 impl InitialMapBuilder for DrunkardsWalkBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         self.build(rng, build_data);
+    }
+}
+
+impl MetaMapBuilder for DrunkardsWalkBuilder {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+       self.build(rng, build_data);
     }
 }
 

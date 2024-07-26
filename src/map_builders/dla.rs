@@ -4,7 +4,7 @@ use bracket_lib::random::RandomNumberGenerator;
 
 use crate::components::Position;
 use crate::map::TileType;
-use crate::map_builders::{BuilderMap, InitialMapBuilder};
+use crate::map_builders::{BuilderMap, InitialMapBuilder, MetaMapBuilder};
 use crate::map_builders::common::{
     paint, Symmetry,
 };
@@ -29,6 +29,12 @@ impl InitialMapBuilder for DLABuilder {
     }
 }
 
+impl MetaMapBuilder for DLABuilder {
+    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+       self.build(rng, build_data)
+    }
+}
+
 impl DLABuilder {
     #[allow(dead_code)]
     pub fn new() -> Self {
@@ -46,6 +52,15 @@ impl DLABuilder {
             brush_size: 1,
             symmetry: Symmetry::None,
             floor_percent: 0.25,
+        })
+    }
+
+    pub fn heavy_erosion() -> Box<Self> {
+        Box::new(Self {
+            algorithm: DLAAlgoritm::WalkInwards,
+            brush_size: 2,
+            symmetry: Symmetry::None,
+            floor_percent: 0.35,
         })
     }
 

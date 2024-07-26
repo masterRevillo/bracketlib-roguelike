@@ -1,6 +1,22 @@
 use std::cmp::{max, min};
+use bracket_lib::random::RandomNumberGenerator;
 
 use crate::map::{Map, TileType};
+use crate::map_builders::area_starting_points::AreaStartingPoint;
+use crate::map_builders::bsp_dungeon::BspDungeonBuilder;
+use crate::map_builders::bsp_interior::BspInteriorBuilder;
+use crate::map_builders::BuilderChain;
+use crate::map_builders::distant_exit::DistantExit;
+use crate::map_builders::room_based_spawner::RoomBasedSpawner;
+use crate::map_builders::room_based_stairs::RoomBasedStairs;
+use crate::map_builders::room_based_starting_position::RoomBasedStartingPosition;
+use crate::map_builders::room_corner_rounding::RoomCornerRounding;
+use crate::map_builders::room_corridors_bsp::BSPCorridors;
+use crate::map_builders::room_corridors_dogleg::DoglegCorridors;
+use crate::map_builders::room_exploder::RoomExploder;
+use crate::map_builders::room_sorter::{RoomSort, RoomSorter};
+use crate::map_builders::simple_map::SimpleMapBuilder;
+use crate::map_builders::voronoi_spawning::VoronoiSpawning;
 use crate::rect::Rect;
 
 pub fn apply_room_to_map(map: &mut Map, room: &Rect) {
