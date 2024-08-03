@@ -25,6 +25,15 @@ impl DistantExit {
             starting_pos.y
         );
 
+        // First clear all existing exits
+        for x in build_data.map.tiles.iter_mut() {
+            for t in x.iter_mut() {
+                if *t == TileType::DownStairs {
+                    *t = TileType::Floor;
+                }
+            }
+        }
+
         let map_starts: Vec<usize> = vec![start_idx];
         let dijkstra_map = DijkstraMap::new(build_data.map.width, build_data.map.height, &map_starts, &build_data.map, 200.0);
         let mut exit_tile = (0, 0, 0.0f32);

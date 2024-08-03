@@ -6,11 +6,12 @@ pub struct Rect {
     pub x2: i32,
     pub y1: i32,
     pub y2: i32,
+    pub radius: Option<f32>
 }
 
 impl Rect {
     pub fn new(x: i32, y: i32, w: i32, h: i32) -> Self {
-        Self { x1:x, x2: x+w, y1:y, y2:y+h }
+        Self { x1:x, x2: x+w, y1:y, y2:y+h, radius: None}
     }
 
     pub fn intersect(&self, other: &Rect) -> bool {

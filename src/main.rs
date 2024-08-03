@@ -3,14 +3,7 @@ use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{
-    AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus,
-    EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack,
-    InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player,
-    Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe,
-    SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
-    WantsToUnequipItem, WantsToUseItem,
-};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
@@ -497,6 +490,8 @@ fn main() -> BError {
     state.ecs.register::<EntryTrigger>();
     state.ecs.register::<EntityMoved>();
     state.ecs.register::<SingleActivation>();
+    state.ecs.register::<BlocksVisibility>();
+    state.ecs.register::<Door>();
 
     state.ecs.insert(particle_system::ParticleBuilder::new());
     state

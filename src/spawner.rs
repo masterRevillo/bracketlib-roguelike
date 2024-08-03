@@ -1,21 +1,13 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use bracket_lib::color::{
-    BLACK, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RED, RGB,
-    YELLOW,
-};
+use bracket_lib::color::{BLACK, BROWN_42, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RED, RGB, YELLOW};
 use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{
-    AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus,
-    EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage,
-    Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood,
-    ProvidesHealing, Ranged, Renderable, SerializeMe, SingleActivation, Viewshed,
-};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializeMe, SingleActivation, Viewshed};
 use crate::DEBUGGING;
 use crate::map::{Map, TileType};
 use crate::random_tables::{EntryType, RandomTable};
@@ -195,6 +187,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntryType)) {
         TowerShield => tower_shield(ecs, coords.0, coords.1),
         MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1),
         BearTrap => bear_trap(ecs, coords.0, coords.1),
+        Door => door(ecs, coords.0, coords.1)
     }
 }
 
@@ -539,6 +532,25 @@ fn bear_trap(ecs: &mut World, x: i32, y: i32) {
         .with(EntryTrigger {})
         .with(InflictsDamage { damage: 6 })
         .with(SingleActivation {})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn door(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: to_cp437('+'),
+            fg: RGB::named(BROWN_42),
+            bg: RGB::named(BLACK),
+            render_order: 2,
+        })
+        .with(Name {
+            name: "Door".to_string(),
+        })
+        .with(BlocksTile{})
+        .with(BlocksVisibility{})
+        .with(Door {open: false})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }

@@ -1,8 +1,7 @@
 use bracket_lib::random::RandomNumberGenerator;
 
-use crate::map::{Map, TileType};
+use crate::map::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder};
-use crate::map_builders::common::{apply_room_to_map, draw_corridor};
 use crate::rect::Rect;
 
 pub struct BspDungeonBuilder {
@@ -32,15 +31,13 @@ impl BspDungeonBuilder {
 
         // attempt 240 times to get a random rectangle and divide it. If it fits, we place the room
         let mut n_rooms = 0;
-        while n_rooms < 240 {
+        while n_rooms < 500 {
             let rect = self.get_random_rect(rng);
             let candidate = self.get_random_sub_rect(rect, rng);
 
-            if self.is_possible(candidate, &mut build_data.map) {
-                apply_room_to_map(&mut build_data.map, &candidate);
+            if self.is_possible(candidate, &build_data, &self.rects) {
                 rooms.push(candidate);
                 self.add_subrects(rect);
-                build_data.take_snapshot();
             }
             n_rooms += 1;
         }
@@ -100,7 +97,7 @@ impl BspDungeonBuilder {
         result
     }
 
-    fn is_possible(&self, rect: Rect, map: &Map) -> bool {
+    fn is_possible(&self, rect: Rect, build_data: &BuilderMap, rooms: &Vec<Rect>) -> bool {
         let mut expanded = rect;
         expanded.x1 -= 2;
         expanded.x2 += 2;
@@ -109,12 +106,18 @@ impl BspDungeonBuilder {
 
         let mut can_build = true;
 
+        for r in rooms.iter() {
+            if r.intersect(&rect) {
+                can_build = false;
+            }
+        }
+
         for y in expanded.y1..=expanded.y2 {
             for x in expanded.x1..=expanded.x2 {
-                if x > map.width - 2 {
+                if x > build_data.map.width - 2 {
                     can_build = false;
                 }
-                if y > map.height - 2 {
+                if y > build_data.map.height - 2 {
                     can_build = false;
                 }
                 if x < 1 {
@@ -124,7 +127,7 @@ impl BspDungeonBuilder {
                     can_build = false;
                 }
                 if can_build {
-                    if map.tiles[x as usize][y as usize] != TileType::Wall {
+                    if build_data.map.tiles[x as usize][y as usize] != TileType::Wall {
                         can_build = false;
                     }
                 }

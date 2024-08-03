@@ -1,50 +1,34 @@
 use std::cmp::{max, min};
-use bracket_lib::random::RandomNumberGenerator;
+use bracket_lib::prelude::console;
 
 use crate::map::{Map, TileType};
-use crate::map_builders::area_starting_points::AreaStartingPoint;
-use crate::map_builders::bsp_dungeon::BspDungeonBuilder;
-use crate::map_builders::bsp_interior::BspInteriorBuilder;
-use crate::map_builders::BuilderChain;
-use crate::map_builders::distant_exit::DistantExit;
-use crate::map_builders::room_based_spawner::RoomBasedSpawner;
-use crate::map_builders::room_based_stairs::RoomBasedStairs;
-use crate::map_builders::room_based_starting_position::RoomBasedStartingPosition;
-use crate::map_builders::room_corner_rounding::RoomCornerRounding;
-use crate::map_builders::room_corridors_bsp::BSPCorridors;
-use crate::map_builders::room_corridors_dogleg::DoglegCorridors;
-use crate::map_builders::room_exploder::RoomExploder;
-use crate::map_builders::room_sorter::{RoomSort, RoomSorter};
-use crate::map_builders::simple_map::SimpleMapBuilder;
-use crate::map_builders::voronoi_spawning::VoronoiSpawning;
-use crate::rect::Rect;
 
-pub fn apply_room_to_map(map: &mut Map, room: &Rect) {
-    for x in room.x1 + 1..=room.x2 {
-        for y in room.y1 + 1..=room.y2 {
-            map.tiles[x as usize][y as usize] = TileType::Floor
-        }
-    }
-}
-
-pub fn apply_horizontal_tunnel(map: &mut Map, x1: i32, x2: i32, y: i32) {
+pub fn apply_horizontal_tunnel(map: &mut Map, x1: i32, x2: i32, y: i32) -> Vec<(usize, usize)> {
+    let mut corridor: Vec<(usize, usize)> = Vec::new();
     for x in min(x1, x2)..=max(x1, x2) {
-        if map.is_tile_in_bounds(x, y) {
-            map.tiles[x as usize][y as usize] = TileType::Floor
+        if map.is_tile_in_bounds(x, y) && map.tiles[x as usize][y as usize] != TileType::Floor {
+            map.tiles[x as usize][y as usize] = TileType::Floor;
+            corridor.push((x as usize, y as usize));
         }
     }
+    corridor
 }
 
-pub fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) {
+pub fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) -> Vec<(usize, usize)> {
+    let mut corridor: Vec<(usize, usize)> = Vec::new();
     for y in min(y1, y2)..=max(y1, y2) {
-        if map.is_tile_in_bounds(x, y) {
-            map.tiles[x as usize][y as usize] = TileType::Floor
+        if map.is_tile_in_bounds(x, y) && map.tiles[x as usize][y as usize] != TileType::Floor {
+            map.tiles[x as usize][y as usize] = TileType::Floor;
+            corridor.push((x as usize, y as usize))
         }
     }
+    corridor
 }
 
 
-pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) {
+pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) -> Vec<(usize, usize)> {
+    console::log(format!("drawing corridor with coords {},{},{}.{}", x1,y1,x2,y2));
+    let mut corridor: Vec<(usize, usize)> = Vec::new();
     let mut x = x1;
     let mut y = y1;
 
@@ -58,8 +42,14 @@ pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32) {
         } else if y > y2 {
             y -= 1;
         }
-        map.tiles[x as usize][y as usize] = TileType::Floor;
+        let x = x as usize;
+        let y = y as usize;
+        if map.tiles[x][y] != TileType::Floor {
+            map.tiles[x][y] = TileType::Floor;
+            corridor.push((x, y))
+        }
     }
+    corridor
 }
 
 #[derive(PartialEq, Copy, Clone)]

@@ -1,11 +1,11 @@
 use std::cmp::{max, min};
 
-use bracket_lib::prelude::{BTerm, Point, VirtualKeyCode};
+use bracket_lib::prelude::{add_wasm_support, BTerm, Point, to_cp437, VirtualKeyCode};
 use specs::{Join, World};
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{CombatStats, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Viewshed, WantsToMelee, WantsToPickUpItem};
+use crate::components::{BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Renderable, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
 use crate::map::{Map, TileType};
 
@@ -106,6 +106,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
+    let mut doors = ecs.write_storage::<Door>();
+    let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
+    let mut blocks_movement = ecs.write_storage::<BlocksTile>();
+    let mut renderables = ecs.write_storage::<Renderable>();
     let map = ecs.fetch::<Map>();
 
     for (entity, _p, viewshed, pos) in (&entities, &players, &mut viewseheds, &mut positions)
@@ -115,13 +119,19 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
 
             for potential_target in map.tile_content[dest_x as usize][dest_y as usize].iter() {
                 let target = combat_stats.get(*potential_target);
-                match target {
-                    None => {}
-                    Some(_t) => {
-                        wants_to_melee.insert(entity, WantsToMelee{target: *potential_target})
-                            .expect("Failed to add target");
-                        return;
-                    }
+                if let Some(_t) = target {
+                    wants_to_melee.insert(entity, WantsToMelee{target: *potential_target})
+                        .expect("Failed to add target");
+                    return;
+                }
+                let door = doors.get_mut(*potential_target);
+                if let Some(door) = door {
+                    door.open = true;
+                    blocks_visibility.remove(*potential_target);
+                    blocks_movement.remove(*potential_target);
+                    let glyph = renderables.get_mut(*potential_target).unwrap();
+                    glyph.glyph = to_cp437('/');
+                    viewshed.dirty = true;
                 }
             }
             if !map.blocked[dest_x as usize][dest_y as usize] {

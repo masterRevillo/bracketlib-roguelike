@@ -2,6 +2,7 @@ use std::any::{Any, type_name_of_val};
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::{Builder, World};
+use specs::rayon::spawn_fifo;
 
 use crate::components::Position;
 use crate::map_builders::area_starting_points::{AreaStartingPoint, XStart, YStart};
@@ -11,6 +12,7 @@ use crate::map_builders::cellular_automata::CellularAutomataBuilder;
 use crate::map_builders::cull_unreachable::CullUnreachable;
 use crate::map_builders::distant_exit::DistantExit;
 use crate::map_builders::dla::DLABuilder;
+use crate::map_builders::door_placement::DoorPlacement;
 use crate::map_builders::drunkards::DrunkardsWalkBuilder;
 use crate::map_builders::maze::MazeBuilder;
 use crate::map_builders::prefab_builder::prefab_levels::WFC_POPULATED;
@@ -20,8 +22,12 @@ use crate::map_builders::room_based_spawner::RoomBasedSpawner;
 use crate::map_builders::room_based_stairs::RoomBasedStairs;
 use crate::map_builders::room_based_starting_position::RoomBasedStartingPosition;
 use crate::map_builders::room_corner_rounding::RoomCornerRounding;
+use crate::map_builders::room_corridor_spawner::CorridorSpawner;
 use crate::map_builders::room_corridors_bsp::BSPCorridors;
 use crate::map_builders::room_corridors_dogleg::DoglegCorridors;
+use crate::map_builders::room_corridors_lines::StraightLineCorridors;
+use crate::map_builders::room_corridors_nearest::NearestCorridors;
+use crate::map_builders::room_draw::RoomDrawer;
 use crate::map_builders::room_exploder::RoomExploder;
 use crate::map_builders::room_sorter::RoomSorter;
 use crate::map_builders::simple_map::SimpleMapBuilder;
@@ -56,12 +62,18 @@ mod room_corner_rounding;
 mod room_corridors_dogleg;
 mod room_corridors_bsp;
 mod room_sorter;
+mod room_draw;
+mod room_corridors_nearest;
+mod room_corridors_lines;
+mod room_corridor_spawner;
+mod door_placement;
 
 pub struct BuilderMap {
     pub spawn_list: SpawnList,
     pub map: Map,
     pub starting_position: Option<Position>,
     pub rooms: Option<Vec<Rect>>,
+    pub corridors: Option<Vec<Vec<(usize, usize)>>>,
     pub history: Vec<Map>
 }
 
@@ -95,6 +107,7 @@ impl BuilderChain {
                 map: Map::new(depth),
                 starting_position: None,
                 rooms: None,
+                corridors: None,
                 history: Vec::new()
             }
         }
@@ -116,12 +129,13 @@ impl BuilderChain {
             None => panic!("Missing starting map builder"),
             Some(starter) => {
                 starter.build_map(rng, &mut self.build_data);
+                console::log(format!("Starting with {}", starter.get_type_type()))
             }
         }
 
         for metabuilder in self.builders.iter_mut() {
             metabuilder.build_map(rng, &mut self.build_data);
-            console::log(format!("Adding metabuilder {}", type_name_of_val(metabuilder)))
+            console::log(format!("Adding metabuilder {}", metabuilder.get_type_type()))
         }
     }
 
@@ -139,38 +153,17 @@ impl BuilderChain {
 
 pub trait InitialMapBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap);
+
+    fn get_type_type(&self) -> &str {
+        type_name_of_val(self)
+    }
 }
 pub trait MetaMapBuilder {
     fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap);
-}
 
-pub fn random_initial_builder(rng: &mut RandomNumberGenerator) -> (Box<dyn InitialMapBuilder>, bool) {
-    let builder = rng.roll_dice(1, 20);
-    let mut result: (Box<dyn InitialMapBuilder>, bool);
-    result = match builder {
-        1 => (BspDungeonBuilder::new(), true),
-        2 => (BspInteriorBuilder::new(), true),
-        3 => (CellularAutomataBuilder::new(), false),
-        4 => (DrunkardsWalkBuilder::open_area(), false),
-        5 => (DrunkardsWalkBuilder::open_halls(), false),
-        6 => (DrunkardsWalkBuilder::winding_passages(), false),
-        7 => (DrunkardsWalkBuilder::fat_passages(), false),
-        8 => (DrunkardsWalkBuilder::symmetrical_passages(), false),
-        9 => (DrunkardsWalkBuilder::crazy_beer_goggles(), false),
-        10 => (MazeBuilder::new(), false),
-        11 => (DLABuilder::walk_inward(), false),
-        12 => (DLABuilder::walk_outward(), false),
-        13 => (DLABuilder::insectoid(), false),
-        14 => (DLABuilder::central_attractor(), false),
-        15 => (DLABuilder::walk_inwards_symmetry(), false),
-        16 => (DLABuilder::walk_outward_symmetry(), false),
-        17 => (VoronoiCellBuilder::pythagoras(), false),
-        18 => (VoronoiCellBuilder::manhattan(), false),
-        19 => (VoronoiCellBuilder::chebyshev(), false),
-        20 => (PrefabBuilder::constant(WFC_POPULATED), false),
-        _ => (SimpleMapBuilder::new(), true),
-    };
-    result
+    fn get_type_type(&self) -> &str {
+        type_name_of_val(self)
+    }
 }
 
 fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderChain) {
@@ -190,8 +183,12 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
             _ => builder.with(RoomSorter::central()),
         }
 
-        match rng.roll_dice(1,2) {
+        builder.with(RoomDrawer::new());
+
+        match rng.roll_dice(1,4) {
             1 => builder.with(DoglegCorridors::new()),
+            2 => builder.with(NearestCorridors::new()),
+            3 => builder.with(StraightLineCorridors::new()),
             _ => builder.with(BSPCorridors::new())
         }
 
@@ -199,6 +196,10 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
             1 => builder.with(RoomExploder::new()),
             2 => builder.with(RoomCornerRounding::new()),
             _ => {}
+        }
+
+        if rng.roll_dice(1, 2) == 1 {
+            builder.with(CorridorSpawner::new())
         }
     }
 
@@ -271,11 +272,28 @@ pub fn random_builder(depth: i32, rng: &mut RandomNumberGenerator) -> BuilderCha
 
     if rng.roll_dice(1, 3) == 1 {
         builder.with(WaveformCollapseBuilder::new());
+        /* if wfc is selected, room-based options no longer function. Therefore, we need to:
+        1. select a random start point
+        2. rerun voronoi spawning
+        3. use a distant exit
+        4. run cull unreachable again
+        */
+        builder.with(CullUnreachable::new());
+
+        let (start_x, start_y) = random_start_position(rng);
+        builder.with(AreaStartingPoint::new(start_x, start_y));
+        builder.with(VoronoiSpawning::new());
+        builder.with(DistantExit::new());
     }
     if rng.roll_dice(1, 20) == 1 {
         builder.with(PrefabBuilder::sectional(UNDERGROUND_FORT));
     }
-    builder.with(PrefabBuilder::vaults());
+    // builder.start_with(CellularAutomataBuilder::new());
+    // let (start_x, start_y) = random_start_position(rng);
+    // builder.with(AreaStartingPoint::new(start_x, start_y));
+    // builder.with(VoronoiSpawning::new());
+    // builder.with(DistantExit::new());
+    // builder.with(DoorPlacement::new());
 
     builder
 }

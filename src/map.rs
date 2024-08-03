@@ -30,6 +30,7 @@ pub struct Map {
     pub blocked: Vec<Vec<bool>>,
     pub depth: i32,
     pub bloodstains: HashSet<(i32, i32)>,
+    pub view_blocked: HashSet<(i32, i32)>,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -44,7 +45,8 @@ impl Algorithm2D for Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
-        self.tiles[idx % self.width as usize][idx / self.width as usize] == TileType::Wall
+        self.tiles[idx % self.width as usize][idx / self.width as usize] == TileType::Wall ||
+            self.view_blocked.contains(&(idx as i32 % self.width, idx as i32 / self.width))
     }
 
     fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
@@ -114,6 +116,7 @@ impl Map {
             tile_content: vec![vec![Vec::new(); MAPHEIGHT]; MAPWIDTH],
             depth: new_depth,
             bloodstains: HashSet::new(),
+            view_blocked: HashSet::new(),
         }
     }
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {

@@ -7,7 +7,7 @@ use specs::{Builder, Entity, Join, World, WorldExt};
 use specs::error::NoError;
 use specs::saveload::{DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
@@ -90,7 +90,9 @@ pub fn save_game(ecs: &mut World) {
             Hidden,
             EntryTrigger,
             EntityMoved,
-            SingleActivation
+            SingleActivation,
+            BlocksVisibility,
+            Door
         );
     }
     ecs.delete_entity(savehelper).expect("Couldn't clean up helper")
@@ -158,7 +160,9 @@ pub fn load_game(ecs: &mut World) {
             Hidden,
             EntryTrigger,
             EntityMoved,
-            SingleActivation
+            SingleActivation,
+            BlocksVisibility,
+            Door
         );
     }
     let mut deleteme: Option<Entity> = None;

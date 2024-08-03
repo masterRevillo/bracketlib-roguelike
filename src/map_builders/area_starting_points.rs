@@ -5,12 +5,14 @@ use crate::map::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
 use crate::map_builders::common::paint;
 
+#[derive(Debug)]
 pub enum XStart {
     LEFT,
     CENTER,
     RIGHT
 }
 
+#[derive(Debug)]
 pub enum YStart {
     TOP,
     CENTER,

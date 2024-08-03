@@ -1,7 +1,7 @@
 use bracket_lib::prelude::{field_of_view, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
-use crate::components::{Hidden, Name, Player};
+use crate::components::{BlocksVisibility, Hidden, Name, Player};
 use crate::gamelog::GameLog;
 use crate::map::Map;
 use super::{Viewshed, Position};
@@ -18,10 +18,17 @@ impl<'a> System<'a> for VisibilitySystem {
         WriteStorage<'a, Hidden>,
         WriteExpect<'a,  RandomNumberGenerator>,
         WriteExpect<'a, GameLog>,
-        ReadStorage<'a, Name>
+        ReadStorage<'a, Name>,
+        ReadStorage<'a, BlocksVisibility>
     );
     fn run(&mut self, data: Self::SystemData) {
-        let (mut map, entities, mut viewshed, pos, player, mut hidden_things, mut rng, mut log, names) = data;
+        let (mut map, entities, mut viewshed, pos, player, mut hidden_things, mut rng, mut log, names, blocsk_visibility) = data;
+
+        map.view_blocked.clear();
+        for (block_pos, _bl) in (&pos, &blocsk_visibility).join() {
+            map.view_blocked.insert((block_pos.x, block_pos.y));
+        }
+
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.visible_tiles.clear();

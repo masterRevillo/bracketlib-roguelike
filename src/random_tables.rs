@@ -18,7 +18,8 @@ pub enum EntryType {
     Longsword,
     TowerShield,
     MagicMappingScroll,
-    BearTrap
+    BearTrap,
+    Door
 }
 
 pub struct RandomEntry {

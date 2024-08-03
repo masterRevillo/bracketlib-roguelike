@@ -1,9 +1,6 @@
 use bracket_lib::prelude::RandomNumberGenerator;
 use specs::prelude::*;
 
-use crate::map_builders::common::{
-    apply_horizontal_tunnel, apply_room_to_map, apply_vertical_tunnel,
-};
 use crate::rect::Rect;
 
 use super::{BuilderMap, InitialMapBuilder};
@@ -42,10 +39,7 @@ impl SimpleMapBuilder {
                 }
             }
             if ok {
-                apply_room_to_map(&mut build_data.map, &new_room);
-                build_data.take_snapshot();
                 rooms.push(new_room);
-                build_data.take_snapshot();
             }
         }
         build_data.rooms = Some(rooms);
