@@ -11,8 +11,6 @@ use serde::{Deserialize, Serialize};
 use specs::prelude::*;
 use specs::WorldExt;
 
-pub const MAPWIDTH: usize = 100;
-pub const MAPHEIGHT: usize = 73;
 #[derive(PartialEq, Eq, Hash, Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
@@ -105,15 +103,15 @@ impl BaseMap for Map {
 }
 
 impl Map {
-    pub fn new(new_depth: i32) -> Map {
+    pub fn new(new_depth: i32, width: i32, height: i32) -> Map {
         Map {
-            tiles: vec![vec![TileType::Wall; MAPHEIGHT]; MAPWIDTH],
-            width: MAPWIDTH as i32,
-            height: MAPHEIGHT as i32,
-            revealed_tiles: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
-            visible_tiles: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
-            blocked: vec![vec![false; MAPHEIGHT]; MAPWIDTH],
-            tile_content: vec![vec![Vec::new(); MAPHEIGHT]; MAPWIDTH],
+            tiles: vec![vec![TileType::Wall; height as usize]; width as usize],
+            width,
+            height,
+            revealed_tiles: vec![vec![false; height as usize]; width as usize],
+            visible_tiles: vec![vec![false; height as usize]; width as usize],
+            blocked: vec![vec![false; height as usize]; width as usize],
+            tile_content: vec![vec![Vec::new(); height as usize]; width as usize],
             depth: new_depth,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),

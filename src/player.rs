@@ -1,6 +1,6 @@
 use std::cmp::{max, min};
 
-use bracket_lib::prelude::{add_wasm_support, BTerm, Point, to_cp437, VirtualKeyCode};
+use bracket_lib::prelude::{BTerm, Point, to_cp437, VirtualKeyCode};
 use specs::{Join, World};
 use specs::prelude::*;
 

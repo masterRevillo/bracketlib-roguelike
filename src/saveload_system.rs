@@ -174,7 +174,7 @@ pub fn load_game(ecs: &mut World) {
         for (e,h) in (&entities, &helper).join() {
             let mut worldmap = ecs.write_resource::<super::map::Map>();
             *worldmap = h.map.clone();
-            worldmap.tile_content = vec![vec![Vec::new(); super::map::MAPHEIGHT]; super::map::MAPWIDTH];
+            worldmap.tile_content = vec![vec![Vec::new(); worldmap.height as usize]; worldmap.width as usize];
             deleteme = Some(e);
         }
         for (e,_p,pos) in (&entities, &player, &position).join() {

@@ -74,7 +74,9 @@ pub struct BuilderMap {
     pub starting_position: Option<Position>,
     pub rooms: Option<Vec<Rect>>,
     pub corridors: Option<Vec<Vec<(usize, usize)>>>,
-    pub history: Vec<Map>
+    pub history: Vec<Map>,
+    pub width: i32,
+    pub height: i32
 }
 
 impl BuilderMap {
@@ -98,17 +100,19 @@ pub struct BuilderChain {
 }
 
 impl BuilderChain {
-    pub fn new(depth: i32) -> Self {
+    pub fn new(depth: i32, width: i32, height: i32) -> Self {
         Self {
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(depth),
+                map: Map::new(depth, width, height),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
-                history: Vec::new()
+                history: Vec::new(),
+                width,
+                height
             }
         }
     }
@@ -263,8 +267,8 @@ fn random_shape_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCh
     builder.with(DistantExit::new());
 }
 
-pub fn random_builder(depth: i32, rng: &mut RandomNumberGenerator) -> BuilderChain {
-    let mut builder = BuilderChain::new(depth);
+pub fn random_builder(depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    let mut builder = BuilderChain::new(depth, width, height);
     match rng.roll_dice(1, 2) {
         1 => random_room_builder(rng, &mut builder),
         _ => random_shape_builder(rng, &mut builder)

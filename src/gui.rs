@@ -7,24 +7,25 @@ use bracket_lib::prelude::{
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
-use crate::{DEBUGGING, RunState, State};
+use crate::{DEBUGGING, RunState, SCREEN_X, SCREEN_Y, State};
+use crate::camera::get_screen_bounds;
 use crate::components::{
     CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Name, Player, Position,
     Viewshed,
 };
 use crate::gamelog::GameLog;
-use crate::map::{Map, MAPHEIGHT, MAPWIDTH};
+use crate::map::{Map};
 use crate::rex_assets::RexAssets;
 use crate::saveload_system::does_save_exist;
 
-const GUIY: usize = MAPHEIGHT;
 const GUIHEIGHT: usize = 6;
-const GUIWIDTH: usize = MAPWIDTH - 1;
+const GUIY: usize = SCREEN_Y as usize - GUIHEIGHT - 1;
+const GUIWIDTH: usize = SCREEN_X as usize - 1;
 
 pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
     ctx.draw_box(
         0,
-        MAPHEIGHT,
+        SCREEN_Y as usize - GUIHEIGHT - 1,
         GUIWIDTH,
         GUIHEIGHT,
         RGB::named(WHITE),
@@ -84,6 +85,7 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
 }
 
 pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
+    let (min_x, _max_x, min_y, _max_y) = get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
@@ -91,13 +93,16 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     let dkm = ecs.try_fetch::<DijkstraMap>();
 
     let mouse_pos = ctx.mouse_pos();
-    if !map.is_tile_in_bounds(mouse_pos.0, mouse_pos.1) {
+    let mut mouse_map_pos = mouse_pos;
+    mouse_map_pos.0 += min_x;
+    mouse_map_pos.1 += min_y;
+    if !map.is_tile_in_bounds(mouse_map_pos.0, mouse_map_pos.1) {
         return;
     }
     let mut tooltip: Vec<String> = Vec::new();
     for (name, postion, _h) in (&names, &positions, !&hidden).join() {
-        if postion.x == mouse_pos.0
-            && postion.y == mouse_pos.1
+        if postion.x == mouse_map_pos.0
+            && postion.y == mouse_map_pos.1
             && map.visible_tiles[postion.x as usize][postion.y as usize]
         {
             tooltip.push(name.name.to_string());
@@ -131,7 +136,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
         }
         width += 3;
 
-        if mouse_pos.0 > MAPWIDTH as i32 / 2 {
+        if mouse_pos.0 > SCREEN_X / 2 {
             let arrow_pos = Point::new(mouse_pos.0 - 2, mouse_pos.1);
             let left_x = mouse_pos.0 - width;
             let mut y = mouse_pos.1;
@@ -192,7 +197,7 @@ pub enum ItemMenuResult {
     Selected,
 }
 
-const INVENTORY_X: usize = MAPWIDTH / 2 - 20;
+const INVENTORY_X: usize = SCREEN_X as usize / 2 - 20;
 
 pub fn show_inventory(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
@@ -336,6 +341,7 @@ pub fn ranged_target(
     ctx: &mut BTerm,
     range: i32,
 ) -> (ItemMenuResult, Option<Point>) {
+    let (min_x, max_x, min_y, max_y) = get_screen_bounds(&gs.ecs, ctx);
     let player = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
@@ -354,17 +360,24 @@ pub fn ranged_target(
         for point in visible.visible_tiles.iter() {
             let distance = DistanceAlg::Pythagoras.distance2d(*player_pos, *point);
             if distance <= range as f32 {
-                ctx.set_bg(point.x, point.y, RGB::named(BLUE));
-                available_cells.push(point);
+                let screen_x = point.x - min_x;
+                let screen_y = point.y - min_y;
+                if screen_x > 1 && screen_x < (max_x - min_x)-1 && screen_y > 1 && screen_y < (max_y - min_y)-1 {
+                    ctx.set_bg(screen_x, screen_y, RGB::named(BLUE));
+                    available_cells.push(point);
+                }
             }
         }
     } else {
         return (ItemMenuResult::Cancel, None);
     }
     let mouse_pos = ctx.mouse_pos();
+    let mut mouse_map_pos = mouse_pos;
+    mouse_map_pos.0 += min_x;
+    mouse_map_pos.1 += min_y;
     let mut valid_target = false;
     for i in available_cells.iter() {
-        if i.x == mouse_pos.0 && i.y == mouse_pos.1 {
+        if i.x == mouse_map_pos.0 && i.y == mouse_map_pos.1 {
             valid_target = true;
         }
     }
@@ -373,7 +386,7 @@ pub fn ranged_target(
         if ctx.left_click {
             return (
                 ItemMenuResult::Selected,
-                Some(Point::new(mouse_pos.0, mouse_pos.1)),
+                Some(Point::new(mouse_map_pos.0, mouse_map_pos.1)),
             );
         }
     } else {

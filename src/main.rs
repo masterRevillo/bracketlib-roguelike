@@ -2,6 +2,7 @@ use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Po
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use crate::camera::render_debug_map;
 
 use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
@@ -46,6 +47,7 @@ mod saveload_system;
 mod spawner;
 mod trigger_system;
 mod visibility_system;
+mod camera;
 
 mod util {
     pub mod namegen;
@@ -54,6 +56,9 @@ mod util {
 
 const SHOW_MAPGEN_VISUALIZATION: bool = true;
 const DEBUGGING: bool = true;
+
+const SCREEN_X: i32 = 100;
+const SCREEN_Y: i32 = 80;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -115,7 +120,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng);
+        let mut builder = map_builders::random_builder(new_depth, &mut rng, 128, 128);
         builder.build_map(&mut rng);
         drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -233,22 +238,7 @@ impl GameState for State {
             RunState::MainMenu { .. } => {}
             RunState::GameOver { .. } => {}
             _ => {
-                let map = self.ecs.fetch::<Map>();
-                map.draw_map(ctx);
-                let positions = self.ecs.read_storage::<Position>();
-                let renderables = self.ecs.read_storage::<Renderable>();
-                let hidden = self.ecs.read_storage::<Hidden>();
-
-                let mut to_render = (&positions, &renderables, !&hidden)
-                    .join()
-                    .collect::<Vec<_>>();
-                to_render.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                for (pos, render, _h) in to_render.iter() {
-                    if map.visible_tiles[pos.x as usize][pos.y as usize] {
-                        ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-                    }
-                }
-                ctx.print(70, 0, ctx.fps);
+                camera::render_camera(&self.ecs, ctx);
                 gui::dwaw_ui(&self.ecs, ctx);
             }
         }
@@ -258,7 +248,10 @@ impl GameState for State {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 ctx.cls();
-                self.mapgen_history[self.mapgen_index].draw_map(ctx);
+                if self.mapgen_index < self.mapgen_history.len() {
+                    render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
+                }
+                // self.mapgen_history[self.mapgen_index].draw_map(ctx);
 
                 self.mapgen_timer += ctx.frame_time_ms;
                 if self.mapgen_timer > 200.0 {
@@ -500,7 +493,7 @@ fn main() -> BError {
     state.ecs.insert(RexAssets::new());
     state.ecs.insert(RandomNumberGenerator::new());
 
-    state.ecs.insert(Map::new(1));
+    state.ecs.insert(Map::new(1, 64, 64));
     state.ecs.insert(Point::new(0, 0));
     let player_entity = player(&mut state.ecs, 0, 0);
     state.ecs.insert(player_entity);
@@ -511,7 +504,7 @@ fn main() -> BError {
 
     state.generate_world_map(1);
 
-    let bterm = BTermBuilder::simple(100, 80)?
+    let bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
         .with_title("Rusty Roguelike V2")
         .with_tile_dimensions(12, 12)
         .with_fps_cap(120.)
