@@ -1,0 +1,248 @@
+{
+  "items" : [
+    {
+      "type": "HealthPotion",
+      "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : { "provides_healing" : "8" }
+      }
+    },
+    {
+      "type": "MagicMissileScroll",
+      "renderable": {
+        "glyph" : "~",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "ranged" : "6",
+          "damage" : "20"
+        }
+      }
+    },
+    {
+      "type" : "FireballScroll",
+      "renderable": {
+        "glyph" : "~",
+        "fg" : "#FFA500",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "ranged" : "6",
+          "damage" : "20",
+          "area_of_effect" : "3"
+        }
+      }
+    },
+    {
+      "type" : "ConfusionScroll",
+      "renderable": {
+        "glyph" : "~",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "ranged" : "6",
+          "damage" : "20",
+          "confusion" : "4"
+        }
+      }
+    },
+    {
+      "type" : "MagicMappingScroll",
+      "renderable": {
+        "glyph" : "~",
+        "fg" : "#AAAAFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "magic_mapping" : ""
+        }
+      }
+    },
+    {
+      "type" : "Sandwich",
+      "renderable": {
+        "glyph" : "=",
+        "fg" : "#cd661d",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "food" : "200"
+        }
+      }
+    },
+    {
+      "type" : "ChickenLeg",
+      "renderable": {
+        "glyph" : "q",
+        "fg" : "#cd661d",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "food" : "150"
+        }
+      }
+    },
+    {
+      "type" : "GobletOfWine",
+      "renderable": {
+        "glyph" : "u",
+        "fg" : "#b0305f",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "food" : "25"
+        }
+      }
+    },
+    {
+      "type" : "Artefact",
+      "renderable": {
+        "glyph" : "{",
+        "fg" : "#ffd700",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "artefact" : {
+        "effects": {}
+      }
+    },
+    {
+      "type" : "Dagger",
+      "renderable": {
+        "glyph" : "-",
+        "fg" : "#FFAAAA",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "weapon" : {
+        "range" : "melee",
+        "power_bonus" : 2
+      }
+    },
+    {
+      "type" : "Longsword",
+      "renderable": {
+        "glyph" : "/",
+        "fg" : "#FFAAFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "weapon" : {
+        "range" : "melee",
+        "power_bonus" : 4
+      }
+    },
+    {
+      "type" : "Shield",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#00AAFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "shield" : {
+        "defense_bonus" : 1
+      }
+    },
+    {
+      "type" : "TowerShield",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "shield" : {
+        "defense_bonus" : 3
+      }
+    }
+  ],
+  "mobs" : [
+    {
+      "type" : "Ogur",
+      "renderable": {
+        "glyph" : "o",
+        "fg" : "#808000",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 16,
+        "hp" : 16,
+        "defense" : 1,
+        "power" : 4
+      },
+      "vision_range" : 8
+    },
+    {
+      "type" : "Bisat",
+      "renderable": {
+        "glyph" : "b",
+        "fg" : "#cd853f",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 8,
+        "hp" : 8,
+        "defense" : 1,
+        "power" : 3
+      },
+      "vision_range" : 8
+    }
+  ],
+  "props" : [
+    {
+      "type" : "BearTrap",
+      "renderable": {
+        "glyph" : "^",
+        "fg" : "#FF0000",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "hidden" : true,
+      "entry_trigger" : {
+        "effects" : {
+          "damage" : "6",
+          "single_activation" : "1"
+        }
+      }
+    },
+    {
+      "type" : "Door",
+      "renderable": {
+        "glyph" : "+",
+        "fg" : "#805A46",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "hidden" : false,
+      "blocks_tile" : true,
+      "blocks_visibility" : true,
+      "door_open" : true
+    }
+  ]
+}

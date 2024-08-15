@@ -1,4 +1,5 @@
 use bracket_lib::random::RandomNumberGenerator;
+use rand::random;
 use crate::util::string_utils::capitalize;
 
 const ARTIFACT_SYLLABLES: [&str; 11] = [
@@ -11,16 +12,15 @@ const OGUR_SYLLABLES: [&str; 14] = [
 const OGUR_MIN_SYLLABLES: i32 = 2;
 const OGUR_MAX_SYLLABLES: i32 = 5;
 
-pub fn generate_artefact_name() -> String {
-    generate_name(&ARTIFACT_SYLLABLES, 2, 7)
+pub fn generate_artefact_name(rng: &mut RandomNumberGenerator) -> String {
+    generate_name(rng, &ARTIFACT_SYLLABLES, 2, 7)
 }
 
-pub fn generate_ogur_name() -> String {
-    generate_name(&OGUR_SYLLABLES, OGUR_MIN_SYLLABLES, OGUR_MAX_SYLLABLES)
+pub fn generate_ogur_name(rng: &mut RandomNumberGenerator) -> String {
+    generate_name(rng, &OGUR_SYLLABLES, OGUR_MIN_SYLLABLES, OGUR_MAX_SYLLABLES)
 }
 
-pub fn generate_name(syllables: &[&str], min_syllables: i32, max_syllables: i32) -> String {
-    let mut rng = RandomNumberGenerator::new();
+pub fn generate_name(rng: &mut RandomNumberGenerator, syllables: &[&str], min_syllables: i32, max_syllables: i32) -> String {
     // let artifact_syllables: Vec<&str>=  vec![
     //     "gi", "reh", "han", "do", "mee", "sak", "ein", "pol", "maat", "hen", "kid"
     // ];

@@ -3,7 +3,7 @@ use bracket_lib::prelude::RandomNumberGenerator;
 use crate::components::Position;
 use crate::map::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
-use crate::random_tables::EntryType;
+use crate::random_tables::EntityType;
 use crate::spawner::spawn_room;
 
 pub struct DoorPlacement {}
@@ -25,7 +25,7 @@ impl DoorPlacement {
             for hall in halls.iter() {
                 if hall.len() > 2 {
                     if self.door_possible(build_data, hall[0].0, hall[0].1) {
-                        build_data.spawn_list.push(((hall[0].0 as i32, hall[0].1 as i32), EntryType::Door));
+                        build_data.spawn_list.push(((hall[0].0 as i32, hall[0].1 as i32), EntityType::Door));
 
                     }
                 }
@@ -35,7 +35,7 @@ impl DoorPlacement {
             for (x, row) in tiles.iter().enumerate() {
                 for (y, tile) in row.iter().enumerate() {
                     if *tile == TileType::Floor && self.door_possible(build_data, x, y) && rng.roll_dice(1,3)==1{
-                        build_data.spawn_list.push(((x as i32, y as i32), EntryType::Door));
+                        build_data.spawn_list.push(((x as i32, y as i32), EntityType::Door));
                     }
                 }
             }

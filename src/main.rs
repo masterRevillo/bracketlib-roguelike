@@ -2,8 +2,8 @@ use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Po
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use crate::camera::render_debug_map;
 
+use crate::camera::render_debug_map;
 use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
@@ -48,11 +48,16 @@ mod spawner;
 mod trigger_system;
 mod visibility_system;
 mod camera;
+mod raws;
 
 mod util {
     pub mod namegen;
     pub mod string_utils;
 }
+
+#[macro_use]
+extern crate lazy_static;
+extern crate strum;
 
 const SHOW_MAPGEN_VISUALIZATION: bool = true;
 const DEBUGGING: bool = true;
@@ -120,7 +125,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng, 128, 128);
+        let mut builder = map_builders::random_builder(new_depth, &mut rng, 100, 73);
         builder.build_map(&mut rng);
         drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -227,13 +232,13 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
-        ctx.cls();
-        particle_system::cull_dead_particles(&mut self.ecs, ctx);
         let mut new_runstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
             new_runstate = *runstate;
         }
+        ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
         match new_runstate {
             RunState::MainMenu { .. } => {}
             RunState::GameOver { .. } => {}
@@ -485,6 +490,8 @@ fn main() -> BError {
     state.ecs.register::<SingleActivation>();
     state.ecs.register::<BlocksVisibility>();
     state.ecs.register::<Door>();
+
+    raws::load_raws();
 
     state.ecs.insert(particle_system::ParticleBuilder::new());
     state

@@ -8,16 +8,18 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializeMe, SingleActivation, Viewshed};
-use crate::DEBUGGING;
+use crate::{DEBUGGING, raws};
 use crate::map::{Map, TileType};
-use crate::random_tables::{EntryType, RandomTable};
-use crate::random_tables::EntryType::*;
+use crate::random_tables::{EntityType, RandomTable};
+use crate::random_tables::EntityType::*;
+use crate::raws::rawmaster::{spawn_named_entity, spawn_named_item, SpawnType};
+use crate::raws::RAWS;
 use crate::rect::Rect;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
 const MAX_MONSTERS: i32 = 4;
 
-pub type SpawnList = Vec<((i32, i32), EntryType)>;
+pub type SpawnList = Vec<((i32, i32), EntityType)>;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     ecs.create_entity()
@@ -74,39 +76,39 @@ fn room_table(level: i32) -> RandomTable {
         .add(BearTrap, 5)
 }
 
-fn ogur(ecs: &mut World, x: i32, y: i32) {
-    monster(
-        ecs,
-        x,
-        y,
-        to_cp437('o'),
-        generate_ogur_name(),
-        RGB::named(OLIVE),
-        CombatStats {
-            max_hp: 16,
-            hp: 16,
-            defense: 1,
-            power: 4,
-        },
-    )
-}
-
-fn bisat(ecs: &mut World, x: i32, y: i32) {
-    monster(
-        ecs,
-        x,
-        y,
-        to_cp437('b'),
-        generate_ogur_name(),
-        RGB::named(PERU),
-        CombatStats {
-            max_hp: 12,
-            hp: 12,
-            defense: 1,
-            power: 3,
-        },
-    )
-}
+// fn ogur(ecs: &mut World, x: i32, y: i32) {
+//     monster(
+//         ecs,
+//         x,
+//         y,
+//         to_cp437('o'),
+//         generate_ogur_name(),
+//         RGB::named(OLIVE),
+//         CombatStats {
+//             max_hp: 16,
+//             hp: 16,
+//             defense: 1,
+//             power: 4,
+//         },
+//     )
+// }
+//
+// fn bisat(ecs: &mut World, x: i32, y: i32) {
+//     monster(
+//         ecs,
+//         x,
+//         y,
+//         to_cp437('b'),
+//         generate_ogur_name(),
+//         RGB::named(PERU),
+//         CombatStats {
+//             max_hp: 12,
+//             hp: 12,
+//             defense: 1,
+//             power: 3,
+//         },
+//     )
+// }
 
 fn monster<S: ToString>(
     ecs: &mut World,
@@ -140,54 +142,67 @@ fn monster<S: ToString>(
         .build();
 }
 
-pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntryType)) {
+pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntityType)) {
+    // let mut rng = ecs.write_resource::<RandomNumberGenerator>();
+    // let builder = ecs.create_entity();
     let coords = spawn.0;
+
+    let item_result = spawn_named_entity(
+        &RAWS.lock().unwrap(),
+        spawn.1,
+        SpawnType::AtPosition {x:coords.0, y:coords.1},
+        ecs
+    );
+    if item_result.is_some() {
+        return;
+    }
     match spawn.1 {
         None => {}
-        Bisat => bisat(ecs, coords.0, coords.1),
-        Ogur => ogur(ecs, coords.0, coords.1),
-        HealthPotion => health_potion(ecs, coords.0, coords.1),
-        FireballScroll => fireball_stroll(ecs, coords.0, coords.1),
-        ConfusionScroll => confusion_stroll(ecs, coords.0, coords.1),
-        MagicMissileScroll => magic_missile_stroll(ecs, coords.0, coords.1),
-        Sandwich => food(
-            ecs,
-            to_cp437('='),
-            "Sandwich",
-            RGB::named(CHOCOLATE3),
-            2,
-            200,
-            coords.0,
-            coords.1,
-        ),
-        ChickenLeg => food(
-            ecs,
-            to_cp437('q'),
-            "Chicken Leg",
-            RGB::named(CHOCOLATE3),
-            3,
-            150,
-            coords.0,
-            coords.1,
-        ),
-        GobletOfWine => food(
-            ecs,
-            to_cp437('u'),
-            "Goblet of Wine",
-            RGB::named(MAROON),
-            1,
-            25,
-            coords.0,
-            coords.1,
-        ),
-        Artefact => artefact(ecs, coords.0, coords.1),
-        Dagger => dagger(ecs, coords.0, coords.1),
-        Shield => shield(ecs, coords.0, coords.1),
-        Longsword => longsword(ecs, coords.0, coords.1),
-        TowerShield => tower_shield(ecs, coords.0, coords.1),
-        MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1),
-        BearTrap => bear_trap(ecs, coords.0, coords.1),
-        Door => door(ecs, coords.0, coords.1)
+        // Bisat => bisat(ecs, coords.0, coords.1),
+        // Ogur => ogur(ecs, coords.0, coords.1),
+        // HealthPotion => health_potion(ecs, coords.0, coords.1),
+        // FireballScroll => fireball_stroll(ecs, coords.0, coords.1),
+        // ConfusionScroll => confusion_stroll(ecs, coords.0, coords.1),
+        // MagicMissileScroll => magic_missile_stroll(ecs, coords.0, coords.1),
+        // Sandwich => food(
+        //     ecs,
+        //     to_cp437('='),
+        //     "Sandwich",
+        //     RGB::named(CHOCOLATE3),
+        //     2,
+        //     200,
+        //     coords.0,
+        //     coords.1,
+        // ),
+        // ChickenLeg => food(
+        //     ecs,
+        //     to_cp437('q'),
+        //     "Chicken Leg",
+        //     RGB::named(CHOCOLATE3),
+        //     3,
+        //     150,
+        //     coords.0,
+        //     coords.1,
+        // ),
+        // GobletOfWine => food(
+        //     ecs,
+        //     to_cp437('u'),
+        //     "Goblet of Wine",
+        //     RGB::named(MAROON),
+        //     1,
+        //     25,
+        //     coords.0,
+        //     coords.1,
+        // ),
+        // Artefact => artefact(ecs, coords.0, coords.1),
+        // Dagger => dagger(ecs, coords.0, coords.1),
+        // Shield => shield(ecs, coords.0, coords.1),
+        // Longsword => longsword(ecs, coords.0, coords.1),
+        // TowerShield => tower_shield(ecs, coords.0, coords.1),
+        // MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1),
+        // BearTrap => bear_trap(ecs, coords.0, coords.1),
+        // Door => door(ecs, coords.0, coords.1),
+        _ => {}
     }
 }
 
@@ -250,7 +265,7 @@ pub fn spawn_region(
     spawn_list: &mut SpawnList
 ) {
     let spawn_table = room_table(map_depth);
-    let mut spawn_points: HashMap<(i32, i32), EntryType> = HashMap::new();
+    let mut spawn_points: HashMap<(i32, i32), EntityType> = HashMap::new();
     let mut areas: Vec<(i32, i32)> = Vec::from(area);
 
     {
@@ -277,30 +292,30 @@ pub fn spawn_region(
     }
 }
 
-fn artefact(ecs: &mut World, x: i32, y: i32) {
-    let value: i32;
-    {
-        value = ecs.write_resource::<RandomNumberGenerator>().range(2, 40) * 500
-    }
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph: to_cp437('{'),
-            fg: RGB::named(GOLD),
-            bg: RGB::named(BLACK),
-            render_order: 2,
-        })
-        .with(Name {
-            name: "Artefact".to_string(),
-        })
-        .with(Item {})
-        .with(Artefact {
-            name: generate_artefact_name(),
-            value,
-        })
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
-}
+// fn artefact(ecs: &mut World, x: i32, y: i32) {
+//     let value: i32;
+//     {
+//         value = ecs.write_resource::<RandomNumberGenerator>().range(2, 40) * 500
+//     }
+//     ecs.create_entity()
+//         .with(Position { x, y })
+//         .with(Renderable {
+//             glyph: to_cp437('{'),
+//             fg: RGB::named(GOLD),
+//             bg: RGB::named(BLACK),
+//             render_order: 2,
+//         })
+//         .with(Name {
+//             name: "Artefact".to_string(),
+//         })
+//         .with(Item {})
+//         .with(Artefact {
+//             name: generate_artefact_name(),
+//             value,
+//         })
+//         .marked::<SimpleMarker<SerializeMe>>()
+//         .build();
+// }
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
