@@ -1,17 +1,18 @@
-use std::any::Any;
-use std::collections::HashMap;
-use std::ops::{Deref, DerefMut};
+use std::collections::{HashMap, HashSet};
+use std::ops::DerefMut;
 use std::str::FromStr;
 
 use bracket_lib::color::RGB;
 use bracket_lib::prelude::{console, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
-use specs::{Builder, Component, Entity, EntityBuilder, World, WorldExt};
+use specs::{Builder, Entity, EntityBuilder, World, WorldExt};
+use strum::ParseError;
 
 use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, InflictsDamage, MagicMapper, MeleeAttackBonus, Monster, Name, Position, ProvidesFood, ProvidesHealing, Ranged, SingleActivation, Viewshed};
-use crate::random_tables::EntityType;
+use crate::random_tables::{EntityType, RandomTable};
 use crate::raws::rawmaster::SpawnType::AtPosition;
 use crate::raws::Raws;
+use crate::raws::spawn_table_structs::SpawnTableEntry;
 use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
 pub enum SpawnType {
@@ -28,25 +29,36 @@ pub struct RawMaster {
 impl RawMaster {
     pub fn empty() -> Self {
         Self {
-            raws: Raws{ items: Vec::new(), mobs: Vec::new(), props: Vec::new() },
+            raws: Raws{ items: Vec::new(), mobs: Vec::new(), props: Vec::new(), spawn_table: Vec::new() },
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
         }
     }
 
+
     pub fn load(&mut self, raws: Raws) {
         self.raws = raws;
         self.item_index = HashMap::new();
+        let mut entries_used: HashSet<String> = HashSet::new();
         for (i, item) in self.raws.items.iter().enumerate() {
-            println!("{}", item.r#type);
-            self.item_index.insert(EntityType::from_str(item.r#type.as_str()).unwrap(), i);
+            if entries_used.contains(&item.r#type) {
+                console::log(format!("WARNING - duplicate item type in raw file [{}]", item.r#type))
+            }
+            entries_used.insert(item.r#type.clone());
+            self.item_index.insert(EntityType::get_entry_type_from_raw(&item.r#type), i);
         }
         for (i, mob) in self.raws.mobs.iter().enumerate() {
-            self.mob_index.insert(EntityType::from_str(mob.r#type.as_str()).unwrap(), i);
+            if entries_used.contains(&mob.r#type) {
+                console::log(format!("WARNING - duplicate mob type in raw file [{}]", mob.r#type))
+            }
+            self.mob_index.insert(EntityType::get_entry_type_from_raw(&mob.r#type), i);
         }
         for (i, prop) in self.raws.props.iter().enumerate() {
-            self.prop_index.insert(EntityType::from_str(prop.r#type.as_str()).unwrap(), i);
+            if entries_used.contains(&prop.r#type) {
+                console::log(format!("WARNING - duplicate mob type in raw file [{}]", prop.r#type))
+            }
+            self.prop_index.insert(EntityType::get_entry_type_from_raw(&prop.r#type), i);
         }
     }
 }
@@ -242,4 +254,22 @@ pub fn spawn_named_prop(raws: &RawMaster, new_entity: EntityBuilder, key: &Entit
 
     }
     None
+}
+
+pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
+    let available_options: Vec<&SpawnTableEntry> = raws.raws.spawn_table
+        .iter()
+        .filter(|a| depth >= a.min_depth && depth <= a.max_depth)
+        .collect();
+
+    let mut rt = RandomTable::new();
+    for e in available_options.iter() {
+        let mut weight = e.weight;
+        if e.add_map_depth_to_weight.is_some() {
+            weight += depth;
+        }
+        rt = rt.add(e.r#type, weight);
+    }
+    rt
+
 }

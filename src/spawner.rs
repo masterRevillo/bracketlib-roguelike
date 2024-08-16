@@ -1,21 +1,20 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use bracket_lib::color::{BLACK, BROWN_42, CYAN, CYAN3, GOLD, LIGHT_GRAY, MAGENTA, MAROON, OLIVE, ORANGE, PERU, PINK, RED, RGB, YELLOW};
-use bracket_lib::prelude::{CHOCOLATE3, FontCharType, to_cp437};
+use bracket_lib::color::{BLACK, RGB, YELLOW};
+use bracket_lib::prelude::to_cp437;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializeMe, SingleActivation, Viewshed};
-use crate::{DEBUGGING, raws};
+use crate::components::{CombatStats, HungerClock, HungerState, Name, Player, Position, Renderable, SerializeMe, Viewshed};
+use crate::DEBUGGING;
 use crate::map::{Map, TileType};
 use crate::random_tables::{EntityType, RandomTable};
 use crate::random_tables::EntityType::*;
-use crate::raws::rawmaster::{spawn_named_entity, spawn_named_item, SpawnType};
+use crate::raws::rawmaster::{get_spawn_table_for_depth, spawn_named_entity, SpawnType};
 use crate::raws::RAWS;
 use crate::rect::Rect;
-use crate::util::namegen::{generate_artefact_name, generate_ogur_name};
 
 const MAX_MONSTERS: i32 = 4;
 
@@ -57,89 +56,24 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
 }
 
 fn room_table(level: i32) -> RandomTable {
-    RandomTable::new()
-        .add(Bisat, 10)
-        .add(Ogur, 1 + level)
-        .add(HealthPotion, 7)
-        .add(FireballScroll, 2 + level)
-        .add(ConfusionScroll, 2 + level)
-        .add(MagicMissileScroll, 4)
-        .add(ChickenLeg, 4)
-        .add(Sandwich, 5)
-        .add(GobletOfWine, 4)
-        .add(Artefact, (level - 1))
-        .add(Dagger, 3)
-        .add(Shield, 3)
-        .add(Longsword, level - 1)
-        .add(TowerShield, level - 1)
-        .add(MagicMappingScroll, 2)
-        .add(BearTrap, 5)
-}
-
-// fn ogur(ecs: &mut World, x: i32, y: i32) {
-//     monster(
-//         ecs,
-//         x,
-//         y,
-//         to_cp437('o'),
-//         generate_ogur_name(),
-//         RGB::named(OLIVE),
-//         CombatStats {
-//             max_hp: 16,
-//             hp: 16,
-//             defense: 1,
-//             power: 4,
-//         },
-//     )
-// }
-//
-// fn bisat(ecs: &mut World, x: i32, y: i32) {
-//     monster(
-//         ecs,
-//         x,
-//         y,
-//         to_cp437('b'),
-//         generate_ogur_name(),
-//         RGB::named(PERU),
-//         CombatStats {
-//             max_hp: 12,
-//             hp: 12,
-//             defense: 1,
-//             power: 3,
-//         },
-//     )
-// }
-
-fn monster<S: ToString>(
-    ecs: &mut World,
-    x: i32,
-    y: i32,
-    glyph: FontCharType,
-    name: S,
-    color: RGB,
-    cstats: CombatStats,
-) {
-    ecs.create_entity()
-        .with(Position { x, y })
-        .with(Renderable {
-            glyph,
-            fg: color,
-            bg: RGB::named(BLACK),
-            render_order: 1,
-        })
-        .with(Viewshed {
-            visible_tiles: Vec::new(),
-            range: 8,
-            dirty: true,
-        })
-        .with(Monster {})
-        .with(Name {
-            name: name.to_string(),
-        })
-        .with(BlocksTile {})
-        .with(cstats)
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build();
+    get_spawn_table_for_depth(&RAWS.lock().unwrap(),  level)
+    // RandomTable::new()
+    //     .add(Bisat, 10)
+    //     .add(Ogur, 1 + level)
+    //     .add(HealthPotion, 7)
+    //     .add(FireballScroll, 2 + level)
+    //     .add(ConfusionScroll, 2 + level)
+    //     .add(MagicMissileScroll, 4)
+    //     .add(ChickenLeg, 4)
+    //     .add(Sandwich, 5)
+    //     .add(GobletOfWine, 4)
+    //     .add(Artefact, (level - 1))
+    //     .add(Dagger, 3)
+    //     .add(Shield, 3)
+    //     .add(Longsword, level - 1)
+    //     .add(TowerShield, level - 1)
+    //     .add(MagicMappingScroll, 2)
+    //     .add(BearTrap, 5)
 }
 
 pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntityType)) {

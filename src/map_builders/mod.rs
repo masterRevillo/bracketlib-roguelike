@@ -274,7 +274,7 @@ pub fn random_builder(depth: i32, rng: &mut RandomNumberGenerator, width: i32, h
         _ => random_shape_builder(rng, &mut builder)
     }
 
-    if rng.roll_dice(1, 3) == 1 {
+    // if rng.roll_dice(1, 3) == 1 {
         builder.with(WaveformCollapseBuilder::new());
         /* if wfc is selected, room-based options no longer function. Therefore, we need to:
         1. select a random start point
@@ -282,13 +282,12 @@ pub fn random_builder(depth: i32, rng: &mut RandomNumberGenerator, width: i32, h
         3. use a distant exit
         4. run cull unreachable again
         */
-        builder.with(CullUnreachable::new());
-
         let (start_x, start_y) = random_start_position(rng);
         builder.with(AreaStartingPoint::new(start_x, start_y));
+        builder.with(CullUnreachable::new());
         builder.with(VoronoiSpawning::new());
         builder.with(DistantExit::new());
-    }
+    // }
     if rng.roll_dice(1, 20) == 1 {
         builder.with(PrefabBuilder::sectional(UNDERGROUND_FORT));
     }

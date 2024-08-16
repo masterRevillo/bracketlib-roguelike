@@ -1,11 +1,17 @@
+use std::str::FromStr;
+use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
+use serde::Deserialize;
 use strum_macros::EnumString;
 
-#[derive(Clone, Copy, Debug, EnumString, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, EnumString, Eq, PartialEq, Hash, Deserialize)]
 pub enum EntityType {
     None,
+    Rat,
     Bisat,
     Ogur,
+    Spectre,
+    TukkaWarrior,
     HealthPotion,
     MagicMissileScroll,
     FireballScroll,
@@ -17,6 +23,7 @@ pub enum EntityType {
     Dagger,
     Shield,
     Longsword,
+    Battleaxe,
     TowerShield,
     MagicMappingScroll,
     BearTrap,
@@ -24,11 +31,21 @@ pub enum EntityType {
 }
 
 impl EntityType {
+
+    pub(crate) fn get_entry_type_from_raw(t: &String) -> EntityType {
+        EntityType::from_str(t.as_str()).unwrap_or_else(|_| {
+            console::log(format!("Unrecognized EntityType [{t}]"));
+            EntityType::None
+        })
+    }
     pub fn get_display_name(&self) -> String {
         String::from(match self {
             EntityType::None => "None",
+            EntityType::Rat => "Rat",
             EntityType::Bisat => "Bisat",
             EntityType::Ogur => "Ogur",
+            EntityType::Spectre => "Spectre",
+            EntityType::TukkaWarrior => "Tukka Warrior",
             EntityType::HealthPotion => "Health Potion",
             EntityType::MagicMissileScroll => "Magic Missile Scroll",
             EntityType::FireballScroll => "Fireball Scroll",
@@ -40,6 +57,7 @@ impl EntityType {
             EntityType::Dagger => "Dagger",
             EntityType::Shield => "Shield",
             EntityType::Longsword => "Longsword",
+            EntityType::Battleaxe => "Battleaxe",
             EntityType::TowerShield => "Tower Shield",
             EntityType::MagicMappingScroll => "Magic Mapping Scroll",
             EntityType::BearTrap => "Bear Trap",

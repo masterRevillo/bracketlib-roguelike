@@ -154,6 +154,19 @@
       }
     },
     {
+      "type" : "Battleaxe",
+      "renderable": {
+        "glyph" : "¶",
+        "fg" : "#FF55FF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "weapon" : {
+        "range" : "melee",
+        "power_bonus" : 5
+      }
+    },
+    {
       "type" : "Shield",
       "renderable": {
         "glyph" : "[",
@@ -179,6 +192,23 @@
     }
   ],
   "mobs" : [
+    {
+      "type" : "Rat",
+      "renderable": {
+        "glyph" : "r",
+        "fg" : "#6b4b5a",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 2,
+        "hp" : 2,
+        "defense" : 0,
+        "power" : 1
+      },
+      "vision_range" : 8
+    },
     {
       "type" : "Ogur",
       "renderable": {
@@ -212,6 +242,40 @@
         "power" : 3
       },
       "vision_range" : 8
+    },
+    {
+      "type" : "Spectre",
+      "renderable": {
+        "glyph" : "s",
+        "fg" : "#93a7db",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 18,
+        "hp" : 18,
+        "defense" : 2,
+        "power" : 5
+      },
+      "vision_range" : 10
+    },
+    {
+      "type" : "TukkaWarrior",
+      "renderable": {
+        "glyph" : "t",
+        "fg" : "#76c491",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 13,
+        "hp" : 13,
+        "defense" : 2,
+        "power" : 6
+      },
+      "vision_range" : 6
     }
   ],
   "props" : [
@@ -244,5 +308,27 @@
       "blocks_visibility" : true,
       "door_open" : true
     }
+  ],
+  "spawn_table" : [
+    { "type" : "Rat", "weight" : 20, "min_depth" : 0, "max_depth" : 3 },
+    { "type" : "Bisat", "weight" : 10, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "Ogur", "weight" : 3, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "type" : "Spectre", "weight" : 3, "min_depth" : 2, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "type" : "TukkaWarrior", "weight" : 4, "min_depth" : 4, "max_depth" : 100 },
+    { "type" : "HealthPotion", "weight" : 7, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "FireballScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "type" : "ConfusionScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "type" : "MagicMissileScroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "Dagger", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "Shield", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "Longsword", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
+    { "type" : "Battleaxe", "weight" : 1, "min_depth" : 2, "max_depth" : 100 },
+    { "type" : "TowerShield", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
+    { "type" : "Sandwich", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "ChickenLeg", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "GobletOfWine", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "MagicMappingScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "BearTrap", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
+    { "type" : "Artefact", "weight" : 1, "min_depth" : 2, "max_depth" : 100 }
   ]
 }
