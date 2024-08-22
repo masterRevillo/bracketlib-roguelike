@@ -1,7 +1,8 @@
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 
-use crate::map::{Map, TileType};
+use crate::map::Map;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder};
 
 const TOP: usize = 0;

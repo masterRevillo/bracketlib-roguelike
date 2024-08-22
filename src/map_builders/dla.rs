@@ -3,7 +3,7 @@ use bracket_lib::prelude::{line2d, Point};
 use bracket_lib::random::RandomNumberGenerator;
 
 use crate::components::Position;
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder, MetaMapBuilder};
 use crate::map_builders::common::{
     paint, Symmetry,

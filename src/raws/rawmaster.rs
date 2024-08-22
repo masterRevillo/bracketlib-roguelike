@@ -1,12 +1,10 @@
 use std::collections::{HashMap, HashSet};
 use std::ops::DerefMut;
-use std::str::FromStr;
 
 use bracket_lib::color::RGB;
 use bracket_lib::prelude::{console, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::{Builder, Entity, EntityBuilder, World, WorldExt};
-use strum::ParseError;
 
 use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, InflictsDamage, MagicMapper, MeleeAttackBonus, Monster, Name, Position, ProvidesFood, ProvidesHealing, Ranged, SingleActivation, Viewshed};
 use crate::random_tables::{EntityType, RandomTable};

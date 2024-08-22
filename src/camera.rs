@@ -1,11 +1,11 @@
-use bracket_lib::color::{BLACK, GREY, RGB};
-use bracket_lib::prelude::{BTerm, Point, to_cp437};
-use bracket_lib::terminal::FontCharType;
+use bracket_lib::color::{BLACK, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, FORESTGREEN, GREY, LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, RGB};
+use bracket_lib::prelude::{BTerm, CHOCOLATE, GREY2, Point, to_cp437};
+use bracket_lib::terminal::{FontCharType, GREEN1};
 use specs::{Join, World, WorldExt};
 
 use crate::components::{Hidden, Position, Renderable};
 use crate::Map;
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 
 const SHOW_BOUNDARIES: bool = true;
 
@@ -120,13 +120,48 @@ fn get_tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
             glyph = to_cp437('>');
             fg = RGB::from_f32(0., 1.0, 1.0);
         }
+        TileType::Bridge => {
+            glyph = to_cp437('.');
+            fg = RGB::named(CHOCOLATE);
+        }
+        TileType::Road => {
+            glyph = to_cp437('~');
+            fg = RGB::named(GREY);
+            bg = RGB::named(LIGHT_GRAY);
+        }
+        TileType::Grass => {
+            glyph = to_cp437('"');
+            fg = RGB::named(FORESTGREEN);
+            bg = RGB::named(GREEN1);
+        }
+        TileType::ShallowWater => {
+            glyph = to_cp437('≈');
+            fg = RGB::named(CYAN);
+            bg = RGB::named(MEDIUM_AQUAMARINE);
+        }
+        TileType::DeepWater => {
+            glyph = to_cp437('≈');
+            fg = RGB::named(NAVY_BLUE);
+            bg = RGB::named(CORNFLOWERBLUE);
+        }
+        TileType::WoodFloor => {
+            glyph = to_cp437('.');
+            fg = RGB::named(CHOCOLATE);
+            bg = RGB::named(CHOCOLATE2);
+        }
+        TileType::Gravel=> {
+            glyph = to_cp437('\'');
+            fg = RGB::named(LIGHT_SLATE);
+            fg = RGB::named(DARK_GRAY)
+        }
     }
     if map.bloodstains.contains(&(x as i32, y as i32)) {
         bg = RGB::from_f32(0.75, 0., 0.);
     }
     if !map.visible_tiles[x][y] {
-        fg = fg.to_greyscale();
-        bg = RGB::from_f32(0., 0., 0.);
+        fg = fg.lerp(RGB::named(BLACK), 0.5);
+        bg = bg.lerp(RGB::named(BLACK), 0.7);
+        // bg = RGB::from_f32(0., 0., 0.);
     }
     (glyph, fg, bg)
 }

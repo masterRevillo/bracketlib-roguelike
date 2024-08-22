@@ -1,5 +1,5 @@
 use bracket_lib::random::RandomNumberGenerator;
-use rand::random;
+
 use crate::util::string_utils::capitalize;
 
 const ARTIFACT_SYLLABLES: [&str; 11] = [

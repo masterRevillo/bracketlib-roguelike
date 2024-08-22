@@ -1,9 +1,7 @@
-use std::fmt::format;
 use bracket_lib::prelude::{console, DistanceAlg, Point, RandomNumberGenerator};
-use bracket_lib::prelude::DistanceAlg::PythagorasSquared;
-use serde::de::Unexpected::Option;
-use crate::map::TileType;
-use crate::map_builders::{BuilderChain, BuilderMap, MetaMapBuilder};
+
+use crate::map::tiletype::TileType;
+use crate::map_builders::{BuilderMap, MetaMapBuilder};
 use crate::rect::Rect;
 
 pub struct RoomDrawer {}

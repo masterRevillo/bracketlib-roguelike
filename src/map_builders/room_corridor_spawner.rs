@@ -1,6 +1,7 @@
 use bracket_lib::prelude::RandomNumberGenerator;
+
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
-use crate::spawner::{spawn_region, spawn_room};
+use crate::spawner::spawn_region;
 
 pub struct CorridorSpawner {}
 

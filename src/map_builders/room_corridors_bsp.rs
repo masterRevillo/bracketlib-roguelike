@@ -1,5 +1,5 @@
-use std::ffi::c_ushort;
 use bracket_lib::prelude::RandomNumberGenerator;
+
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
 use crate::map_builders::common::draw_corridor;
 

@@ -1,7 +1,9 @@
 use std::cmp::{max, min};
+
 use bracket_lib::prelude::console;
 
-use crate::map::{Map, TileType};
+use crate::map::Map;
+use crate::map::tiletype::TileType;
 
 pub fn apply_horizontal_tunnel(map: &mut Map, x1: i32, x2: i32, y: i32) -> Vec<(usize, usize)> {
     let mut corridor: Vec<(usize, usize)> = Vec::new();

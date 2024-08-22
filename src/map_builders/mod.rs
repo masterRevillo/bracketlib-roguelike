@@ -1,8 +1,8 @@
 use std::any::{Any, type_name_of_val};
+
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::{Builder, World};
-use specs::rayon::spawn_fifo;
 
 use crate::components::Position;
 use crate::map_builders::area_starting_points::{AreaStartingPoint, XStart, YStart};
@@ -12,7 +12,6 @@ use crate::map_builders::cellular_automata::CellularAutomataBuilder;
 use crate::map_builders::cull_unreachable::CullUnreachable;
 use crate::map_builders::distant_exit::DistantExit;
 use crate::map_builders::dla::DLABuilder;
-use crate::map_builders::door_placement::DoorPlacement;
 use crate::map_builders::drunkards::DrunkardsWalkBuilder;
 use crate::map_builders::maze::MazeBuilder;
 use crate::map_builders::prefab_builder::prefab_levels::WFC_POPULATED;
@@ -31,6 +30,7 @@ use crate::map_builders::room_draw::RoomDrawer;
 use crate::map_builders::room_exploder::RoomExploder;
 use crate::map_builders::room_sorter::RoomSorter;
 use crate::map_builders::simple_map::SimpleMapBuilder;
+use crate::map_builders::town::TownBuilder;
 use crate::map_builders::voronoi::VoronoiCellBuilder;
 use crate::map_builders::voronoi_spawning::VoronoiSpawning;
 use crate::map_builders::waveform_collapse::WaveformCollapseBuilder;
@@ -67,6 +67,7 @@ mod room_corridors_nearest;
 mod room_corridors_lines;
 mod room_corridor_spawner;
 mod door_placement;
+mod town;
 
 pub struct BuilderMap {
     pub spawn_list: SpawnList,
@@ -169,6 +170,20 @@ pub trait MetaMapBuilder {
         type_name_of_val(self)
     }
 }
+
+pub fn level_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    match new_depth {
+        1 => town_builder(new_depth, rng, width, height),
+        _ => random_builder(new_depth, rng, width, height)
+    }
+}
+
+pub fn town_builder(depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+   let mut chain = BuilderChain::new(depth, width, height);
+    chain.start_with(TownBuilder::new());
+    chain
+}
+
 
 fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderChain) {
     let build_roll = rng.roll_dice(1, 3);

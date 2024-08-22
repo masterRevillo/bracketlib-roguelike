@@ -1,6 +1,6 @@
 use bracket_lib::random::RandomNumberGenerator;
+use crate::map::tiletype::TileType;
 
-use crate::map::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder};
 use crate::rect::Rect;
 

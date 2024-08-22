@@ -33,7 +33,6 @@ mod gamelog;
 mod gui;
 mod hunger_system;
 mod inventory_system;
-mod map;
 pub mod map_builders;
 mod map_indexing_system;
 mod melee_combat_system;
@@ -49,6 +48,7 @@ mod trigger_system;
 mod visibility_system;
 mod camera;
 mod raws;
+mod map;
 
 mod util {
     pub mod namegen;
@@ -125,7 +125,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-        let mut builder = map_builders::random_builder(new_depth, &mut rng, 100, 73);
+        let mut builder = map_builders::level_builder(new_depth, &mut rng, 100, 73);
         builder.build_map(&mut rng);
         drop(rng);
         self.mapgen_history = builder.build_data.history.clone();

@@ -7,7 +7,8 @@ use specs::prelude::*;
 use crate::{RunState, State};
 use crate::components::{BlocksTile, BlocksVisibility, CombatStats, Door, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Renderable, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
-use crate::map::{Map, TileType};
+use crate::map::Map;
+use crate::map::tiletype::TileType;
 
 pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     match ctx.key {

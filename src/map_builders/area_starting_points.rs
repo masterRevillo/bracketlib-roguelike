@@ -1,9 +1,9 @@
-use bracket_lib::prelude::DistanceAlg::PythagorasSquared;
 use bracket_lib::prelude::{Point, RandomNumberGenerator};
+use bracket_lib::prelude::DistanceAlg::PythagorasSquared;
+
 use crate::components::Position;
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
-use crate::map_builders::common::paint;
 
 #[derive(Debug)]
 pub enum XStart {
@@ -51,7 +51,7 @@ impl AreaStartingPoint {
         let mut available_floors: Vec<((usize, usize), f32)> = Vec::new();
         for (x, row) in build_data.map.tiles.iter().enumerate() {
             for (y, tile) in row.iter().enumerate() {
-                if *tile == TileType::Floor {
+                if *tile == TileType::Floor || *tile == TileType::Grass {
                     available_floors.push(
                         ((x, y),
                         PythagorasSquared.distance2d (

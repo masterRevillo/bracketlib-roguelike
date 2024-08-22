@@ -1,22 +1,14 @@
 use std::collections::HashSet;
-
-use bracket_lib::algorithm_traits::SmallVec;
+use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
 use bracket_lib::color::RGB;
-use bracket_lib::geometry::Point;
-use bracket_lib::prelude::{
-    Algorithm2D, BaseMap, BTerm, DistanceAlg, FontCharType, to_cp437
-    ,
-};
+use bracket_lib::geometry::{DistanceAlg, Point};
+use bracket_lib::prelude::{BTerm, FontCharType, to_cp437};
 use serde::{Deserialize, Serialize};
-use specs::prelude::*;
-use specs::WorldExt;
+use specs::Entity;
 
-#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum TileType {
-    Wall,
-    Floor,
-    DownStairs,
-}
+pub mod tiletype;
+pub use tiletype::{TileType, tile_walkable, tile_opaque};
+use crate::map::tiletype::tile_cost;
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct Map {
@@ -43,7 +35,7 @@ impl Algorithm2D for Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
-        self.tiles[idx % self.width as usize][idx / self.width as usize] == TileType::Wall ||
+        tile_opaque(self.tiles[idx % self.width as usize][idx / self.width as usize]) ||
             self.view_blocked.contains(&(idx as i32 % self.width, idx as i32 / self.width))
     }
 
@@ -52,42 +44,42 @@ impl BaseMap for Map {
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
         let w = self.width as usize;
-        let _h = self.height as usize;
+        let tt = self.tiles[x as usize][y as usize];
 
         // cardinal directions:
         // west
         if self.is_exit_valid(x - 1, y) {
-            exits.push((idx - 1, 1.0))
+            exits.push((idx - 1, tile_cost(tt)))
         };
         // east
         if self.is_exit_valid(x + 1, y) {
-            exits.push((idx + 1, 1.0))
+            exits.push((idx + 1, tile_cost(tt)))
         };
         // north
         if self.is_exit_valid(x, y - 1) {
-            exits.push((idx - w, 1.0))
+            exits.push((idx - w, tile_cost(tt)))
         };
         // south
         if self.is_exit_valid(x, y + 1) {
-            exits.push((idx + w, 1.0))
+            exits.push((idx + w, tile_cost(tt)))
         };
 
         // diagonals:
         // north west
         if self.is_exit_valid(x - 1, y - 1) {
-            exits.push(((idx - w) - 1, 1.45));
+            exits.push(((idx - w) - 1, tile_cost(tt) * 1.45));
         }
         // north east
         if self.is_exit_valid(x + 1, y - 1) {
-            exits.push(((idx - w) + 1, 1.45));
+            exits.push(((idx - w) + 1, tile_cost(tt) * 1.45));
         }
         // south west
         if self.is_exit_valid(x - 1, y + 1) {
-            exits.push(((idx + w) - 1, 1.45));
+            exits.push(((idx + w) - 1, tile_cost(tt) * 1.45));
         }
         // south east
         if self.is_exit_valid(x + 1, y + 1) {
-            exits.push(((idx + w) + 1, 1.45));
+            exits.push(((idx + w) + 1, tile_cost(tt) * 1.45));
         }
 
         exits
@@ -128,7 +120,7 @@ impl Map {
     pub fn populate_blocked(&mut self) {
         for (i, row) in self.tiles.iter_mut().enumerate() {
             for (j, tile) in row.iter_mut().enumerate() {
-                self.blocked[i][j] = *tile == TileType::Wall;
+                self.blocked[i][j] = !tile_walkable(*tile);
             }
         }
     }
@@ -141,40 +133,40 @@ impl Map {
         }
     }
 
-    pub fn draw_map(&self, ctx: &mut BTerm) {
-        for x in 0..self.width {
-            for y in 0..self.height {
-                if self.revealed_tiles[x as usize][y as usize] {
-                    let glyph;
-                    let mut fg;
-                    let mut bg = RGB::from_f32(0., 0., 0.);
-                    match self.tiles[x as usize][y as usize] {
-                        TileType::Floor => {
-                            glyph = to_cp437('.');
-                            fg = RGB::from_u8(170, 131, 96);
-                            bg = RGB::from_u8(170, 131, 96);
-                        }
-                        TileType::Wall => {
-                            glyph = self.wall_glyph(x, y);
-                            fg = RGB::from_u8(127, 30, 20);
-                        }
-                        TileType::DownStairs => {
-                            glyph = to_cp437('>');
-                            fg = RGB::from_f32(0., 1.0, 1.0);
-                        }
-                    }
-                    if self.bloodstains.contains(&(x, y)) {
-                        bg = RGB::from_f32(0.75, 0., 0.);
-                    }
-                    if !self.visible_tiles[x as usize][y as usize] {
-                        fg = fg.to_greyscale();
-                        bg = RGB::from_f32(0., 0., 0.);
-                    }
-                    ctx.set(x, y, fg, bg, glyph)
-                }
-            }
-        }
-    }
+    // pub fn draw_map(&self, ctx: &mut BTerm) {
+    //     for x in 0..self.width {
+    //         for y in 0..self.height {
+    //             if self.revealed_tiles[x as usize][y as usize] {
+    //                 let glyph;
+    //                 let mut fg;
+    //                 let mut bg = RGB::from_f32(0., 0., 0.);
+    //                 match self.tiles[x as usize][y as usize] {
+    //                     TileType::Floor => {
+    //                         glyph = to_cp437('.');
+    //                         fg = RGB::from_u8(170, 131, 96);
+    //                         bg = RGB::from_u8(170, 131, 96);
+    //                     }
+    //                     TileType::Wall => {
+    //                         glyph = self.wall_glyph(x, y);
+    //                         fg = RGB::from_u8(127, 30, 20);
+    //                     }
+    //                     TileType::DownStairs => {
+    //                         glyph = to_cp437('>');
+    //                         fg = RGB::from_f32(0., 1.0, 1.0);
+    //                     }
+    //                 }
+    //                 if self.bloodstains.contains(&(x, y)) {
+    //                     bg = RGB::from_f32(0.75, 0., 0.);
+    //                 }
+    //                 if !self.visible_tiles[x as usize][y as usize] {
+    //                     fg = fg.to_greyscale();
+    //                     bg = RGB::from_f32(0., 0., 0.);
+    //                 }
+    //                 ctx.set(x, y, fg, bg, glyph)
+    //             }
+    //         }
+    //     }
+    // }
 
     pub fn is_tile_in_bounds(&self, x: i32, y: i32) -> bool {
         x > 0 && x < self.width && y > 0 && y < self.height

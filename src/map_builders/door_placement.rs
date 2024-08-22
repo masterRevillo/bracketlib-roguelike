@@ -1,10 +1,8 @@
 use bracket_lib::prelude::RandomNumberGenerator;
 
-use crate::components::Position;
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
 use crate::random_tables::EntityType;
-use crate::spawner::spawn_room;
 
 pub struct DoorPlacement {}
 

@@ -4,7 +4,7 @@ use bracket_lib::prelude::{console, XpFile};
 use bracket_lib::random::RandomNumberGenerator;
 
 use crate::components::Position;
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder, MetaMapBuilder};
 use crate::map_builders::prefab_builder::prefab_levels::PrefabLevel;
 use crate::map_builders::prefab_builder::prefab_rooms::{CHECKERBOARD, CHICKFILA, PrefabRoom, TRAP, WELL};

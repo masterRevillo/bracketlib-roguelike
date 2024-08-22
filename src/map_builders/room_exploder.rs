@@ -1,6 +1,6 @@
-use bracket_lib::prelude::{console, RandomNumberGenerator};
+use bracket_lib::prelude::RandomNumberGenerator;
 
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
 use crate::map_builders::common::{paint, Symmetry};
 use crate::rect::Rect;

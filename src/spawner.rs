@@ -9,7 +9,8 @@ use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 use crate::components::{CombatStats, HungerClock, HungerState, Name, Player, Position, Renderable, SerializeMe, Viewshed};
 use crate::DEBUGGING;
-use crate::map::{Map, TileType};
+use crate::map::Map;
+use crate::map::tiletype::TileType;
 use crate::random_tables::{EntityType, RandomTable};
 use crate::random_tables::EntityType::*;
 use crate::raws::rawmaster::{get_spawn_table_for_depth, spawn_named_entity, SpawnType};
@@ -192,7 +193,7 @@ pub fn spawn_debug_items(ecs: &mut World, starting_position: &Position) {
 }
 
 pub fn spawn_region(
-    map: &Map,
+    _map: &Map,
     rng: &mut RandomNumberGenerator,
     area: &[(i32, i32)],
     map_depth: i32,

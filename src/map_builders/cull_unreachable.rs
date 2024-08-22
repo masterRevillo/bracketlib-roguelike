@@ -1,5 +1,5 @@
 use bracket_lib::prelude::{DijkstraMap, RandomNumberGenerator};
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
 
 pub struct CullUnreachable {}

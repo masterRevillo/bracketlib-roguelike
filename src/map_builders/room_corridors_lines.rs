@@ -1,9 +1,10 @@
 use std::collections::HashSet;
+
 use bracket_lib::geometry::{DistanceAlg, LineAlg, Point};
 use bracket_lib::prelude::{line2d, RandomNumberGenerator};
-use crate::map::TileType;
+
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
-use crate::map_builders::common::{apply_horizontal_tunnel, apply_vertical_tunnel};
 
 pub struct StraightLineCorridors {}
 

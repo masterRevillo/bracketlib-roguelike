@@ -1,7 +1,7 @@
 use bracket_lib::random::RandomNumberGenerator;
 use specs::WorldExt;
 
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder, MetaMapBuilder};
 
 pub struct CellularAutomataBuilder {

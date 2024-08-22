@@ -2,7 +2,7 @@ use bracket_lib::geometry::Point;
 use bracket_lib::prelude::{DistanceAlg, RandomNumberGenerator};
 
 use crate::DEBUGGING;
-use crate::map::TileType;
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, InitialMapBuilder};
 
 #[derive(PartialEq, Copy, Clone)]

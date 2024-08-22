@@ -1,8 +1,9 @@
 use std::collections::HashMap;
+
 use bracket_lib::noise::{CellularDistanceFunction, FastNoise, NoiseType};
-use bracket_lib::pathfinding::DijkstraMap;
 use bracket_lib::prelude::RandomNumberGenerator;
-use crate::map::TileType;
+
+use crate::map::tiletype::TileType;
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
 use crate::spawner::spawn_region;
 
