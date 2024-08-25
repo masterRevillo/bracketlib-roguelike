@@ -6,7 +6,7 @@ use bracket_lib::prelude::{console, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::{Builder, Entity, EntityBuilder, World, WorldExt};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, InflictsDamage, MagicMapper, MeleeAttackBonus, Monster, Name, Position, ProvidesFood, ProvidesHealing, Ranged, SingleActivation, Viewshed};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, InflictsDamage, MagicMapper, MeleeAttackBonus, Monster, Name, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, SingleActivation, Vendor, Viewshed};
 use crate::random_tables::{EntityType, RandomTable};
 use crate::random_tables::EntityType::{Bisat, Ogur, Spectre, TukkaWarrior};
 use crate::raws::rawmaster::SpawnType::AtPosition;
@@ -191,7 +191,14 @@ pub fn spawn_named_mob(raws: &RawMaster, key: &EntityType, pos: SpawnType, ecs: 
         match mob_template.ai.as_ref() {
             "melee" => eb = eb.with(Monster {}),
             "bystander" => eb = eb.with(Bystander{}),
+            "vendor" => eb = eb.with(Vendor{}),
             _ => {}
+        }
+
+        if let Some(quips) = &mob_template.quips {
+            eb = eb.with(
+                Quips{ available: quips.clone() }
+            );
         }
 
         if mob_template.blocks_tile {

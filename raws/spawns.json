@@ -208,9 +208,8 @@
         "power" : 4
       },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "vendor"
     },
-
     {
       "type" : "Clothier",
       "renderable": {
@@ -227,9 +226,8 @@
         "power" : 4
       },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "vendor"
     },
-
     {
       "type" : "Alchemist",
       "renderable": {
@@ -246,9 +244,8 @@
         "power" : 4
       },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "vendor"
     },
-
     {
       "type" : "Mom",
       "renderable": {
@@ -267,7 +264,6 @@
       "vision_range" : 4,
       "ai" : "bystander"
     },
-
     {
       "type" : "Peasant",
       "renderable": {
@@ -302,7 +298,7 @@
         "power" : 4
       },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "vendor"
     },
     {
       "type" : "ShadySalesman",
@@ -320,7 +316,7 @@
         "power" : 4
       },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "vendor"
     },
     {
       "type" : "Patron",
@@ -338,7 +334,8 @@
         "power" : 4
       },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "bystander",
+      "quips": ["Fancy seeing you here again.", "Hey kid, next one is on you!", "One day I'll leave this town in my dust!", "How's the treasure hunt going, kid?"]
     },
     {
       "type" : "Priest",
@@ -375,6 +372,82 @@
       },
       "vision_range" : 4,
       "ai" : "bystander"
+    },
+    {
+      "type" : "DockWorker",
+      "renderable": {
+        "glyph" : "☺",
+        "fg" : "#999999",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 16,
+        "hp" : 16,
+        "defense" : 1,
+        "power" : 4
+      },
+      "vision_range" : 4,
+      "ai" : "bystander",
+      "quips" : [ "Lovely day, eh?", "Good day for sailing, I'd say.","Nice weather", "Hello" ]
+    },
+    {
+      "type" : "Fisher",
+      "renderable": {
+        "glyph" : "☺",
+        "fg" : "#999999",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 16,
+        "hp" : 16,
+        "defense" : 1,
+        "power" : 4
+      },
+      "vision_range" : 4,
+      "ai" : "bystander",
+      "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain", "Let me tell ya 'bout the 15 foot catfish I seen one time..." ]
+    },
+    {
+      "type" : "Pirate",
+      "renderable": {
+        "glyph" : "☺",
+        "fg" : "#aa9999",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 16,
+        "hp" : 16,
+        "defense" : 1,
+        "power" : 4
+      },
+      "vision_range" : 4,
+      "ai" : "bystander",
+      "quips" : [ "Arrr", "Grog!", "Booze!" ]
+    },
+    {
+      "type" : "Drunk",
+      "renderable": {
+        "glyph" : "☺",
+        "fg" : "#aa9999",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "stats" : {
+        "max_hp" : 16,
+        "hp" : 16,
+        "defense" : 1,
+        "power" : 4
+      },
+      "vision_range" : 4,
+      "ai" : "bystander",
+      "quips" : [ "We're'd I put me rum?!", "Wanna drink? You're buyin'!", "Spare a copper?" ]
     },
     {
       "type" : "Rat",

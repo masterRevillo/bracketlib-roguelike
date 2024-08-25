@@ -51,7 +51,11 @@ pub enum EntityType {
     DeadThing,
     Mom,
     Bed,
-    Peasant
+    Peasant,
+    DockWorker,
+    Pirate,
+    Fisher,
+    Drunk
 }
 
 impl EntityType {
@@ -109,7 +113,11 @@ impl EntityType {
             EntityType::DeadThing => "Dead Thing",
             EntityType::Mom => "Mom",
             EntityType::Bed => "Bed",
-            EntityType::Peasant => "Peasant"
+            EntityType::Peasant => "Peasant",
+            EntityType::DockWorker => "Dock Worker",
+            EntityType::Pirate => "Pirate",
+            EntityType::Fisher => "Fisher",
+            EntityType::Drunk => "Drunk"
         })
     }
 }

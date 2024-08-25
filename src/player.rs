@@ -5,7 +5,7 @@ use specs::{Join, World};
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{BlocksTile, BlocksVisibility, Bystander, CombatStats, Door, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Renderable, Viewshed, WantsToMelee, WantsToPickUpItem};
+use crate::components::{BlocksTile, BlocksVisibility, Bystander, CombatStats, Door, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Renderable, Vendor, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
 use crate::map::Map;
 use crate::map::tiletype::TileType;
@@ -112,6 +112,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
     let bystanders = ecs.read_storage::<Bystander>();
+    let vendors = ecs.read_storage::<Vendor>();
     let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
     let map = ecs.fetch::<Map>();
 
@@ -123,7 +124,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
 
         for potential_target in map.tile_content[dest_x as usize][dest_y as usize].iter() {
             let bystander = bystanders.get(*potential_target);
-            if bystander.is_some() {
+            let vendor = vendors.get(*potential_target);
+            if bystander.is_some() || vendor.is_some() {
                 swap_entities.push((*potential_target, pos.x, pos.y));
                 pos.x = min(map.width-1, max(0, pos.x + delta_x));
                 pos.y = min(map.height-1, max(0, pos.y + delta_y));

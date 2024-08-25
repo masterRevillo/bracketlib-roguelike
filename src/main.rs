@@ -2,9 +2,10 @@ use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Po
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use crate::bystander_ai_system::BystanderAI;
 
 use crate::camera::render_debug_map;
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
@@ -49,6 +50,7 @@ mod visibility_system;
 mod camera;
 mod raws;
 mod map;
+mod bystander_ai_system;
 
 mod util {
     pub mod namegen;
@@ -97,6 +99,8 @@ impl State {
         vis.run_now(&self.ecs);
         let mut mob = MonsterAI {};
         mob.run_now(&self.ecs);
+        let mut bystandar_ai = BystanderAI {};
+        bystandar_ai.run_now(&self.ecs);
         let mut triggers = TriggerSystem {};
         triggers.run_now(&self.ecs);
         let mut mapindex = MapIndexingSystem {};
@@ -456,6 +460,7 @@ fn main() -> BError {
     state.ecs.register::<Viewshed>();
     state.ecs.register::<Monster>();
     state.ecs.register::<Bystander>();
+    state.ecs.register::<Vendor>();
     state.ecs.register::<Name>();
     state.ecs.register::<BlocksTile>();
     state.ecs.register::<CombatStats>();
@@ -491,6 +496,7 @@ fn main() -> BError {
     state.ecs.register::<SingleActivation>();
     state.ecs.register::<BlocksVisibility>();
     state.ecs.register::<Door>();
+    state.ecs.register::<Quips>();
 
     raws::load_raws();
 

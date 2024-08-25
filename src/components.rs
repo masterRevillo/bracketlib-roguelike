@@ -32,6 +32,9 @@ pub struct Monster {}
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Bystander {}
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Vendor {}
+
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String
@@ -218,4 +221,9 @@ pub struct BlocksVisibility {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Door {
     pub open: bool
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Quips {
+    pub available: Vec<String>
 }
