@@ -6,8 +6,9 @@ use bracket_lib::prelude::{console, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::{Builder, Entity, EntityBuilder, World, WorldExt};
 
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, InflictsDamage, MagicMapper, MeleeAttackBonus, Monster, Name, Position, ProvidesFood, ProvidesHealing, Ranged, SingleActivation, Viewshed};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Hidden, InflictsDamage, MagicMapper, MeleeAttackBonus, Monster, Name, Position, ProvidesFood, ProvidesHealing, Ranged, SingleActivation, Viewshed};
 use crate::random_tables::{EntityType, RandomTable};
+use crate::random_tables::EntityType::{Bisat, Ogur, Spectre, TukkaWarrior};
 use crate::raws::rawmaster::SpawnType::AtPosition;
 use crate::raws::Raws;
 use crate::raws::spawn_table_structs::SpawnTableEntry;
@@ -170,9 +171,12 @@ pub fn spawn_named_mob(raws: &RawMaster, key: &EntityType, pos: SpawnType, ecs: 
     if raws.mob_index.contains_key(key) {
         let mob_template = &raws.raws.mobs[raws.mob_index[key]];
 
-        let name = Name{ name: generate_ogur_name(
-            ecs.write_resource::<RandomNumberGenerator>().deref_mut()
-        )};
+        let name = match key {
+            Ogur | Bisat | Spectre | TukkaWarrior => Name{ name: generate_ogur_name(
+                ecs.write_resource::<RandomNumberGenerator>().deref_mut()
+            )},
+            _ => Name{ name: key.get_display_name() }
+        };
 
         let mut eb = ecs.create_entity();
 
@@ -184,7 +188,12 @@ pub fn spawn_named_mob(raws: &RawMaster, key: &EntityType, pos: SpawnType, ecs: 
 
         eb = eb.with(name);
 
-        eb = eb.with(Monster {});
+        match mob_template.ai.as_ref() {
+            "melee" => eb = eb.with(Monster {}),
+            "bystander" => eb = eb.with(Bystander{}),
+            _ => {}
+        }
+
         if mob_template.blocks_tile {
             eb = eb.with(BlocksTile{});
         }

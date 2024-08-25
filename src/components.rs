@@ -29,6 +29,9 @@ pub struct Renderable {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Monster {}
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Bystander {}
+
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String

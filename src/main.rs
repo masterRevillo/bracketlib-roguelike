@@ -4,7 +4,7 @@ use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 use crate::camera::render_debug_map;
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
@@ -455,6 +455,7 @@ fn main() -> BError {
     state.ecs.register::<Player>();
     state.ecs.register::<Viewshed>();
     state.ecs.register::<Monster>();
+    state.ecs.register::<Bystander>();
     state.ecs.register::<Name>();
     state.ecs.register::<BlocksTile>();
     state.ecs.register::<CombatStats>();
