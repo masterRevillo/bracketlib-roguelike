@@ -18,7 +18,7 @@ impl DistantExit {
         Box::new(Self {})
     }
 
-    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build(&mut self, _rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let starting_pos = build_data.starting_position.as_ref().unwrap().clone();
         let start_idx = build_data.map.xy_idx(
             starting_pos.x,

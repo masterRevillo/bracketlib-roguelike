@@ -1,5 +1,5 @@
 use bracket_lib::color::{BLACK, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, FORESTGREEN, GREY, LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, RGB};
-use bracket_lib::prelude::{BTerm, CHOCOLATE, GREY2, Point, to_cp437};
+use bracket_lib::prelude::{BTerm, CHOCOLATE, Point, SADDLEBROWN, to_cp437};
 use bracket_lib::terminal::{FontCharType, GREEN1};
 use specs::{Join, World, WorldExt};
 
@@ -121,8 +121,9 @@ fn get_tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
             fg = RGB::from_f32(0., 1.0, 1.0);
         }
         TileType::Bridge => {
-            glyph = to_cp437('.');
+            glyph = to_cp437('|');
             fg = RGB::named(CHOCOLATE);
+            bg = RGB::named(SADDLEBROWN);
         }
         TileType::Road => {
             glyph = to_cp437('~');
@@ -152,7 +153,7 @@ fn get_tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
         TileType::Gravel=> {
             glyph = to_cp437('\'');
             fg = RGB::named(LIGHT_SLATE);
-            fg = RGB::named(DARK_GRAY)
+            bg = RGB::named(DARK_GRAY)
         }
     }
     if map.bloodstains.contains(&(x as i32, y as i32)) {

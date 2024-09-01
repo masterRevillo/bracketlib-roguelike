@@ -2,7 +2,7 @@ use bracket_lib::color::{BLACK, GREEN, MAGENTA, ORANGE, RED, RGB};
 use bracket_lib::prelude::{field_of_view, to_cp437};
 use specs::prelude::*;
 
-use crate::components::{AreaOfEffect, Artefact, CombatStats, Confusion, Consumable, Equippable, Equipped, HungerClock, InBackpack, InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, Confusion, Consumable, Equippable, Equipped, HungerClock, InBackpack, InflictsDamage, MagicMapper, Name, Pools, Position, ProvidesFood, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::gamelog::GameLog;
 use crate::hunger_system::HungerSystem;
 use crate::map::Map;
@@ -49,7 +49,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Name>,
         ReadStorage<'a, ProvidesHealing>,
         ReadStorage<'a, Artefact>,
-        WriteStorage<'a, CombatStats>,
+        WriteStorage<'a, Pools>,
         ReadStorage<'a, Consumable>,
         ReadStorage<'a, InflictsDamage>,
         WriteStorage<'a, SufferDamage>,
@@ -76,7 +76,7 @@ impl<'a> System<'a> for ItemUseSystem {
             names,
             healing,
             artefacts,
-            mut combat_stats,
+            mut pools,
             consumables,
             inflicts_damage,
             mut suffer_damage,
@@ -168,9 +168,9 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(healer) => {
                     for target in targets.iter() {
-                        let stats = combat_stats.get_mut(*target);
-                        if let Some(stats) = stats {
-                            stats.hp = i32::min(stats.max_hp, stats.hp + healer.heal_amount);
+                        let p = pools.get_mut(*target);
+                        if let Some(p) = p {
+                            p.hit_points.current = i32::min(p.hit_points.max, p.hit_points.current + healer.heal_amount);
                             if entity == *player_entity {
                                 gamelog.entries.push(format!("You drink the {}, and it heals {}hp", names.get(use_item.item).unwrap().name, healer.heal_amount));
                             }

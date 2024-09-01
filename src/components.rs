@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use bracket_lib::color::RGB;
 use bracket_lib::prelude::{FontCharType, Point};
 use serde::{Deserialize, Serialize};
@@ -53,14 +54,6 @@ pub struct Player {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksTile {}
 
-
-#[derive(Component, Debug, ConvertSaveload, Clone)]
-pub struct CombatStats {
-    pub max_hp: i32,
-    pub hp: i32,
-    pub defense: i32,
-    pub power: i32
-}
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct WantsToMelee {
@@ -226,4 +219,46 @@ pub struct Door {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Quips {
     pub available: Vec<String>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Attribute {
+    pub base: i32,
+    pub modifiers: i32,
+    pub bonus: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Attributes {
+    pub might: Attribute,
+    pub fitness: Attribute,
+    pub quickness: Attribute,
+    pub intelligence: Attribute
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum Skill {
+    Melee, Defense, Magic
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Skills {
+    pub skills: HashMap<Skill, i32>
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Pool {
+    pub max: i32,
+    pub current: i32
+}
+
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Pools {
+    pub hit_points: Pool,
+    pub mana: Pool,
+    pub xp: i32,
+    pub level: i32
 }

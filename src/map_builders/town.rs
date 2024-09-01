@@ -100,7 +100,7 @@ impl TownBuilder {
         for _i in 0..rng.roll_dice(1, 4) + 6 {
             let y = rng.roll_dice(1, build_data.height) - 1;
             for x in 2 + rng.roll_dice(1, 6)..water_width[y as usize] + 4 {
-                build_data.map.tiles[x as usize][y as usize] = WoodFloor;
+                build_data.map.tiles[x as usize][y as usize] = Bridge;
             }
         }
         build_data.take_snapshot();
@@ -309,7 +309,7 @@ impl TownBuilder {
         buildings: &[(i32, i32, i32, i32)],
         building_index: &[(usize, i32, BuildingTag)],
     ) {
-        for (i, b_idx) in building_index.iter().enumerate() {
+        for (_i, b_idx) in building_index.iter().enumerate() {
             let build_type = &b_idx.2;
             let building = buildings[b_idx.0];
             match build_type {

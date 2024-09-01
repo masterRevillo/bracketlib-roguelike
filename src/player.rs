@@ -5,7 +5,7 @@ use specs::{Join, World};
 use specs::prelude::*;
 
 use crate::{RunState, State};
-use crate::components::{BlocksTile, BlocksVisibility, Bystander, CombatStats, Door, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Position, Renderable, Vendor, Viewshed, WantsToMelee, WantsToPickUpItem};
+use crate::components::{BlocksTile, BlocksVisibility, Bystander, Door, EntityMoved, HungerClock, HungerState, Item, Monster, Player, Pools, Position, Renderable, Vendor, Viewshed, WantsToMelee, WantsToPickUpItem};
 use crate::gamelog::GameLog;
 use crate::map::Map;
 use crate::map::tiletype::TileType;
@@ -79,9 +79,9 @@ fn skip_turn(ecs: &mut World) -> RunState {
     }
 
     if can_heal {
-        let mut health_components = ecs.write_storage::<CombatStats>();
-        let player_hp = health_components.get_mut(*player_entity).unwrap();
-        player_hp.hp = i32::min(player_hp.hp + 1, player_hp.max_hp);
+        let mut health_components = ecs.write_storage::<Pools>();
+        let pools = health_components.get_mut(*player_entity).unwrap();
+        pools.hit_points.current = i32::min(pools.hit_points.current + 1, pools.hit_points.max);
     }
 
     RunState::PlayerTurn
@@ -103,7 +103,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let players = ecs.write_storage::<Player>();
     let mut viewseheds = ecs.write_storage::<Viewshed>();
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let pools = ecs.read_storage::<Pools>();
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
@@ -136,7 +136,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
                 ppos.x = pos.x;
                 ppos.y = pos.y;
             } else {
-                let target = combat_stats.get(*potential_target);
+                let target = pools.get(*potential_target);
                 if let Some(_t) = target {
                     wants_to_melee.insert(entity, WantsToMelee{target: *potential_target})
                         .expect("Failed to add target");

@@ -1,11 +1,15 @@
+#[macro_use]
+extern crate lazy_static;
+extern crate strum;
+
 use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use crate::bystander_ai_system::BystanderAI;
 
+use crate::bystander_ai_system::BystanderAI;
 use crate::camera::render_debug_map;
-use crate::components::{AreaOfEffect, Artefact, BlocksTile, BlocksVisibility, Bystander, CombatStats, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
@@ -51,17 +55,14 @@ mod camera;
 mod raws;
 mod map;
 mod bystander_ai_system;
+mod gamesystem;
 
 mod util {
     pub mod namegen;
     pub mod string_utils;
 }
 
-#[macro_use]
-extern crate lazy_static;
-extern crate strum;
-
-const SHOW_MAPGEN_VISUALIZATION: bool = true;
+const SHOW_MAPGEN_VISUALIZATION: bool = false;
 const DEBUGGING: bool = true;
 
 const SCREEN_X: i32 = 100;
@@ -221,16 +222,10 @@ impl State {
         }
         self.generate_world_map(current_depth + 1);
 
-        let player_entity = self.ecs.fetch::<Entity>();
         let mut gamelog = self.ecs.fetch_mut::<GameLog>();
         gamelog
             .entries
-            .push("You rest for a moment and then descend to the next level".to_string());
-        let mut player_health_store = self.ecs.write_storage::<CombatStats>();
-        let player_health = player_health_store.get_mut(*player_entity);
-        if let Some(player_health) = player_health {
-            player_health.hp = i32::max(player_health.hp, player_health.max_hp / 2);
-        }
+            .push("You descend to the next level".to_string());
     }
 }
 
@@ -463,7 +458,6 @@ fn main() -> BError {
     state.ecs.register::<Vendor>();
     state.ecs.register::<Name>();
     state.ecs.register::<BlocksTile>();
-    state.ecs.register::<CombatStats>();
     state.ecs.register::<WantsToMelee>();
     state.ecs.register::<SufferDamage>();
     state.ecs.register::<Item>();
@@ -497,6 +491,9 @@ fn main() -> BError {
     state.ecs.register::<BlocksVisibility>();
     state.ecs.register::<Door>();
     state.ecs.register::<Quips>();
+    state.ecs.register::<Attributes>();
+    state.ecs.register::<Skills>();
+    state.ecs.register::<Pools>();
 
     raws::load_raws();
 

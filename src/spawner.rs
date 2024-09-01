@@ -7,8 +7,9 @@ use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-use crate::components::{CombatStats, HungerClock, HungerState, Name, Player, Position, Renderable, SerializeMe, Viewshed};
+use crate::components::{Attribute, Attributes, HungerClock, HungerState, Name, Player, Pool, Pools, Position, Renderable, SerializeMe, Skill, Skills, Viewshed};
 use crate::DEBUGGING;
+use crate::gamesystem::{attr_bonus, mana_at_level, player_hp_at_level};
 use crate::map::Map;
 use crate::map::tiletype::TileType;
 use crate::random_tables::{EntityType, RandomTable};
@@ -22,6 +23,12 @@ const MAX_MONSTERS: i32 = 4;
 pub type SpawnList = Vec<((i32, i32), EntityType)>;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
+    let mut skills = Skills{
+        skills: HashMap::new()
+    };
+    skills.skills.insert(Skill::Melee, 1);
+    skills.skills.insert(Skill::Defense, 1);
+    skills.skills.insert(Skill::Magic, 1);
     ecs.create_entity()
         .with(Position {
             x: player_x,
@@ -36,21 +43,44 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Player {})
         .with(Viewshed {
             visible_tiles: Vec::new(),
-            range: 8,
+            range: 32,
             dirty: true,
         })
         .with(Name {
             name: "Player".to_string(),
         })
-        .with(CombatStats {
-            max_hp: 30,
-            hp: 30,
-            defense: 2,
-            power: 5,
-        })
         .with(HungerClock {
             state: HungerState::WellFed,
             hunger_points: 20,
+        })
+        .with(
+            Attributes{
+                might: Attribute {
+                    base: 11, modifiers: 0, bonus: attr_bonus(11)
+                },
+                fitness: Attribute {
+                    base: 11, modifiers: 0, bonus: attr_bonus(11)
+                },
+                quickness: Attribute {
+                    base: 11, modifiers: 0, bonus: attr_bonus(11)
+                },
+                intelligence: Attribute {
+                    base: 11, modifiers: 0, bonus: attr_bonus(11)
+                },
+            }
+        )
+        .with(skills)
+        .with(Pools {
+           hit_points: Pool {
+               current: player_hp_at_level(11, 1),
+               max: player_hp_at_level(11, 1)
+           },
+            mana: Pool {
+                current: mana_at_level(11, 1),
+                max: mana_at_level(11, 1)
+            },
+            xp: 0,
+            level: 1
         })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
@@ -58,23 +88,6 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
 
 fn room_table(level: i32) -> RandomTable {
     get_spawn_table_for_depth(&RAWS.lock().unwrap(),  level)
-    // RandomTable::new()
-    //     .add(Bisat, 10)
-    //     .add(Ogur, 1 + level)
-    //     .add(HealthPotion, 7)
-    //     .add(FireballScroll, 2 + level)
-    //     .add(ConfusionScroll, 2 + level)
-    //     .add(MagicMissileScroll, 4)
-    //     .add(ChickenLeg, 4)
-    //     .add(Sandwich, 5)
-    //     .add(GobletOfWine, 4)
-    //     .add(Artefact, (level - 1))
-    //     .add(Dagger, 3)
-    //     .add(Shield, 3)
-    //     .add(Longsword, level - 1)
-    //     .add(TowerShield, level - 1)
-    //     .add(MagicMappingScroll, 2)
-    //     .add(BearTrap, 5)
 }
 
 pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntityType)) {

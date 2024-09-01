@@ -1,14 +1,16 @@
 use std::collections::HashSet;
+
 use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
-use bracket_lib::color::RGB;
 use bracket_lib::geometry::{DistanceAlg, Point};
-use bracket_lib::prelude::{BTerm, FontCharType, to_cp437};
+use bracket_lib::prelude::FontCharType;
 use serde::{Deserialize, Serialize};
 use specs::Entity;
 
-pub mod tiletype;
-pub use tiletype::{TileType, tile_walkable, tile_opaque};
+pub use tiletype::{tile_opaque, tile_walkable, TileType};
+
 use crate::map::tiletype::tile_cost;
+
+pub mod tiletype;
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct Map {

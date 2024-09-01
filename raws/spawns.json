@@ -201,14 +201,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "vendor"
+      "ai" : "vendor",
+      "attributes": {}
     },
     {
       "type" : "Clothier",
@@ -219,14 +214,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "vendor"
+      "ai" : "vendor",
+      "attributes": {}
     },
     {
       "type" : "Alchemist",
@@ -237,14 +227,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "vendor"
+      "ai" : "vendor",
+      "attributes": {}
     },
     {
       "type" : "Mom",
@@ -255,14 +240,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "bystander",
+      "attributes": {}
     },
     {
       "type" : "Peasant",
@@ -273,14 +253,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "bystander",
+      "attributes": {}
     },
     {
       "type" : "Bartender",
@@ -291,14 +266,14 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "vendor"
+      "ai" : "vendor",
+      "attributes": {
+        "intelligence": 13
+      },
+      "skills": {
+        "Melee": 2
+      }
     },
     {
       "type" : "ShadySalesman",
@@ -309,14 +284,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "vendor"
+      "ai" : "vendor",
+      "attributes": {}
     },
     {
       "type" : "Patron",
@@ -327,14 +297,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
       "ai" : "bystander",
+      "attributes": {},
       "quips": ["Fancy seeing you here again.", "Hey kid, next one is on you!", "One day I'll leave this town in my dust!", "How's the treasure hunt going, kid?"]
     },
     {
@@ -346,14 +311,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "bystander",
+      "attributes": {}
     },
     {
       "type" : "Parishioner",
@@ -364,14 +324,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
-      "ai" : "bystander"
+      "ai" : "bystander",
+      "attributes": {}
     },
     {
       "type" : "DockWorker",
@@ -382,14 +337,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
       "ai" : "bystander",
+      "attributes": {},
       "quips" : [ "Lovely day, eh?", "Good day for sailing, I'd say.","Nice weather", "Hello" ]
     },
     {
@@ -401,14 +351,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
       "ai" : "bystander",
+      "attributes": {},
       "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain", "Let me tell ya 'bout the 15 foot catfish I seen one time..." ]
     },
     {
@@ -420,15 +365,10 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
       "ai" : "bystander",
-      "quips" : [ "Arrr", "Grog!", "Booze!" ]
+      "quips" : [ "Arrr", "Grog!", "Booze!" ],
+      "attributes": {}
     },
     {
       "type" : "Drunk",
@@ -439,15 +379,10 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 4,
       "ai" : "bystander",
-      "quips" : [ "We're'd I put me rum?!", "Wanna drink? You're buyin'!", "Spare a copper?" ]
+      "quips" : [ "We're'd I put me rum?!", "Wanna drink? You're buyin'!", "Spare a copper?" ],
+      "attributes": {}
     },
     {
       "type" : "Rat",
@@ -458,14 +393,16 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 2,
-        "hp" : 2,
-        "defense" : 0,
-        "power" : 1
-      },
       "vision_range" : 8,
-      "ai": "melee"
+      "ai": "melee",
+      "attributes": {
+        "Might": 3,
+        "Fitness": 3
+      },
+      "skills" : {
+        "Melee": -1,
+        "Defense": -1
+      }
     },
     {
       "type" : "Ogur",
@@ -476,14 +413,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 16,
-        "hp" : 16,
-        "defense" : 1,
-        "power" : 4
-      },
       "vision_range" : 8,
-      "ai": "melee"
+      "ai": "melee",
+      "attributes": {}
     },
     {
       "type" : "Bisat",
@@ -494,14 +426,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 8,
-        "hp" : 8,
-        "defense" : 1,
-        "power" : 3
-      },
-      "vision_range" : 8,
-      "ai": "melee"
+    "vision_range" : 8,
+      "ai": "melee",
+      "attributes": {}
     },
     {
       "type" : "Spectre",
@@ -512,14 +439,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 18,
-        "hp" : 18,
-        "defense" : 2,
-        "power" : 5
-      },
       "vision_range" : 10,
-      "ai": "melee"
+      "ai": "melee",
+      "attributes": {}
     },
     {
       "type" : "TukkaWarrior",
@@ -530,14 +452,9 @@
         "order" : 1
       },
       "blocks_tile" : true,
-      "stats" : {
-        "max_hp" : 13,
-        "hp" : 13,
-        "defense" : 2,
-        "power" : 6
-      },
       "vision_range" : 6,
-      "ai": "melee"
+      "ai": "melee",
+      "attributes": {}
     }
   ],
   "props" : [

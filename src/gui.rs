@@ -9,10 +9,7 @@ use specs::prelude::*;
 
 use crate::{DEBUGGING, RunState, SCREEN_X, SCREEN_Y, State};
 use crate::camera::get_screen_bounds;
-use crate::components::{
-    CombatStats, Equipped, Hidden, HungerClock, HungerState, InBackpack, Name, Player, Position,
-    Viewshed,
-};
+use crate::components::{Equipped, Hidden, HungerClock, HungerState, InBackpack, Name, Player, Pools, Position, Viewshed};
 use crate::gamelog::GameLog;
 use crate::map::{Map};
 use crate::rex_assets::RexAssets;
@@ -32,21 +29,21 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
         RGB::named(BLACK),
     );
 
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let pools = ecs.read_storage::<Pools>();
     let players = ecs.read_storage::<Player>();
     let hunger = ecs.read_storage::<HungerClock>();
     let log = ecs.fetch::<GameLog>();
     let map = ecs.fetch::<Map>();
-    for (_p, stats, hc) in (&players, &combat_stats, &hunger).join() {
-        let health = format!(" HP: {} / {} ", stats.hp, stats.max_hp);
+    for (_p, stats, hc) in (&players, &pools, &hunger).join() {
+        let health = format!(" HP: {} / {} ", stats.hit_points.current, stats.hit_points.max);
         ctx.print_color(20, GUIY, RGB::named(YELLOW), RGB::named(BLACK), &health);
 
         ctx.draw_bar_horizontal(
             36,
             GUIY,
             51,
-            stats.hp,
-            stats.max_hp,
+            stats.hit_points.current,
+            stats.hit_points.max,
             RGB::named(RED),
             RGB::named(BLACK),
         );

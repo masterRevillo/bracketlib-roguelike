@@ -43,7 +43,7 @@ impl<'a> System<'a> for BystanderAI {
 
         if *runstate != RunState::MonsterTurn { return; }
 
-        for (entity, mut viewshed, _bystander, mut pos) in (&entities, &mut viewshed, &bystander, &mut position).join() {
+        for (entity, viewshed, _bystander, pos) in (&entities, &mut viewshed, &bystander, &mut position).join() {
             let quip = quips.get_mut(entity);
             if let Some(quip) = quip {
                 if !quip.available.is_empty() && viewshed.visible_tiles.contains(&player_pos) && rng.roll_dice(1, 6) == 1 {

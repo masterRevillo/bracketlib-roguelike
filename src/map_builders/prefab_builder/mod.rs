@@ -101,10 +101,6 @@ impl PrefabBuilder {
                 build_data.map.tiles[x][y] = TileType::Floor;
                 build_data.spawn_list.push(((x as i32, y as i32), EntityType::BearTrap));
             }
-            'o' => {
-                build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::Ogur));
-            }
             '=' | '%' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
                 build_data.spawn_list.push(((x as i32, y as i32), EntityType::Sandwich));
