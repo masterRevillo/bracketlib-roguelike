@@ -7,7 +7,7 @@ use specs::{Builder, Entity, Join, World, WorldExt};
 use specs::error::NoError;
 use specs::saveload::{DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator};
 
-use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, Wearable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, NaturalAttackDefense};
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
@@ -79,8 +79,8 @@ pub fn save_game(ecs: &mut World) {
             Artefact,
             Equippable,
             Equipped,
-            MeleeAttackBonus,
-            DefenseBonus,
+            MeleeWeapon,
+            Wearable,
             WantsToUnequipItem,
             ParticleLifetime,
             HungerClock,
@@ -97,7 +97,8 @@ pub fn save_game(ecs: &mut World) {
             Quips,
             Attributes,
             Skills,
-            Pools
+            Pools,
+            NaturalAttackDefense
         );
     }
     ecs.delete_entity(savehelper).expect("Couldn't clean up helper")
@@ -154,8 +155,8 @@ pub fn load_game(ecs: &mut World) {
             Artefact,
             Equippable,
             Equipped,
-            MeleeAttackBonus,
-            DefenseBonus,
+            MeleeWeapon,
+            Wearable,
             WantsToUnequipItem,
             ParticleLifetime,
             HungerClock,
@@ -172,7 +173,8 @@ pub fn load_game(ecs: &mut World) {
             Quips,
             Attributes,
             Skills,
-            Pools
+            Pools,
+            NaturalAttackDefense
         );
     }
     let mut deleteme: Option<Entity> = None;

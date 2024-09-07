@@ -4,7 +4,8 @@ use crate::raws::item_structs::Renderable;
 
 #[derive(Deserialize, Debug)]
 pub struct Mob {
-    pub r#type: String,
+    pub id: String,
+    pub name: String,
     pub renderable: Option<Renderable>,
     pub blocks_tile: bool,
     pub vision_range: i32,
@@ -14,7 +15,22 @@ pub struct Mob {
     pub skills: Option<HashMap<String, i32>>,
     pub level: Option<i32>,
     pub hp: Option<i32>,
-    pub mana: Option<i32>
+    pub mana: Option<i32>,
+    pub equipped: Option<Vec<String>>,
+    pub natural: Option<MobNatural>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MobNatural {
+    pub armor_class: Option<i32>,
+    pub attacks: Option<Vec<NaturalAttack>>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct NaturalAttack {
+    pub name: String,
+    pub hit_bonus: i32,
+    pub damage: String
 }
 
 #[derive(Deserialize, Debug)]

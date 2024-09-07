@@ -9,7 +9,6 @@ use crate::map_builders::{BuilderMap, InitialMapBuilder, MetaMapBuilder};
 use crate::map_builders::prefab_builder::prefab_levels::PrefabLevel;
 use crate::map_builders::prefab_builder::prefab_rooms::{CHECKERBOARD, CHICKFILA, PrefabRoom, TRAP, WELL};
 use crate::map_builders::prefab_builder::prefab_sections::{HorizontalPlacement, PrefabSection, VerticalPlacement};
-use crate::random_tables::EntityType;
 
 pub mod prefab_levels;
 pub mod prefab_sections;
@@ -91,31 +90,31 @@ impl PrefabBuilder {
             '>' => build_data.map.tiles[x][y] = TileType::DownStairs,
             'b' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::Bisat));
+                build_data.spawn_list.push(((x as i32, y as i32), "Bisat".to_string()));
             }
             'o' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::Ogur));
+                build_data.spawn_list.push(((x as i32, y as i32), "Ogur".to_string()));
             }
             '^' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::BearTrap));
+                build_data.spawn_list.push(((x as i32, y as i32), "Bear Trap".to_string()));
             }
             '=' | '%' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::Sandwich));
+                build_data.spawn_list.push(((x as i32, y as i32), "Sandwich".to_string()));
             }
             'q' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::ChickenLeg));
+                build_data.spawn_list.push(((x as i32, y as i32), "Chicken Leg".to_string()));
             }
             'u' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::GobletOfWine));
+                build_data.spawn_list.push(((x as i32, y as i32), "Goblet Of Wine".to_string()));
             }
             '!' => {
                 build_data.map.tiles[x][y] = TileType::Floor;
-                build_data.spawn_list.push(((x as i32, y as i32), EntityType::HealthPotion));
+                build_data.spawn_list.push(((x as i32, y as i32), "Health Potion".to_string()));
             }
             w => { console::log(format!("unknown glyph loading map {}", w)) }
         }

@@ -4,7 +4,8 @@ use crate::raws::item_structs::Renderable;
 
 #[derive(Deserialize, Debug)]
 pub struct Prop {
-    pub r#type: String,
+    pub id: String,
+    pub name: String,
     pub renderable: Option<Renderable>,
     pub hidden: Option<bool>,
     pub blocks_tile: Option<bool>,

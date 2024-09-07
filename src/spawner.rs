@@ -12,15 +12,14 @@ use crate::DEBUGGING;
 use crate::gamesystem::{attr_bonus, mana_at_level, player_hp_at_level};
 use crate::map::Map;
 use crate::map::tiletype::TileType;
-use crate::random_tables::{EntityType, RandomTable};
-use crate::random_tables::EntityType::*;
+use crate::random_tables::RandomTable;
 use crate::raws::rawmaster::{get_spawn_table_for_depth, spawn_named_entity, SpawnType};
 use crate::raws::RAWS;
 use crate::rect::Rect;
 
 const MAX_MONSTERS: i32 = 4;
 
-pub type SpawnList = Vec<((i32, i32), EntityType)>;
+pub type SpawnList = Vec<((i32, i32), String)>;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let mut skills = Skills{
@@ -29,7 +28,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     skills.skills.insert(Skill::Melee, 1);
     skills.skills.insert(Skill::Defense, 1);
     skills.skills.insert(Skill::Magic, 1);
-    ecs.create_entity()
+    let player = ecs.create_entity()
         .with(Position {
             x: player_x,
             y: player_y,
@@ -83,14 +82,21 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             level: 1
         })
         .marked::<SimpleMarker<SerializeMe>>()
-        .build()
+        .build();
+    spawn_named_entity(&RAWS.lock().unwrap(), &"RustyLongsword".to_string(), SpawnType::Equipped {by: player}, ecs);
+    spawn_named_entity(&RAWS.lock().unwrap(), &"DriedSausage".to_string(), SpawnType::Carried {by: player}, ecs);
+    spawn_named_entity(&RAWS.lock().unwrap(), &"Beer".to_string(), SpawnType::Carried {by: player}, ecs);
+    spawn_named_entity(&RAWS.lock().unwrap(), &"StainedTunic".to_string(), SpawnType::Equipped {by: player}, ecs);
+    spawn_named_entity(&RAWS.lock().unwrap(), &"TornTrousers".to_string(), SpawnType::Equipped {by: player}, ecs);
+    spawn_named_entity(&RAWS.lock().unwrap(), &"OldBoots".to_string(), SpawnType::Equipped {by: player}, ecs);
+    player
 }
 
 fn room_table(level: i32) -> RandomTable {
     get_spawn_table_for_depth(&RAWS.lock().unwrap(),  level)
 }
 
-pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntityType)) {
+pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &String)) {
     // let mut rng = ecs.write_resource::<RandomNumberGenerator>();
     // let builder = ecs.create_entity();
     let coords = spawn.0;
@@ -104,8 +110,8 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntityType)) {
     if item_result.is_some() {
         return;
     }
-    match spawn.1 {
-        None => {}
+    // match spawn.1 {
+    //     None => {}
         // Bisat => bisat(ecs, coords.0, coords.1),
         // Ogur => ogur(ecs, coords.0, coords.1),
         // HealthPotion => health_potion(ecs, coords.0, coords.1),
@@ -150,8 +156,8 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&(i32, i32), &EntityType)) {
         // MagicMappingScroll => magic_mapping_stroll(ecs, coords.0, coords.1),
         // BearTrap => bear_trap(ecs, coords.0, coords.1),
         // Door => door(ecs, coords.0, coords.1),
-        _ => {}
-    }
+        // _ => {}
+    // }
 }
 
 pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_level: i32, spawn_list: &mut SpawnList) {
@@ -200,7 +206,7 @@ pub fn spawn_debug_items(ecs: &mut World, starting_position: &Position) {
     if DEBUGGING {
         spawn_entity(
             ecs,
-            &(&(starting_position.x, starting_position.y), &MagicMappingScroll),
+            &(&(starting_position.x, starting_position.y), &"Magic Mapping Scroll".to_string()),
         );
     }
 }
@@ -213,7 +219,7 @@ pub fn spawn_region(
     spawn_list: &mut SpawnList
 ) {
     let spawn_table = room_table(map_depth);
-    let mut spawn_points: HashMap<(i32, i32), EntityType> = HashMap::new();
+    let mut spawn_points: HashMap<(i32, i32), String> = HashMap::new();
     let mut areas: Vec<(i32, i32)> = Vec::from(area);
 
     {
@@ -236,6 +242,6 @@ pub fn spawn_region(
     }
 
     for spawn in spawn_points.iter() {
-        spawn_list.push((*spawn.0, *spawn.1))
+        spawn_list.push((*spawn.0, spawn.1.to_string()))
     }
 }

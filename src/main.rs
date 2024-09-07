@@ -9,7 +9,7 @@ use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 use crate::bystander_ai_system::BystanderAI;
 use crate::camera::render_debug_map;
-use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, DefenseBonus, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeAttackBonus, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem};
+use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, Wearable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, NaturalAttackDefense};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
@@ -248,7 +248,7 @@ impl GameState for State {
         }
         match new_runstate {
             RunState::MapGeneration => {
-                if !SHOW_MAPGEN_VISUALIZATION {
+                if SHOW_MAPGEN_VISUALIZATION {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 ctx.cls();
@@ -477,8 +477,8 @@ fn main() -> BError {
     state.ecs.register::<Examinable>();
     state.ecs.register::<Equippable>();
     state.ecs.register::<Equipped>();
-    state.ecs.register::<MeleeAttackBonus>();
-    state.ecs.register::<DefenseBonus>();
+    state.ecs.register::<MeleeWeapon>();
+    state.ecs.register::<Wearable>();
     state.ecs.register::<WantsToUnequipItem>();
     state.ecs.register::<ParticleLifetime>();
     state.ecs.register::<HungerClock>();
@@ -494,6 +494,7 @@ fn main() -> BError {
     state.ecs.register::<Attributes>();
     state.ecs.register::<Skills>();
     state.ecs.register::<Pools>();
+    state.ecs.register::<NaturalAttackDefense>();
 
     raws::load_raws();
 

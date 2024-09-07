@@ -144,7 +144,7 @@ pub struct SerializationHelper {
 }
 
 #[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum  EquipmentSlot { Melee, Shield }
+pub enum  EquipmentSlot { Melee, Shield, Head, Torso, Legs, Feet, Hands }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Equippable {
@@ -157,14 +157,37 @@ pub struct Equipped {
     pub slot: EquipmentSlot
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
-pub struct MeleeAttackBonus {
-    pub attack: i32
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum WeaponAttribute { Might, Quickness}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct MeleeWeapon {
+    pub attribute: WeaponAttribute,
+    pub damage_n_dice: i32,
+    pub damage_die_type: i32,
+    pub damage_bonus: i32,
+    pub hit_bonus: i32
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
-pub struct DefenseBonus {
-    pub defense: i32
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Wearable {
+    pub armor_class: f32
+}
+
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct NaturalAttack {
+    pub name: String,
+    pub damage_n_dice: i32,
+    pub damage_die_type: i32,
+    pub damage_bonus: i32,
+    pub hit_bonus: i32
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct NaturalAttackDefense {
+    pub armor_class: Option<i32>,
+    pub attacks: Vec<NaturalAttack>
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]

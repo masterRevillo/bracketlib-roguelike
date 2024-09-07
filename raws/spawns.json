@@ -1,7 +1,108 @@
 {
   "items" : [
     {
-      "type": "HealthPotion",
+      "id" : "Cudgel",
+      "name" : "Cudgel",
+      "renderable": {
+        "glyph" : "/",
+        "fg" : "#A52A2A",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "weapon" : {
+        "range" : "melee",
+        "attribute" : "Quickness",
+        "base_damage" : "1d4",
+        "hit_bonus" : 0
+      }
+    },
+    {
+      "id" : "ClothTunic",
+      "name" : "Cloth Tunic",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FF00",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "wearable" : {
+        "slot" : "Torso",
+        "armor_class" : 0.1
+      }
+    },
+    {
+      "id" : "ClothPants",
+      "name" : "Cloth Pants",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.1
+      }
+    },
+    {
+      "id" : "Slippers",
+      "name" : "Slippers",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#FF9999",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.1
+      }
+    },
+    {
+      "id" : "StainedTunic",
+      "name" : "Stained Tunic",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FF00",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "wearable" : {
+        "slot" : "Torso",
+        "armor_class" : 0.1
+      }
+    },
+    {
+      "id" : "TornTrousers",
+      "name" : "Torn Trousers",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#00FFFF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.1
+      }
+    },
+    {
+      "id" : "OldBoots",
+      "name" : "Old Boots",
+      "renderable": {
+        "glyph" : "[",
+        "fg" : "#FF9999",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "wearable" : {
+        "slot" : "Legs",
+        "armor_class" : 0.1
+      }
+    },
+    {
+      "id": "HealthPotion",
+      "name": "Health Potion",
       "renderable": {
         "glyph" : "!",
         "fg" : "#FF00FF",
@@ -13,7 +114,8 @@
       }
     },
     {
-      "type": "MagicMissileScroll",
+      "id": "MagicMissileScroll",
+      "name": "Magic Missile Scroll",
       "renderable": {
         "glyph" : "~",
         "fg" : "#00FFFF",
@@ -28,7 +130,8 @@
       }
     },
     {
-      "type" : "FireballScroll",
+      "id" : "FireballScroll",
+      "name" : "Fireball Scroll",
       "renderable": {
         "glyph" : "~",
         "fg" : "#FFA500",
@@ -44,7 +147,8 @@
       }
     },
     {
-      "type" : "ConfusionScroll",
+      "id" : "ConfusionScroll",
+      "name" : "Confusion Scroll",
       "renderable": {
         "glyph" : "~",
         "fg" : "#FFAAAA",
@@ -60,7 +164,8 @@
       }
     },
     {
-      "type" : "MagicMappingScroll",
+      "id" : "MagicMappingScroll",
+      "name" : "Magic Mapping Scroll",
       "renderable": {
         "glyph" : "~",
         "fg" : "#AAAAFF",
@@ -74,7 +179,8 @@
       }
     },
     {
-      "type" : "Sandwich",
+      "id" : "Sandwich",
+      "name" : "Sandwich",
       "renderable": {
         "glyph" : "=",
         "fg" : "#cd661d",
@@ -88,7 +194,8 @@
       }
     },
     {
-      "type" : "ChickenLeg",
+      "id" : "ChickenLeg",
+      "name" : "Chicken Leg",
       "renderable": {
         "glyph" : "q",
         "fg" : "#cd661d",
@@ -102,7 +209,38 @@
       }
     },
     {
-      "type" : "GobletOfWine",
+      "id" : "DriedSausage",
+      "name" : "Dried Sausage",
+      "renderable": {
+        "glyph" : "%",
+        "fg" : "#00FF00",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "food" : "150"
+        }
+      }
+    },
+    {
+      "id" : "Beer",
+      "name" : "Beer",
+      "renderable": {
+        "glyph" : "!",
+        "fg" : "#FF00FF",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "provides_healing": "4"
+        }
+      }
+    },
+    {
+      "id" : "GobletOfWine",
+      "name" : "Goblet Of Wine",
       "renderable": {
         "glyph" : "u",
         "fg" : "#b0305f",
@@ -116,7 +254,8 @@
       }
     },
     {
-      "type" : "Artefact",
+      "id" : "Artefact",
+      "name" : "Artefact",
       "renderable": {
         "glyph" : "{",
         "fg" : "#ffd700",
@@ -128,7 +267,24 @@
       }
     },
     {
-      "type" : "Dagger",
+      "id" : "RustyLongsword",
+      "name" : "Rusty Longsword",
+      "renderable": {
+        "glyph" : "/",
+        "fg" : "#BB77BB",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "weapon" : {
+        "range" : "melee",
+        "attribute": "Might",
+        "base_damage": "1d8-1,",
+        "hit_bonus": -1
+      }
+    },
+    {
+      "id" : "Dagger",
+      "name" : "Dagger",
       "renderable": {
         "glyph" : "-",
         "fg" : "#FFAAAA",
@@ -137,11 +293,14 @@
       },
       "weapon" : {
         "range" : "melee",
-        "power_bonus" : 2
+        "attribute": "Quickness",
+        "base_damage": "1d4,",
+        "hit_bonus": 0
       }
     },
     {
-      "type" : "Longsword",
+      "id" : "Longsword",
+      "name" : "Longsword",
       "renderable": {
         "glyph" : "/",
         "fg" : "#FFAAFF",
@@ -150,11 +309,14 @@
       },
       "weapon" : {
         "range" : "melee",
-        "power_bonus" : 4
+        "attribute": "Might",
+        "base_damage": "1d4+1,",
+        "hit_bonus": 0
       }
     },
     {
-      "type" : "Battleaxe",
+      "id" : "Battleaxe",
+      "name" : "Battleaxe",
       "renderable": {
         "glyph" : "¶",
         "fg" : "#FF55FF",
@@ -163,37 +325,44 @@
       },
       "weapon" : {
         "range" : "melee",
-        "power_bonus" : 5
+        "attribute": "Might",
+        "base_damage": "1d6+3,",
+        "hit_bonus": 0
       }
     },
     {
-      "type" : "Shield",
+      "id" : "Shield",
+      "name" : "Shield",
       "renderable": {
         "glyph" : "[",
         "fg" : "#00AAFF",
         "bg" : "#000000",
         "order" : 2
       },
-      "shield" : {
-        "defense_bonus" : 1
+      "wearable" : {
+        "slot" : "Shield",
+        "armor_class": 1.0
       }
     },
     {
-      "type" : "TowerShield",
+      "id" : "TowerShield",
+      "name" : "Tower Shield",
       "renderable": {
         "glyph" : "[",
         "fg" : "#00FFFF",
         "bg" : "#000000",
         "order" : 2
       },
-      "shield" : {
-        "defense_bonus" : 3
+      "wearable" : {
+        "slot" : "Shield",
+        "armor_class": 1.0
       }
     }
   ],
   "mobs" : [
     {
-      "type" : "Blacksmith",
+      "id" : "Blacksmith",
+      "name" : "Blacksmith",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#EE82EE",
@@ -203,10 +372,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "vendor",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "Battleaxe", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Clothier",
+      "id" : "Clothier",
+      "name" : "Clothier",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#EE82EE",
@@ -216,10 +387,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "vendor",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Alchemist",
+      "id" : "Alchemist",
+      "name" : "Alchemist",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#EE82EE",
@@ -229,10 +402,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "vendor",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Mom",
+      "id" : "Mom",
+      "name" : "Mom",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#FFAAAA",
@@ -242,10 +417,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "bystander",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "Longsword", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Peasant",
+      "id" : "Peasant",
+      "name" : "Peasant",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#999999",
@@ -255,10 +432,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "bystander",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Bartender",
+      "id" : "Bartender",
+      "name" : "Bartender",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#EE82EE",
@@ -273,10 +452,12 @@
       },
       "skills": {
         "Melee": 2
-      }
+      },
+      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "ShadySalesman",
+      "id" : "ShadySalesman",
+      "name" : "Shady Salesman",
       "renderable": {
         "glyph" : "h",
         "fg" : "#EE82EE",
@@ -286,10 +467,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "vendor",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Patron",
+      "id" : "Patron",
+      "name" : "Patron",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#AAAAAA",
@@ -300,10 +483,12 @@
       "vision_range" : 4,
       "ai" : "bystander",
       "attributes": {},
-      "quips": ["Fancy seeing you here again.", "Hey kid, next one is on you!", "One day I'll leave this town in my dust!", "How's the treasure hunt going, kid?"]
+      "quips": ["Fancy seeing you here again.", "Hey kid, next one is on you!", "One day I'll leave this town in my dust!", "How's the treasure hunt going, kid?"],
+      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Priest",
+      "id" : "Priest",
+      "name" : "Priest",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#EE82EE",
@@ -313,10 +498,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "bystander",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Parishioner",
+      "id" : "Parishioner",
+      "name" : "Parishioner",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#AAAAAA",
@@ -326,10 +513,12 @@
       "blocks_tile" : true,
       "vision_range" : 4,
       "ai" : "bystander",
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "DockWorker",
+      "id" : "DockWorker",
+      "name" : "Dock Worker",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#999999",
@@ -340,10 +529,12 @@
       "vision_range" : 4,
       "ai" : "bystander",
       "attributes": {},
-      "quips" : [ "Lovely day, eh?", "Good day for sailing, I'd say.","Nice weather", "Hello" ]
+      "quips" : [ "Lovely day, eh?", "Good day for sailing, I'd say.","Nice weather", "Hello" ],
+      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Fisher",
+      "id" : "Fisher",
+      "name" : "Fisher",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#999999",
@@ -354,10 +545,12 @@
       "vision_range" : 4,
       "ai" : "bystander",
       "attributes": {},
-      "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain", "Let me tell ya 'bout the 15 foot catfish I seen one time..." ]
+      "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain", "Let me tell ya 'bout the 15 foot catfish I seen one time..." ],
+      "equipped" : [ "Dagger", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Pirate",
+      "id" : "Pirate",
+      "name" : "Pirate",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#aa9999",
@@ -368,10 +561,12 @@
       "vision_range" : 4,
       "ai" : "bystander",
       "quips" : [ "Arrr", "Grog!", "Booze!" ],
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Drunk",
+      "id" : "Drunk",
+      "name" : "Drunk",
       "renderable": {
         "glyph" : "☺",
         "fg" : "#aa9999",
@@ -382,10 +577,12 @@
       "vision_range" : 4,
       "ai" : "bystander",
       "quips" : [ "We're'd I put me rum?!", "Wanna drink? You're buyin'!", "Spare a copper?" ],
-      "attributes": {}
+      "attributes": {},
+      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
     },
     {
-      "type" : "Rat",
+      "id" : "Rat",
+      "name" : "Rat",
       "renderable": {
         "glyph" : "r",
         "fg" : "#6b4b5a",
@@ -402,10 +599,17 @@
       "skills" : {
         "Melee": -1,
         "Defense": -1
+      },
+      "natural" : {
+        "armor_class": 11,
+        "attacks": [
+          { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+        ]
       }
     },
     {
-      "type" : "Ogur",
+      "id" : "Ogur",
+      "name" : "Ogur",
       "renderable": {
         "glyph" : "o",
         "fg" : "#808000",
@@ -418,7 +622,8 @@
       "attributes": {}
     },
     {
-      "type" : "Bisat",
+      "id" : "Bisat",
+      "name" : "Bisat",
       "renderable": {
         "glyph" : "b",
         "fg" : "#cd853f",
@@ -431,7 +636,8 @@
       "attributes": {}
     },
     {
-      "type" : "Spectre",
+      "id" : "Spectre",
+      "name" : "Spectre",
       "renderable": {
         "glyph" : "s",
         "fg" : "#93a7db",
@@ -444,7 +650,8 @@
       "attributes": {}
     },
     {
-      "type" : "TukkaWarrior",
+      "id" : "TukkaWarrior",
+      "name" : "Tukka Warrior",
       "renderable": {
         "glyph" : "t",
         "fg" : "#76c491",
@@ -459,7 +666,8 @@
   ],
   "props" : [
     {
-      "type" : "Anvil",
+      "id" : "Anvil",
+      "name" : "Anvil",
       "renderable": {
         "glyph" : "╔",
         "fg" : "#AAAAAA",
@@ -469,7 +677,8 @@
       "hidden" : false
     },
     {
-      "type" : "WaterTrough",
+      "id" : "WaterTrough",
+      "name" : "Water Trough",
       "renderable": {
         "glyph" : "•",
         "fg" : "#5555FF",
@@ -479,7 +688,8 @@
       "hidden" : false
     },
     {
-      "type" : "WeaponRack",
+      "id" : "WeaponRack",
+      "name" : "Weapon Rack",
       "renderable": {
         "glyph" : "π",
         "fg" : "#FFD700",
@@ -489,7 +699,8 @@
       "hidden" : false
     },
     {
-      "type" : "ArmorStand",
+      "id" : "ArmorStand",
+      "name" : "Armor Stand",
       "renderable": {
         "glyph" : "⌠",
         "fg" : "#FFFFFF",
@@ -499,7 +710,8 @@
       "hidden" : false
     },
     {
-      "type" : "ChemistrySet",
+      "id" : "ChemistrySet",
+      "name" : "Chemistry Set",
       "renderable": {
         "glyph" : "δ",
         "fg" : "#00FFFF",
@@ -509,7 +721,8 @@
       "hidden" : false
     },
     {
-      "type" : "DeadThing",
+      "id" : "DeadThing",
+      "name" : "Dead Thing",
       "renderable": {
         "glyph" : "☻",
         "fg" : "#AA0000",
@@ -519,7 +732,8 @@
       "hidden" : false
     },
     {
-      "type" : "Cabinet",
+      "id" : "Cabinet",
+      "name" : "Cabinet",
       "renderable": {
         "glyph" : "∩",
         "fg" : "#805A46",
@@ -529,7 +743,8 @@
       "hidden" : false
     },
     {
-      "type" : "Bed",
+      "id" : "Bed",
+      "name" : "Bed",
       "renderable": {
         "glyph" : "8",
         "fg" : "#805A46",
@@ -539,7 +754,8 @@
       "hidden" : false
     },
     {
-      "type" : "Loom",
+      "id" : "Loom",
+      "name" : "Loom",
       "renderable": {
         "glyph" : "≡",
         "fg" : "#805A46",
@@ -549,7 +765,8 @@
       "hidden" : false
     },
     {
-      "type" : "HideRack",
+      "id" : "HideRack",
+      "name" : "Hide Rack",
       "renderable": {
         "glyph" : "π",
         "fg" : "#805A46",
@@ -559,7 +776,8 @@
       "hidden" : false
     },
     {
-      "type" : "Keg",
+      "id" : "Keg",
+      "name" : "Keg",
       "renderable": {
         "glyph" : "φ",
         "fg" : "#AAAAAA",
@@ -569,7 +787,8 @@
       "hidden" : false
     },
     {
-      "type" : "Table",
+      "id" : "Table",
+      "name" : "Table",
       "renderable": {
         "glyph" : "╦",
         "fg" : "#AAAAAA",
@@ -579,7 +798,8 @@
       "hidden" : false
     },
     {
-      "type" : "Chair",
+      "id" : "Chair",
+      "name" : "Chair",
       "renderable": {
         "glyph" : "└",
         "fg" : "#AAAAAA",
@@ -589,7 +809,8 @@
       "hidden" : false
     },
     {
-      "type" : "Candle",
+      "id" : "Candle",
+      "name" : "Candle",
       "renderable": {
         "glyph" : "Ä",
         "fg" : "#FFA500",
@@ -599,7 +820,8 @@
       "hidden" : false
     },
     {
-      "type" : "BearTrap",
+      "id" : "BearTrap",
+      "name" : "Bear Trap",
       "renderable": {
         "glyph" : "^",
         "fg" : "#FF0000",
@@ -615,7 +837,8 @@
       }
     },
     {
-      "type" : "Door",
+      "id" : "Door",
+      "name" : "Door",
       "renderable": {
         "glyph" : "+",
         "fg" : "#805A46",
@@ -629,25 +852,25 @@
     }
   ],
   "spawn_table" : [
-    { "type" : "Rat", "weight" : 20, "min_depth" : 0, "max_depth" : 3 },
-    { "type" : "Bisat", "weight" : 10, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "Ogur", "weight" : 3, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "type" : "Spectre", "weight" : 3, "min_depth" : 2, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "type" : "TukkaWarrior", "weight" : 4, "min_depth" : 4, "max_depth" : 100 },
-    { "type" : "HealthPotion", "weight" : 7, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "FireballScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "type" : "ConfusionScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "type" : "MagicMissileScroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "Dagger", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "Shield", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "Longsword", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
-    { "type" : "Battleaxe", "weight" : 1, "min_depth" : 2, "max_depth" : 100 },
-    { "type" : "TowerShield", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
-    { "type" : "Sandwich", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "ChickenLeg", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "GobletOfWine", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "MagicMappingScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "BearTrap", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
-    { "type" : "Artefact", "weight" : 1, "min_depth" : 2, "max_depth" : 100 }
+    { "id" : "Rat", "weight" : 20, "min_depth" : 0, "max_depth" : 3 },
+    { "id" : "Bisat", "weight" : 10, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "Ogur", "weight" : 3, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "id" : "Spectre", "weight" : 3, "min_depth" : 2, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "id" : "TukkaWarrior", "weight" : 4, "min_depth" : 4, "max_depth" : 100 },
+    { "id" : "HealthPotion", "weight" : 7, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "FireballScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "id" : "ConfusionScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "id" : "MagicMissileScroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "Dagger", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "Shield", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "Longsword", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
+    { "id" : "Battleaxe", "weight" : 1, "min_depth" : 2, "max_depth" : 100 },
+    { "id" : "TowerShield", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
+    { "id" : "Sandwich", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "ChickenLeg", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "GobletOfWine", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "MagicMappingScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "BearTrap", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "Artefact", "weight" : 1, "min_depth" : 2, "max_depth" : 100 }
   ]
 }
