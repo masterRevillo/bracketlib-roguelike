@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
 use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
+use bracket_lib::color::RGB;
 use bracket_lib::geometry::{DistanceAlg, Point};
-use bracket_lib::prelude::FontCharType;
+use bracket_lib::prelude::{to_cp437, BTerm, FontCharType};
 use serde::{Deserialize, Serialize};
 use specs::Entity;
 

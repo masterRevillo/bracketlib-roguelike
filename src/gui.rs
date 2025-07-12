@@ -111,6 +111,11 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
         GUIY + 1,
         format!("Coordinates: ({},{})", mouse_pos.0, mouse_pos.1),
     );
+    ctx.print(
+        GUIWIDTH - 20,
+        GUIY + 2,
+        format!("Tile: {:?}", map.tiles[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize]),
+    );
     if let Some(dkm) = dkm {
         if DEBUGGING {
             ctx.print(
@@ -461,9 +466,9 @@ pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
                     selected: selection,
                 }
             }
-            Some(key) => match key {
+            Some(key) => return match key {
                 VirtualKeyCode::Escape => {
-                    return MainMenuResult::NoSelection {
+                    MainMenuResult::Selected {
                         selected: MainMenuSelection::Quit,
                     }
                 }
@@ -477,9 +482,9 @@ pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
                     if new_selection == MainMenuSelection::LoadGame && !save_exists {
                         new_selection = MainMenuSelection::NewGame;
                     }
-                    return MainMenuResult::NoSelection {
+                    MainMenuResult::NoSelection {
                         selected: new_selection,
-                    };
+                    }
                 }
                 VirtualKeyCode::Down => {
                     let mut new_selection;
@@ -491,17 +496,17 @@ pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
                     if new_selection == MainMenuSelection::LoadGame && !save_exists {
                         new_selection = MainMenuSelection::Quit;
                     }
-                    return MainMenuResult::NoSelection {
+                    MainMenuResult::NoSelection {
                         selected: new_selection,
-                    };
+                    }
                 }
                 VirtualKeyCode::Return => {
-                    return MainMenuResult::Selected {
+                    MainMenuResult::Selected {
                         selected: selection,
                     }
                 }
                 _ => {
-                    return MainMenuResult::NoSelection {
+                    MainMenuResult::NoSelection {
                         selected: selection,
                     }
                 }
@@ -519,6 +524,39 @@ fn get_option_color(selection: MainMenuSelection, option: MainMenuSelection) -> 
     } else {
         RGB::named(WHITE)
     }
+}
+
+pub fn draw_hollow_box(
+    console: &mut BTerm,
+    sx: i32,
+    sy: i32,
+    width: i32,
+    height: i32,
+    fg: RGB,
+    bg: RGB,
+) {
+    console.set(sx, sy, fg, bg, to_cp437('┌'));
+    console.set(sx + width, sy, fg, bg, to_cp437('┌'));
+    console.set(sx, sy + height, fg, bg, to_cp437('└'));
+    console.set(sx + width, sy + height, fg, bg, to_cp437('┘'));
+    for x in sx + 1..sx + width {
+        console.set(x, sy, fg, bg, to_cp437('─'));
+        console.set(x, sy + height, fg, bg, to_cp437('─'));
+    }
+    for y in sy + 1..sy + height {
+        console.set(sx, y, fg, bg, to_cp437('│'));
+        console.set(sx + width, y, fg, bg, to_cp437('│'));
+    }
+}
+
+pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
+    let box_gray = RGB::from_hex("#999999").expect("fail");
+    let black = RGB::named(BLACK);
+
+    draw_hollow_box(ctx, 0, 0, 79, 59, box_gray, black);
+    draw_hollow_box(ctx, 0, 0, 49, 45, box_gray, black);
+    draw_hollow_box(ctx, 0, 45, 79, 14, box_gray, black);
+    draw_hollow_box(ctx, 49, 0, 30, 8, box_gray, black);
 }
 
 pub fn unequip_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {

@@ -173,7 +173,7 @@ pub trait MetaMapBuilder {
 
 pub fn level_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
     match new_depth {
-        1 => town_builder(new_depth, rng, width, height),
+        // 1 => town_builder(new_depth, rng, width, height),
         _ => random_builder(new_depth, rng, width, height)
     }
 }
@@ -188,12 +188,13 @@ pub fn town_builder(depth: i32, rng: &mut RandomNumberGenerator, width: i32, hei
 fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderChain) {
     let build_roll = rng.roll_dice(1, 3);
     match build_roll {
-        1 => builder.start_with(SimpleMapBuilder::new()),
-        2 => builder.start_with(BspDungeonBuilder::new()),
-        _ => builder.start_with(BspInteriorBuilder::new())
+        // 1 => builder.start_with(SimpleMapBuilder::new()),
+        // 2 => builder.start_with(BspDungeonBuilder::new()),
+        _ => builder.start_with(BspDungeonBuilder::new()),
+        // _ => builder.start_with(BspInteriorBuilder::new())
     }
 
-    if build_roll != 3 {
+    // if build_roll != 3 {
         match rng.roll_dice(1, 5) {
             1 => builder.with(RoomSorter::leftmost()),
             2 => builder.with(RoomSorter::rightmost()),
@@ -220,7 +221,7 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
         if rng.roll_dice(1, 2) == 1 {
             builder.with(CorridorSpawner::new())
         }
-    }
+    // }
 
     match rng.roll_dice(1, 2) {
         1 => builder.with(RoomBasedStartingPosition::new()),
@@ -285,11 +286,11 @@ fn random_shape_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCh
 pub fn random_builder(depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
     let mut builder = BuilderChain::new(depth, width, height);
     match rng.roll_dice(1, 2) {
-        1 => random_room_builder(rng, &mut builder),
-        _ => random_shape_builder(rng, &mut builder)
+        _ => random_room_builder(rng, &mut builder),
+        // _ => random_shape_builder(rng, &mut builder)
     }
 
-    // if rng.roll_dice(1, 3) == 1 {
+    // if rng.roll_dice(1, 3) == -1 {
         builder.with(WaveformCollapseBuilder::new());
         /* if wfc is selected, room-based options no longer function. Therefore, we need to:
         1. select a random start point

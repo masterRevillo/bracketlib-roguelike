@@ -2,20 +2,22 @@
 extern crate lazy_static;
 extern crate strum;
 
-use bracket_lib::prelude::{BError, BTerm, BTermBuilder, GameState, main_loop, Point};
+use bracket_lib::color::{RGB, WHITE};
+use bracket_lib::prelude::{console, main_loop, BError, BTerm, BTermBuilder, GameState, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 use crate::bystander_ai_system::BystanderAI;
 use crate::camera::render_debug_map;
-use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, Wearable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, NaturalAttackDefense};
+use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
 use crate::gui::{
-    drop_item_menu, GameOverResult, ItemMenuResult, MainMenuResult, MainMenuSelection, ranged_target,
-    show_inventory,
+    drop_item_menu, ranged_target, show_inventory, GameOverResult, ItemMenuResult, MainMenuResult,
+    MainMenuSelection,
 };
+use crate::gui::ItemMenuResult::NoResponse;
 use crate::hunger_system::HungerSystem;
 use crate::inventory_system::{
     ItemCollectionSystem, ItemDropSystem, ItemUnequippingSystem, ItemUseSystem,
@@ -27,10 +29,10 @@ use crate::monster_ai_system::MonsterAI;
 use crate::particle_system::ParticleSpawnSystem;
 use crate::player::player_input;
 use crate::rex_assets::RexAssets;
-use crate::RunState::MainMenu;
 use crate::spawner::player;
 use crate::trigger_system::TriggerSystem;
 use crate::visibility_system::VisibilitySystem;
+use crate::RunState::MainMenu;
 
 mod components;
 mod damage_system;
@@ -62,7 +64,7 @@ mod util {
     pub mod string_utils;
 }
 
-const SHOW_MAPGEN_VISUALIZATION: bool = false;
+const SHOW_MAPGEN_VISUALIZATION: bool = true;
 const DEBUGGING: bool = true;
 
 const SCREEN_X: i32 = 100;
@@ -83,7 +85,8 @@ pub enum RunState {
     ShowRemoveItem,
     GameOver,
     MagicMapReveal { row: i32 },
-    MapGeneration,
+    // MapGeneration,
+    ShowMapVisualization
 }
 
 struct State {
@@ -247,15 +250,15 @@ impl GameState for State {
             }
         }
         match new_runstate {
-            RunState::MapGeneration => {
-                if SHOW_MAPGEN_VISUALIZATION {
+            RunState::ShowMapVisualization => {
+                if !SHOW_MAPGEN_VISUALIZATION {
                     new_runstate = self.mapgen_next_state.unwrap();
                 }
                 ctx.cls();
                 if self.mapgen_index < self.mapgen_history.len() {
-                    render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    let map = &self.mapgen_history[self.mapgen_index];
+                    render_debug_map(map, ctx);
                 }
-                // self.mapgen_history[self.mapgen_index].draw_map(ctx);
 
                 self.mapgen_timer += ctx.frame_time_ms;
                 if self.mapgen_timer > 200.0 {
@@ -291,7 +294,12 @@ impl GameState for State {
             RunState::PreRun => {
                 self.run_systems();
                 self.ecs.maintain();
-                new_runstate = RunState::AwaitingInput;
+                if (SHOW_MAPGEN_VISUALIZATION) {
+                    new_runstate = RunState::ShowMapVisualization;
+                    self.mapgen_next_state = Some(RunState::AwaitingInput);
+                } else {
+                    new_runstate = RunState::AwaitingInput;
+                }
             }
             RunState::AwaitingInput => {
                 new_runstate = player_input(self, ctx);
@@ -509,18 +517,23 @@ fn main() -> BError {
     state.ecs.insert(Point::new(0, 0));
     let player_entity = player(&mut state.ecs, 0, 0);
     state.ecs.insert(player_entity);
-    state.ecs.insert(RunState::MapGeneration {});
+    state.ecs.insert(RunState::MainMenu {
+        menu_selection: MainMenuSelection::NewGame,
+    });
     state.ecs.insert(GameLog {
         entries: vec!["Welcome to the Halls of Ruztoo".to_string()],
     });
 
     state.generate_world_map(1);
 
-    let bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
+    let mut bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
         .with_title("Rusty Roguelike V2")
-        .with_tile_dimensions(12, 12)
+        .with_tile_dimensions(8, 8)
         .with_fps_cap(120.)
+        .with_fitscreen(true)
         .build()?;
+    bterm.with_post_scanlines(true);
+    bterm.screen_burn_color(RGB::named(WHITE));
 
     main_loop(bterm, state)
 }

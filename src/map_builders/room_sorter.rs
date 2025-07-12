@@ -1,4 +1,4 @@
-use bracket_lib::prelude::{Point, RandomNumberGenerator};
+use bracket_lib::prelude::{console, Point, RandomNumberGenerator};
 use bracket_lib::prelude::DistanceAlg::PythagorasSquared;
 
 use crate::map_builders::{BuilderMap, MetaMapBuilder};
@@ -53,6 +53,7 @@ impl RoomSorter {
     }
 
     fn sorter(&mut self, _rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+        console::log(format!("I am sorting, rooms is: {:?}", build_data.rooms));
         match self.sort_by {
             LEFTMOST => build_data.rooms.as_mut().unwrap().sort_by(|a, b| a.x1.cmp(&b.x1)),
             RIGHTMOST => build_data.rooms.as_mut().unwrap().sort_by(|a, b| a.x2.cmp(&b.x2)),

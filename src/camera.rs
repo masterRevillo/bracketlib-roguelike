@@ -1,13 +1,40 @@
+use std::fmt::format;
 use bracket_lib::color::{BLACK, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, FORESTGREEN, GREY, LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, RGB};
-use bracket_lib::prelude::{BTerm, CHOCOLATE, Point, SADDLEBROWN, to_cp437};
+use bracket_lib::prelude::{BTerm, CHOCOLATE, Point, SADDLEBROWN, to_cp437, console};
 use bracket_lib::terminal::{FontCharType, GREEN1};
 use specs::{Join, World, WorldExt};
 
 use crate::components::{Hidden, Position, Renderable};
-use crate::Map;
+use crate::{Map, SCREEN_X, SCREEN_Y};
 use crate::map::tiletype::TileType;
 
 const SHOW_BOUNDARIES: bool = true;
+
+pub fn render_map(map: &Map, ctx: &mut BTerm) {
+    let (min_x, max_x, min_y, max_y) = (0, map.width, 0, map.height);
+
+    let map_width = map.width-1;
+    let map_height = map.height-1;
+
+    // x and y are the coordinates on the screen
+    // tx and ty are coordinates of the Tiles
+    let mut y = 0;
+    for ty in min_y..max_y {
+        let mut x = 0;
+        for tx in min_x..max_x {
+            if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
+                if map.revealed_tiles[tx as usize][ty as usize] {
+                    let (glyph, fg, bg) = get_tile_glyph(tx as usize, ty as usize, map);
+                    ctx.set(x, y, fg, bg, glyph);
+                }
+            } else if SHOW_BOUNDARIES {
+                ctx.set(x, y, RGB::named(GREY), RGB::named(BLACK), to_cp437('.'))
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+}
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map= ecs.fetch::<Map>();
@@ -88,7 +115,10 @@ pub fn render_debug_map(map: &Map, ctx: &mut BTerm) {
 
 pub fn get_screen_bounds(ecs: &World, ctx: &mut BTerm) -> (i32, i32, i32, i32){
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars) = ctx.get_char_size();
+    // let (x_chars, y_chars) = ctx.get_char_size();
+    /// Use the screen dimensions to offset where the camera is looking. This is to preserve the
+    /// viewport with the addition of the GUI
+    let (x_chars, y_chars) = ((SCREEN_X as f32 * 0.7) as i32, (SCREEN_Y as f32 * 0.7) as i32) ;
 
     let center_x = (x_chars / 2) as i32;
     let center_y = (y_chars / 2) as i32;

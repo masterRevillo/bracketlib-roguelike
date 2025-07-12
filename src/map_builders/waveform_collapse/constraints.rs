@@ -143,6 +143,8 @@ pub fn patterns_to_constraints(patterns: Vec<Vec<TileType>>, chunk_size: i32) ->
         constraints.push(new_chunk);
     }
 
+    // duplicate the constraints - we are going to compare the list to itself in order to match
+    // up each chunk with every other one in the list
     let ch = constraints.clone();
     for c in constraints.iter_mut() {
         for (j, potential) in ch.iter().enumerate() {
@@ -161,20 +163,20 @@ pub fn patterns_to_constraints(patterns: Vec<Vec<TileType>>, chunk_size: i32) ->
                         _ => 2 // our east, their west
                     };
 
-                    let mut it_fits = false;
-                    let mut has_any = false;
+                    let mut is_potential_chunk_compatible = false;
+                    let mut current_chunk_has_exits = false;
                     for (slot, can_enter) in exit_list.iter().enumerate() {
                         if *can_enter {
-                            has_any = true;
+                            current_chunk_has_exits = true;
                             if potential.exits[opposite][slot] {
-                                it_fits = true;
+                                is_potential_chunk_compatible = true;
                             }
                         }
                     }
-                    if it_fits {
+                    if is_potential_chunk_compatible {
                         c.compatible_with[direction].push(j);
                     }
-                    if !has_any {
+                    if !current_chunk_has_exits {
                         // there are no exits on this side. We will match only if the
                         // other edge also has not exits
                         let matching_exit_count = potential.exits[opposite].iter()

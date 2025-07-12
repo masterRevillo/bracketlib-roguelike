@@ -1,3 +1,4 @@
+use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 use crate::map::tiletype::TileType;
 
@@ -31,11 +32,11 @@ impl BspDungeonBuilder {
 
         // attempt 240 times to get a random rectangle and divide it. If it fits, we place the room
         let mut n_rooms = 0;
-        while n_rooms < 500 {
+        while n_rooms < 240 {
             let rect = self.get_random_rect(rng);
             let candidate = self.get_random_sub_rect(rect, rng);
 
-            if self.is_possible(candidate, &build_data, &self.rects) {
+            if self.is_possible(candidate, &build_data) {
                 rooms.push(candidate);
                 self.add_subrects(rect);
             }
@@ -97,7 +98,7 @@ impl BspDungeonBuilder {
         result
     }
 
-    fn is_possible(&self, rect: Rect, build_data: &BuilderMap, rooms: &Vec<Rect>) -> bool {
+    fn is_possible(&self, rect: Rect, build_data: &BuilderMap) -> bool {
         let mut expanded = rect;
         expanded.x1 -= 2;
         expanded.x2 += 2;
@@ -106,11 +107,12 @@ impl BspDungeonBuilder {
 
         let mut can_build = true;
 
-        for r in rooms.iter() {
-            if r.intersect(&rect) {
-                can_build = false;
-            }
-        }
+        // for r in rooms.iter() {
+        //     if r.intersect(&rect) {
+        //         console::log("i intersect something else");
+        //         can_build = false;
+        //     }
+        // }
 
         for y in expanded.y1..=expanded.y2 {
             for x in expanded.x1..=expanded.x2 {
