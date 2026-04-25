@@ -7,9 +7,9 @@ use bracket_lib::random::RandomNumberGenerator;
 use crate::components::Position;
 use crate::map::TileType;
 use crate::map::TileType::{Bridge, DownStairs, Floor, Road, Wall, WoodFloor};
-use crate::map_builders::{BuilderChain, BuilderMap, InitialMapBuilder, random_start_position};
 use crate::map_builders::area_starting_points::AreaStartingPoint;
 use crate::map_builders::distant_exit::DistantExit;
+use crate::map_builders::{random_start_position, BuilderChain, BuilderMap, InitialMapBuilder};
 
 #[derive(Debug)]
 enum BuildingTag {
@@ -22,15 +22,6 @@ enum BuildingTag {
     Hovel,
     Abandoned,
     Unassigned,
-}
-
-pub fn level_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let mut chain = BuilderChain::new(new_depth, width, height);
-    chain.start_with(TownBuilder::new());
-    let (start_x, start_y) = random_start_position(rng);
-    chain.with(AreaStartingPoint::new(start_x, start_y));
-    chain.with(DistantExit::new());
-    chain
 }
 
 pub struct TownBuilder {}
@@ -104,8 +95,11 @@ impl TownBuilder {
         build_data.take_snapshot();
     }
 
-
-    fn town_walls(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) -> (HashSet<(i32, i32)>, i32) {
+    fn town_walls(
+        &mut self,
+        rng: &mut RandomNumberGenerator,
+        build_data: &mut BuilderMap,
+    ) -> (HashSet<(i32, i32)>, i32) {
         let mut available_building_tiles: HashSet<(i32, i32)> = HashSet::new();
         let wall_gap_y = rng.roll_dice(1, build_data.height - 9) + 5;
         for y in 1..build_data.height - 2 {
@@ -223,7 +217,9 @@ impl TownBuilder {
                 door_y = building.1 + building.3 - 1;
             }
             build_data.map.tiles[door_x as usize][door_y as usize] = Floor;
-            build_data.spawn_list.push(((door_x, door_y), "Door".to_string()));
+            build_data
+                .spawn_list
+                .push(((door_x, door_y), "Door".to_string()));
             doors.push((door_x, door_y));
         }
         build_data.take_snapshot();
@@ -246,10 +242,7 @@ impl TownBuilder {
             for r in roads.iter() {
                 nearest_roads.push((
                     build_data.map.xy_idx(r.0, r.1),
-                    DistanceAlg::PythagorasSquared.distance2d(
-                        door_pt,
-                        Point::new(r.0, r.1),
-                    )
+                    DistanceAlg::PythagorasSquared.distance2d(door_pt, Point::new(r.0, r.1)),
                 ));
             }
             nearest_roads.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
@@ -271,15 +264,21 @@ impl TownBuilder {
         }
     }
 
-    fn sort_buildings(&mut self, buildings: &[(i32, i32, i32, i32)]) -> Vec<(usize, i32, BuildingTag)> {
+    fn sort_buildings(
+        &mut self,
+        buildings: &[(i32, i32, i32, i32)],
+    ) -> Vec<(usize, i32, BuildingTag)> {
         let mut building_size: Vec<(usize, i32, BuildingTag)> = Vec::new();
         for (i, building) in buildings.iter().enumerate() {
-            console::log(format!("pos: {},{}; size: {}x{}={}", building.0, building.1, building.2, building.3, building.2 * building.3));
-            building_size.push((
-                i,
-                building.2 * building.3,
-                BuildingTag::Unassigned
+            console::log(format!(
+                "pos: {},{}; size: {}x{}={}",
+                building.0,
+                building.1,
+                building.2,
+                building.3,
+                building.2 * building.3
             ));
+            building_size.push((i, building.2 * building.3, BuildingTag::Unassigned));
         }
         building_size.sort_by(|a, b| b.1.cmp(&a.1));
         building_size[0].2 = BuildingTag::Pub;
@@ -312,7 +311,10 @@ impl TownBuilder {
             let building = buildings[b_idx.0];
             match build_type {
                 BuildingTag::Pub => {
-                    console::log(format!("building pub at {},{}, index is {}", building.0, building.1, b_idx.1));
+                    console::log(format!(
+                        "building pub at {},{}, index is {}",
+                        building.0, building.1, b_idx.1
+                    ));
                     self.build_pub(&building, build_data, rng)
                 }
                 BuildingTag::Temple => self.build_temple(&building, build_data, rng),
@@ -340,12 +342,11 @@ impl TownBuilder {
                 if build_data.map.tiles[x as usize][y as usize] == WoodFloor
                     && (x, y) != player_pos
                     && rng.roll_dice(1, 3) == 1
-                    && !to_place.is_empty() {
+                    && !to_place.is_empty()
+                {
                     let entity_tag = to_place[0].to_string();
                     to_place.remove(0);
-                    build_data.spawn_list.push(
-                        ((x, y), entity_tag)
-                    )
+                    build_data.spawn_list.push(((x, y), entity_tag))
                 }
             }
         }
@@ -356,14 +357,19 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut RandomNumberGenerator,
     ) {
-        let (px, py) = (
-            building.0 + (building.2 / 2),
-            building.1 + (building.3 / 2)
-        );
+        let (px, py) = (building.0 + (building.2 / 2), building.1 + (building.3 / 2));
         build_data.starting_position = Some(Position { x: px, y: py });
 
         let mut to_place: Vec<&str> = vec![
-            "Bartender", "ShadySalesman", "Patron", "Patron", "Keg", "Table", "Chair", "Table", "Chair",
+            "Bartender",
+            "ShadySalesman",
+            "Patron",
+            "Patron",
+            "Keg",
+            "Table",
+            "Chair",
+            "Table",
+            "Chair",
         ];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (px, py));
     }
@@ -375,7 +381,13 @@ impl TownBuilder {
         rng: &mut RandomNumberGenerator,
     ) {
         let mut to_place: Vec<&str> = vec![
-            "Priest", "Parishioner", "Parishioner", "Chair", "Chair", "Candle", "Candle",
+            "Priest",
+            "Parishioner",
+            "Parishioner",
+            "Chair",
+            "Chair",
+            "Candle",
+            "Candle",
         ];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (0, 0));
     }
@@ -387,7 +399,11 @@ impl TownBuilder {
         rng: &mut RandomNumberGenerator,
     ) {
         let mut to_place: Vec<&str> = vec![
-            "Blacksmith", "Anvil", "WaterTrough", "WeaponRack", "ArmorStand",
+            "Blacksmith",
+            "Anvil",
+            "WaterTrough",
+            "WeaponRack",
+            "ArmorStand",
         ];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (0, 0));
     }
@@ -398,9 +414,7 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec![
-            "Clothier", "Cabinet", "Table", "Loom", "HideRack",
-        ];
+        let mut to_place: Vec<&str> = vec!["Clothier", "Cabinet", "Table", "Loom", "HideRack"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (0, 0));
     }
 
@@ -410,9 +424,8 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec![
-            "Alchemist", "ChemistrySet", "DeadThing", "Chair", "Table",
-        ];
+        let mut to_place: Vec<&str> =
+            vec!["Alchemist", "ChemistrySet", "DeadThing", "Chair", "Table"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (0, 0));
     }
 
@@ -422,9 +435,7 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec![
-            "Mom", "Bed", "Cabinet", "Chair", "Table",
-        ];
+        let mut to_place: Vec<&str> = vec!["Mom", "Bed", "Cabinet", "Chair", "Table"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (0, 0));
     }
     fn build_hovel(
@@ -433,9 +444,7 @@ impl TownBuilder {
         build_data: &mut BuilderMap,
         rng: &mut RandomNumberGenerator,
     ) {
-        let mut to_place: Vec<&str> = vec![
-            "Peasant", "Bed", "Chair", "Table",
-        ];
+        let mut to_place: Vec<&str> = vec!["Peasant", "Bed", "Chair", "Table"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, (0, 0));
     }
     fn build_abandoned_house(
@@ -447,7 +456,8 @@ impl TownBuilder {
         for y in building.1..building.1 + building.3 {
             for x in building.0..building.0 + building.2 {
                 if build_data.map.tiles[x as usize][y as usize] == WoodFloor
-                    && rng.roll_dice(1, 2) == 1 {
+                    && rng.roll_dice(1, 2) == 1
+                {
                     build_data.spawn_list.push(((x, y), "Rat".to_string()))
                 }
             }
@@ -462,9 +472,11 @@ impl TownBuilder {
                     let et = match roll {
                         1 => "DockWorker",
                         2 => "Pirate",
-                        _ => "Fisher"
+                        _ => "Fisher",
                     };
-                    build_data.spawn_list.push(((x as i32, y as i32), et.to_string()));
+                    build_data
+                        .spawn_list
+                        .push(((x as i32, y as i32), et.to_string()));
                 }
             }
         }
@@ -483,7 +495,7 @@ impl TownBuilder {
                     1 => "Peasant",
                     2 => "Drunk",
                     3 => "DockWorker",
-                    _ => "Fisher"
+                    _ => "Fisher",
                 };
                 build_data.spawn_list.push(((*x, *y), et.to_string()));
             }

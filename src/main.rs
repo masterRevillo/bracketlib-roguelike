@@ -10,14 +10,22 @@ use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 use crate::bystander_ai_system::BystanderAI;
 use crate::camera::render_debug_map;
-use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable};
+use crate::components::{
+    AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion,
+    Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden,
+    HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name,
+    NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing,
+    Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills,
+    SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
+    WantsToUnequipItem, WantsToUseItem, Wearable,
+};
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
+use crate::gui::ItemMenuResult::NoResponse;
 use crate::gui::{
     drop_item_menu, ranged_target, show_inventory, GameOverResult, ItemMenuResult, MainMenuResult,
     MainMenuSelection,
 };
-use crate::gui::ItemMenuResult::NoResponse;
 use crate::hunger_system::HungerSystem;
 use crate::inventory_system::{
     ItemCollectionSystem, ItemDropSystem, ItemUnequippingSystem, ItemUseSystem,
@@ -34,12 +42,16 @@ use crate::trigger_system::TriggerSystem;
 use crate::visibility_system::VisibilitySystem;
 use crate::RunState::MainMenu;
 
+mod bystander_ai_system;
+mod camera;
 mod components;
 mod damage_system;
 mod gamelog;
+mod gamesystem;
 mod gui;
 mod hunger_system;
 mod inventory_system;
+mod map;
 pub mod map_builders;
 mod map_indexing_system;
 mod melee_combat_system;
@@ -47,28 +59,27 @@ mod monster_ai_system;
 mod particle_system;
 mod player;
 mod random_tables;
+mod raws;
 mod rect;
 mod rex_assets;
 mod saveload_system;
 mod spawner;
 mod trigger_system;
 mod visibility_system;
-mod camera;
-mod raws;
-mod map;
-mod bystander_ai_system;
-mod gamesystem;
 
 mod util {
     pub mod namegen;
     pub mod string_utils;
 }
 
-const SHOW_MAPGEN_VISUALIZATION: bool = true;
+const SHOW_MAPGEN_VISUALIZATION: bool = false;
 const DEBUGGING: bool = true;
 
-const SCREEN_X: i32 = 100;
-const SCREEN_Y: i32 = 80;
+const SCREEN_X: i32 = 80;
+const SCREEN_Y: i32 = 60;
+
+const MAP_X: i32 = 100;
+const MAP_Y: i32 = 72;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -86,7 +97,7 @@ pub enum RunState {
     GameOver,
     MagicMapReveal { row: i32 },
     // MapGeneration,
-    ShowMapVisualization
+    ShowMapVisualization,
 }
 
 struct State {
@@ -133,7 +144,7 @@ impl State {
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
         let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-        let mut builder = map_builders::level_builder(new_depth, &mut rng, 100, 73);
+        let mut builder = map_builders::level_builder(new_depth, &mut rng, MAP_X, MAP_Y);
         builder.build_map(&mut rng);
         drop(rng);
         self.mapgen_history = builder.build_data.history.clone();
@@ -141,7 +152,12 @@ impl State {
         {
             let mut map_resource = self.ecs.write_resource::<Map>();
             *map_resource = builder.build_data.map.clone();
-            player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
+            player_start = builder
+                .build_data
+                .starting_position
+                .as_mut()
+                .unwrap()
+                .clone();
         }
         builder.spawn_entities(&mut self.ecs);
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -246,7 +262,7 @@ impl GameState for State {
             RunState::GameOver { .. } => {}
             _ => {
                 camera::render_camera(&self.ecs, ctx);
-                gui::dwaw_ui(&self.ecs, ctx);
+                gui::draw_ui(&self.ecs, ctx);
             }
         }
         match new_runstate {
@@ -261,7 +277,7 @@ impl GameState for State {
                 }
 
                 self.mapgen_timer += ctx.frame_time_ms;
-                if self.mapgen_timer > 200.0 {
+                if self.mapgen_timer > 50.0 {
                     self.mapgen_timer = 0.0;
                     self.mapgen_index += 1;
                     if self.mapgen_index >= self.mapgen_history.len() {
@@ -513,7 +529,7 @@ fn main() -> BError {
     state.ecs.insert(RexAssets::new());
     state.ecs.insert(RandomNumberGenerator::new());
 
-    state.ecs.insert(Map::new(1, 64, 64));
+    state.ecs.insert(Map::new(1, 64, 64, "New Map"));
     state.ecs.insert(Point::new(0, 0));
     let player_entity = player(&mut state.ecs, 0, 0);
     state.ecs.insert(player_entity);

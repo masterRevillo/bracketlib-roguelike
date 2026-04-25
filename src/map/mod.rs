@@ -24,6 +24,7 @@ pub struct Map {
     pub depth: i32,
     pub bloodstains: HashSet<(i32, i32)>,
     pub view_blocked: HashSet<(i32, i32)>,
+    pub name: String,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -38,8 +39,10 @@ impl Algorithm2D for Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
-        tile_opaque(self.tiles[idx % self.width as usize][idx / self.width as usize]) ||
-            self.view_blocked.contains(&(idx as i32 % self.width, idx as i32 / self.width))
+        tile_opaque(self.tiles[idx % self.width as usize][idx / self.width as usize])
+            || self
+                .view_blocked
+                .contains(&(idx as i32 % self.width, idx as i32 / self.width))
     }
 
     fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
@@ -98,7 +101,7 @@ impl BaseMap for Map {
 }
 
 impl Map {
-    pub fn new(new_depth: i32, width: i32, height: i32) -> Map {
+    pub fn new<S: ToString>(new_depth: i32, width: i32, height: i32, name: S) -> Map {
         Map {
             tiles: vec![vec![TileType::Wall; height as usize]; width as usize],
             width,
@@ -110,6 +113,7 @@ impl Map {
             depth: new_depth,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
+            name: name.to_string(),
         }
     }
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
@@ -172,7 +176,7 @@ impl Map {
     // }
 
     pub fn is_tile_in_bounds(&self, x: i32, y: i32) -> bool {
-        x > 0 && x < self.width && y > 0 && y < self.height
+        x >= 0 && x < self.width - 1 && y >= 0 && y < self.height - 1
     }
 
     fn is_exit_valid(&self, x: i32, y: i32) -> bool {

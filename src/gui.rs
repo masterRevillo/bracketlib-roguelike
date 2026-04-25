@@ -2,18 +2,21 @@ use bracket_lib::color::{
     BLACK, BLUE, CYAN, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHEAT, WHITE, YELLOW,
 };
 use bracket_lib::prelude::{
-    BTerm, DijkstraMap, DistanceAlg, letter_to_option, Point, to_cp437, VirtualKeyCode,
+    letter_to_option, to_cp437, BTerm, DijkstraMap, DistanceAlg, Point, VirtualKeyCode,
 };
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
-use crate::{DEBUGGING, RunState, SCREEN_X, SCREEN_Y, State};
 use crate::camera::get_screen_bounds;
-use crate::components::{Equipped, Hidden, HungerClock, HungerState, InBackpack, Name, Player, Pools, Position, Viewshed};
+use crate::components::{
+    Attribute, Attributes, Consumable, Equipped, Hidden, HungerClock, HungerState, InBackpack,
+    Name, Player, Pools, Position, Viewshed,
+};
 use crate::gamelog::GameLog;
-use crate::map::{Map};
+use crate::map::Map;
 use crate::rex_assets::RexAssets;
 use crate::saveload_system::does_save_exist;
+use crate::{RunState, State, DEBUGGING, SCREEN_X, SCREEN_Y};
 
 const GUIHEIGHT: usize = 6;
 const GUIY: usize = SCREEN_Y as usize - GUIHEIGHT - 1;
@@ -29,13 +32,19 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
         RGB::named(BLACK),
     );
 
+    let box_gray: RGB = RGB::from_hex("#999999").expect("fail");
+    let black = RGB::named(BLACK);
+
     let pools = ecs.read_storage::<Pools>();
     let players = ecs.read_storage::<Player>();
     let hunger = ecs.read_storage::<HungerClock>();
     let log = ecs.fetch::<GameLog>();
     let map = ecs.fetch::<Map>();
     for (_p, stats, hc) in (&players, &pools, &hunger).join() {
-        let health = format!(" HP: {} / {} ", stats.hit_points.current, stats.hit_points.max);
+        let health = format!(
+            " HP: {} / {} ",
+            stats.hit_points.current, stats.hit_points.max
+        );
         ctx.print_color(20, GUIY, RGB::named(YELLOW), RGB::named(BLACK), &health);
 
         ctx.draw_bar_horizontal(
@@ -109,12 +118,20 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     ctx.print(
         GUIWIDTH - 20,
         GUIY + 1,
-        format!("Coordinates: ({},{})", mouse_pos.0, mouse_pos.1),
+        format!("Window X/Y: ({},{})", mouse_pos.0, mouse_pos.1),
     );
     ctx.print(
         GUIWIDTH - 20,
         GUIY + 2,
-        format!("Tile: {:?}", map.tiles[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize]),
+        format!("Map X/Y: ({},{})", mouse_map_pos.0, mouse_map_pos.1),
+    );
+    ctx.print(
+        GUIWIDTH - 20,
+        GUIY + 3,
+        format!(
+            "Tile: {:?}",
+            map.tiles[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize]
+        ),
     );
     if let Some(dkm) = dkm {
         if DEBUGGING {
@@ -364,7 +381,11 @@ pub fn ranged_target(
             if distance <= range as f32 {
                 let screen_x = point.x - min_x;
                 let screen_y = point.y - min_y;
-                if screen_x > 1 && screen_x < (max_x - min_x)-1 && screen_y > 1 && screen_y < (max_y - min_y)-1 {
+                if screen_x > 1
+                    && screen_x < (max_x - min_x) - 1
+                    && screen_y > 1
+                    && screen_y < (max_y - min_y) - 1
+                {
                     ctx.set_bg(screen_x, screen_y, RGB::named(BLUE));
                     available_cells.push(point);
                 }
@@ -466,51 +487,51 @@ pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
                     selected: selection,
                 }
             }
-            Some(key) => return match key {
-                VirtualKeyCode::Escape => {
-                    MainMenuResult::Selected {
+            Some(key) => {
+                return match key {
+                    VirtualKeyCode::Escape => MainMenuResult::Selected {
                         selected: MainMenuSelection::Quit,
+                    },
+                    VirtualKeyCode::Up => {
+                        let mut new_selection;
+                        match selection {
+                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
+                            MainMenuSelection::LoadGame => {
+                                new_selection = MainMenuSelection::NewGame
+                            }
+                            MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
+                        }
+                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                            new_selection = MainMenuSelection::NewGame;
+                        }
+                        MainMenuResult::NoSelection {
+                            selected: new_selection,
+                        }
                     }
-                }
-                VirtualKeyCode::Up => {
-                    let mut new_selection;
-                    match selection {
-                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::Quit,
-                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
-                        MainMenuSelection::Quit => new_selection = MainMenuSelection::LoadGame,
+                    VirtualKeyCode::Down => {
+                        let mut new_selection;
+                        match selection {
+                            MainMenuSelection::NewGame => {
+                                new_selection = MainMenuSelection::LoadGame
+                            }
+                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
+                            MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
+                        }
+                        if new_selection == MainMenuSelection::LoadGame && !save_exists {
+                            new_selection = MainMenuSelection::Quit;
+                        }
+                        MainMenuResult::NoSelection {
+                            selected: new_selection,
+                        }
                     }
-                    if new_selection == MainMenuSelection::LoadGame && !save_exists {
-                        new_selection = MainMenuSelection::NewGame;
-                    }
-                    MainMenuResult::NoSelection {
-                        selected: new_selection,
-                    }
-                }
-                VirtualKeyCode::Down => {
-                    let mut new_selection;
-                    match selection {
-                        MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
-                        MainMenuSelection::LoadGame => new_selection = MainMenuSelection::Quit,
-                        MainMenuSelection::Quit => new_selection = MainMenuSelection::NewGame,
-                    }
-                    if new_selection == MainMenuSelection::LoadGame && !save_exists {
-                        new_selection = MainMenuSelection::Quit;
-                    }
-                    MainMenuResult::NoSelection {
-                        selected: new_selection,
-                    }
-                }
-                VirtualKeyCode::Return => {
-                    MainMenuResult::Selected {
+                    VirtualKeyCode::Return => MainMenuResult::Selected {
                         selected: selection,
-                    }
-                }
-                _ => {
-                    MainMenuResult::NoSelection {
+                    },
+                    _ => MainMenuResult::NoSelection {
                         selected: selection,
-                    }
+                    },
                 }
-            },
+            }
         }
     }
     MainMenuResult::NoSelection {
@@ -552,11 +573,128 @@ pub fn draw_hollow_box(
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let box_gray = RGB::from_hex("#999999").expect("fail");
     let black = RGB::named(BLACK);
+    let white = RGB::named(WHITE);
 
+    // boarders
     draw_hollow_box(ctx, 0, 0, 79, 59, box_gray, black);
     draw_hollow_box(ctx, 0, 0, 49, 45, box_gray, black);
     draw_hollow_box(ctx, 0, 45, 79, 14, box_gray, black);
     draw_hollow_box(ctx, 49, 0, 30, 8, box_gray, black);
+    ctx.set(0, 45, box_gray, black, to_cp437('├'));
+    ctx.set(49, 8, box_gray, black, to_cp437('├'));
+    ctx.set(49, 0, box_gray, black, to_cp437('┬'));
+    ctx.set(49, 45, box_gray, black, to_cp437('┴'));
+    ctx.set(79, 8, box_gray, black, to_cp437('┤'));
+    ctx.set(79, 45, box_gray, black, to_cp437('┤'));
+
+    // Map name
+    let map = ecs.fetch::<Map>();
+    let name_len = map.name.len() + 2;
+    let x_pos = (22 - (name_len / 2)) as i32;
+    ctx.set(x_pos, 0, box_gray, black, to_cp437('┤'));
+    ctx.set(x_pos + name_len as i32, 0, box_gray, black, to_cp437('├'));
+    ctx.print_color(x_pos + 1, 0, white, black, &map.name);
+
+    // Stats
+    let player_entity = ecs.fetch::<Entity>();
+    let pools = ecs.read_storage::<Pools>();
+    let player_pools = pools.get(*player_entity).unwrap();
+    let health = format!(
+        "Health: {}/{}",
+        player_pools.hit_points.current, player_pools.hit_points.max
+    );
+    let mana = format!(
+        "Mana:   {}/{}",
+        player_pools.mana.current, player_pools.mana.max
+    );
+    ctx.print_color(50, 1, white, black, &health);
+    ctx.print_color(50, 2, white, black, &mana);
+    ctx.draw_bar_horizontal(
+        64,
+        1,
+        14,
+        player_pools.hit_points.current,
+        player_pools.hit_points.max,
+        RGB::named(RED),
+        RGB::named(BLACK),
+    );
+    ctx.draw_bar_horizontal(
+        64,
+        2,
+        14,
+        player_pools.mana.current,
+        player_pools.mana.max,
+        RGB::named(BLUE),
+        RGB::named(BLACK),
+    );
+
+    // Attributes
+    let attributes = ecs.read_storage::<Attributes>();
+    let attrs = attributes.get(*player_entity).unwrap();
+    draw_attribute("Might:", &attrs.might, 4, ctx);
+    draw_attribute("Quickness:", &attrs.quickness, 5, ctx);
+    draw_attribute("Fitness:", &attrs.fitness, 6, ctx);
+    draw_attribute("Intelligence:", &attrs.intelligence, 7, ctx);
+
+    // Equipment
+    let mut y = 9;
+    let equipped = ecs.read_storage::<Equipped>();
+    let name = ecs.read_storage::<Name>();
+    for (equipped_by, item_name) in (&equipped, &name).join() {
+        if equipped_by.owner == *player_entity {
+            ctx.print_color(50, y, white, black, &item_name.name);
+            y += 1;
+        }
+    }
+
+    y += 1;
+    let green = RGB::named(GREEN);
+    let yellow = RGB::named(YELLOW);
+    let consumables = ecs.read_storage::<Consumable>();
+    let backpack = ecs.read_storage::<InBackpack>();
+    let mut idx = 1;
+    for (carried_by, _c, item_name) in (&backpack, &consumables, &name).join() {
+        if carried_by.owner == *player_entity && idx < 10 {
+            ctx.print_color(50, y, yellow, black, &format!("↑{}", idx));
+            ctx.print_color(53, y, green, black, &item_name.name);
+            y += 1;
+            idx += 1;
+        }
+    }
+
+    // Status
+    let hunger = ecs.read_storage::<HungerClock>();
+    let hc = hunger.get(*player_entity).unwrap();
+    match hc.state {
+        HungerState::WellFed => ctx.print_color(50, 44, green, black, "Well Fed"),
+        HungerState::Normal => {}
+        HungerState::Hungry => ctx.print_color(50, 44, RGB::named(ORANGE), black, "Hungry"),
+        HungerState::Starving => ctx.print_color(50, 44, RGB::named(RED), black, "Starving"),
+    }
+}
+
+fn draw_attribute(name: &str, attribute: &Attribute, y: i32, ctx: &mut BTerm) {
+    let black = RGB::named(BLACK);
+    let attr_gray: RGB = RGB::from_hex("#CCCCCC").expect("fail");
+    ctx.print_color(50, y, attr_gray, black, name);
+    let color: RGB = if attribute.modifiers < 0 {
+        RGB::from_f32(1., 0., 0.)
+    } else if attribute.modifiers == 0 {
+        RGB::named(WHITE)
+    } else {
+        RGB::from_f32(0., 1., 0.)
+    };
+    ctx.print_color(
+        67,
+        y,
+        color,
+        black,
+        &format!("{}", attribute.base + attribute.modifiers),
+    );
+    ctx.print_color(73, y, color, black, &format!("{}", attribute.bonus));
+    if attribute.bonus > 0 {
+        ctx.set(72, y, color, black, to_cp437('+'))
+    };
 }
 
 pub fn unequip_item_menu(gs: &mut State, ctx: &mut BTerm) -> (ItemMenuResult, Option<Entity>) {

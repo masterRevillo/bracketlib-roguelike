@@ -1,17 +1,22 @@
 use bracket_lib::prelude::RandomNumberGenerator;
 
 use crate::map::{Map, TileType};
-use crate::map_builders::{BuilderMap,  MetaMapBuilder};
 use crate::map_builders::waveform_collapse::common::MapChunk;
-use crate::map_builders::waveform_collapse::constraints::{build_patterns, patterns_to_constraints, render_pattern_to_map};
+use crate::map_builders::waveform_collapse::constraints::{
+    build_patterns, patterns_to_constraints, render_pattern_to_map,
+};
 use crate::map_builders::waveform_collapse::solver::Solver;
+use crate::map_builders::{BuilderMap, MetaMapBuilder};
 
-mod constraints;
 mod common;
+mod constraints;
 mod solver;
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum WaveformMode { TestMap, Derived }
+pub enum WaveformMode {
+    TestMap,
+    Derived,
+}
 
 pub struct WaveformCollapseBuilder {}
 
@@ -35,7 +40,12 @@ impl WaveformCollapseBuilder {
         let constraints = patterns_to_constraints(patterns, CHUNK_SIZE);
         self.render_tile_gallery(&constraints, CHUNK_SIZE, build_data);
 
-        build_data.map = Map::new(current_depth, build_data.width, build_data.height);
+        build_data.map = Map::new(
+            current_depth,
+            build_data.width,
+            build_data.height,
+            &build_data.map.name,
+        );
         loop {
             let mut solver = Solver::new(constraints.clone(), CHUNK_SIZE, &build_data.map);
             while !solver.iteration(&mut build_data.map, rng) {
@@ -45,30 +55,33 @@ impl WaveformCollapseBuilder {
 
             if solver.possible {
                 for y in 0..build_data.map.height {
-                    let (x1, x2, y) = (1, (build_data.map.width-2) as usize, y);
+                    let (x1, x2, y) = (0, (build_data.map.width - 1) as usize, y);
 
-                    build_data.map.tiles[x1][y as usize] = TileType::DeepWater;
-                    build_data.map.tiles[x2][y as usize] = TileType::DeepWater;
-                    build_data.take_snapshot();
+                    build_data.map.tiles[x1][y as usize] = TileType::Wall;
+                    build_data.map.tiles[x2][y as usize] = TileType::Wall;
                 }
-
-
+                build_data.take_snapshot();
 
                 for x in 0..build_data.map.width {
-                    let (y1, y2, x) = (1, (build_data.map.height-2) as usize, x);
+                    let (y1, y2, x) = (0, (build_data.map.height - 1) as usize, x);
 
-                    build_data.map.tiles[x as usize][y1] = TileType::DeepWater;
-                    build_data.map.tiles[x as usize][y2] = TileType::DeepWater;
-                    build_data.take_snapshot();
+                    build_data.map.tiles[x as usize][y1] = TileType::Wall;
+                    build_data.map.tiles[x as usize][y2] = TileType::Wall;
                 }
+                build_data.take_snapshot();
                 break;
             }
         }
     }
 
     // Renders the list of patterns onto the map - used for visualization
-    fn render_tile_gallery(&mut self, constraints: &Vec<MapChunk>, chunk_size: i32, build_data: &mut BuilderMap) {
-        build_data.map = Map::new(0, build_data.width, build_data.height);
+    fn render_tile_gallery(
+        &mut self,
+        constraints: &Vec<MapChunk>,
+        chunk_size: i32,
+        build_data: &mut BuilderMap,
+    ) {
+        build_data.map = Map::new(0, build_data.width, build_data.height, &build_data.map.name);
         let mut counter = 0;
         let mut x = 1;
         let mut y = 1;
@@ -81,7 +94,7 @@ impl WaveformCollapseBuilder {
                 y += chunk_size + 1;
 
                 if y + chunk_size > build_data.map.height {
-                    build_data.map = Map::new(0, 64, 64);
+                    build_data.map = Map::new(0, 64, 64, &build_data.map.name);
 
                     x = 1;
                     y = 1;

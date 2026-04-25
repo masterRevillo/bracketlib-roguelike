@@ -1,5 +1,5 @@
-use bracket_lib::prelude::{Point, RandomNumberGenerator};
 use bracket_lib::prelude::DistanceAlg::PythagorasSquared;
+use bracket_lib::prelude::{console, Point, RandomNumberGenerator};
 
 use crate::components::Position;
 use crate::map::tiletype::TileType;
@@ -9,19 +9,20 @@ use crate::map_builders::{BuilderMap, MetaMapBuilder};
 pub enum XStart {
     LEFT,
     CENTER,
-    RIGHT
+    RIGHT,
 }
 
 #[derive(Debug)]
 pub enum YStart {
     TOP,
     CENTER,
-    BOTTOM
+    BOTTOM,
 }
 
+#[derive(Debug)]
 pub struct AreaStartingPoint {
     x: XStart,
-    y: YStart
+    y: YStart,
 }
 
 impl MetaMapBuilder for AreaStartingPoint {
@@ -39,25 +40,23 @@ impl AreaStartingPoint {
         let seed_x = match self.x {
             XStart::LEFT => 1,
             XStart::CENTER => build_data.map.width / 2,
-            XStart::RIGHT => build_data.map.width - 2
+            XStart::RIGHT => build_data.map.width - 2,
         };
 
         let seed_y = match self.y {
             YStart::TOP => 1,
             YStart::CENTER => build_data.map.height / 2,
-            YStart::BOTTOM => build_data.map.height - 2
+            YStart::BOTTOM => build_data.map.height - 2,
         };
 
         let mut available_floors: Vec<((usize, usize), f32)> = Vec::new();
         for (x, row) in build_data.map.tiles.iter().enumerate() {
             for (y, tile) in row.iter().enumerate() {
                 if *tile == TileType::Floor || *tile == TileType::Grass {
-                    available_floors.push(
-                        ((x, y),
-                        PythagorasSquared.distance2d (
-                            Point::new(x as i32, y as i32),
-                            Point::new(seed_x, seed_y)
-                        )
+                    available_floors.push((
+                        (x, y),
+                        PythagorasSquared
+                            .distance2d(Point::new(x as i32, y as i32), Point::new(seed_x, seed_y)),
                     ));
                 }
             }
@@ -65,11 +64,16 @@ impl AreaStartingPoint {
         if available_floors.is_empty() {
             panic!("No valid floors to start on");
         }
-        available_floors.sort_by(|a,b| a.1.partial_cmp(&b.1).unwrap());
+        available_floors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 
-        let start_x = available_floors[0].0.0 as i32;
-        let start_y = available_floors[0].0.1 as i32;
+        let start_x = available_floors[0].0 .0 as i32;
+        let start_y = available_floors[0].0 .1 as i32;
 
-        build_data.starting_position = Some(Position{ x: start_x, y: start_y})
+        console::log(format!("SETTING STARTING POS: ({}, {})", start_x, start_y));
+
+        build_data.starting_position = Some(Position {
+            x: start_x,
+            y: start_y,
+        })
     }
 }
