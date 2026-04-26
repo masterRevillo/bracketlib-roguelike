@@ -90,12 +90,55 @@ pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
     draw_tooltips(ecs, ctx);
 }
 
+struct Tooltip {
+    lines: Vec<String>,
+}
+
+impl Tooltip {
+    fn new() -> Self {
+        Tooltip { lines: Vec::new() }
+    }
+
+    fn add<S: ToString>(&mut self, line: S) {
+        self.lines.push(line.to_string());
+    }
+
+    fn width(&self) -> i32 {
+        let mut max = 0;
+        for s in self.lines.iter() {
+            if s.len() > max {
+                max = s.len();
+            }
+        }
+        max as i32 + 2i32
+    }
+
+    fn height(&self) -> i32 {
+        self.lines.len() as i32 + 2i32
+    }
+
+    fn render(&self, ctx: &mut BTerm, x: i32, y: i32) {
+        let box_gray = RGB::from_hex("#999999").expect("fail");
+        let light_gray = RGB::from_hex("#DDDDDD").expect("fail");
+        let white = RGB::named(WHITE);
+        let black = RGB::named(BLACK);
+        ctx.draw_box(x, y, self.width() - 1, self.height() - 1, white, box_gray);
+        for (i, s) in self.lines.iter().enumerate() {
+            let col = if i == 0 { white } else { light_gray };
+            ctx.print_color(x + 1, y + i as i32 + 1, col, black, &s);
+        }
+    }
+}
+
 pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     let (min_x, _max_x, min_y, _max_y) = get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
     let hidden = ecs.read_storage::<Hidden>();
+    let attrs = ecs.read_storage::<Attributes>();
+    let pools = ecs.read_storage::<Pools>();
+    let entities = ecs.entities();
     let dkm = ecs.try_fetch::<DijkstraMap>();
 
     let mouse_pos = ctx.mouse_pos();
@@ -105,14 +148,91 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     if !map.is_tile_in_bounds(mouse_map_pos.0, mouse_map_pos.1) {
         return;
     }
-    let mut tooltip: Vec<String> = Vec::new();
-    for (name, postion, _h) in (&names, &positions, !&hidden).join() {
-        if postion.x == mouse_map_pos.0
-            && postion.y == mouse_map_pos.1
-            && map.visible_tiles[postion.x as usize][postion.y as usize]
-        {
-            tooltip.push(name.name.to_string());
+    let mut tip_boxes: Vec<Tooltip> = Vec::new();
+    for (entity, name, pos, _h) in (&entities, &names, &positions, !&hidden).join() {
+        if pos.x == mouse_map_pos.0 && pos.y == mouse_map_pos.1 {
+            let mut tip = Tooltip::new();
+            tip.add(name.name.to_string());
+
+            // Attributes on tooltip
+            let att = attrs.get(entity);
+            if let Some(att) = att {
+                let mut s = "".to_string();
+                if att.might.bonus < 0 {
+                    s += "Weak. "
+                };
+                if att.might.bonus > 0 {
+                    s += "Strong. "
+                };
+                if att.quickness.bonus < 0 {
+                    s += "Clumsy. "
+                };
+                if att.quickness.bonus > 0 {
+                    s += "Agile. "
+                };
+                if att.fitness.bonus < 0 {
+                    s += "Unhealthy. "
+                };
+                if att.fitness.bonus > 0 {
+                    s += "Healthy. "
+                };
+                if att.intelligence.bonus < 0 {
+                    s += "Dumb. "
+                };
+                if att.intelligence.bonus > 0 {
+                    s += "Smart. "
+                };
+                if s.is_empty() {
+                    s = "Pretty Average".to_string();
+                }
+                tip.add(s);
+            }
+
+            // Pools on tooltip
+            let stat = pools.get(entity);
+            if let Some(stat) = stat {
+                tip.add(format!("Level: {}", stat.level));
+            }
+
+            tip_boxes.push(tip);
         }
+    }
+    if tip_boxes.is_empty() {
+        return;
+    }
+    let box_gray: RGB = RGB::from_hex("#999999").expect("fail");
+    let white: RGB = RGB::named(WHITE);
+
+    let arrow;
+    let arrow_x;
+    let arrow_y = mouse_pos.1;
+    if mouse_pos.0 < 40 {
+        arrow = to_cp437('←');
+        arrow_x = mouse_pos.0 + 1;
+    } else {
+        arrow = to_cp437('→');
+        arrow_x = mouse_pos.0 - 1;
+    }
+    ctx.set(arrow_x, arrow_y, white, box_gray, arrow);
+
+    let mut total_height = 0;
+    for tt in tip_boxes.iter() {
+        total_height += tt.height();
+    }
+
+    let mut y = mouse_pos.1 - (total_height / 2);
+    while y + (total_height / 2) > 50 {
+        y -= 1;
+    }
+
+    for tt in tip_boxes.iter() {
+        let x = if mouse_pos.0 < 40 {
+            mouse_pos.0 + 2
+        } else {
+            mouse_pos.0 - (1 + tt.width())
+        };
+        tt.render(ctx, x, y);
+        y += tt.height();
     }
 
     ctx.print(
@@ -142,68 +262,6 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
                     "Dijkstra score: {}",
                     dkm.map[(mouse_pos.1 * map.width + mouse_pos.0) as usize]
                 ),
-            );
-        }
-    }
-
-    if !tooltip.is_empty() {
-        let mut width: i32 = 0;
-        for s in tooltip.iter() {
-            if width < s.len() as i32 {
-                width = s.len() as i32;
-            }
-        }
-        width += 3;
-
-        if mouse_pos.0 > SCREEN_X / 2 {
-            let arrow_pos = Point::new(mouse_pos.0 - 2, mouse_pos.1);
-            let left_x = mouse_pos.0 - width;
-            let mut y = mouse_pos.1;
-            for s in tooltip.iter() {
-                ctx.print_color(left_x, y, RGB::named(WHITE), RGB::named(GREY), s);
-                let padding = (width - s.len() as i32) - 1;
-                for i in 0..padding {
-                    ctx.print_color(
-                        arrow_pos.x - i,
-                        y,
-                        RGB::named(WHITE),
-                        RGB::named(GREY),
-                        &" ".to_string(),
-                    );
-                }
-                y += 1;
-            }
-            ctx.print_color(
-                arrow_pos.x,
-                arrow_pos.y,
-                RGB::named(WHITE),
-                RGB::named(GREY),
-                &"->".to_string(),
-            );
-        } else {
-            let arrow_pos = Point::new(mouse_pos.0 + 1, mouse_pos.1);
-            let left_x = mouse_pos.0 + 3;
-            let mut y = mouse_pos.1;
-            for s in tooltip.iter() {
-                ctx.print_color(left_x + 1, y, RGB::named(WHITE), RGB::named(GREY), s);
-                let padding = (width - s.len() as i32) - 1;
-                for i in 0..padding {
-                    ctx.print_color(
-                        arrow_pos.x + 1 + i,
-                        y,
-                        RGB::named(WHITE),
-                        RGB::named(GREY),
-                        &" ".to_string(),
-                    );
-                }
-                y += 1;
-            }
-            ctx.print_color(
-                arrow_pos.x,
-                arrow_pos.y,
-                RGB::named(WHITE),
-                RGB::named(GREY),
-                &"<-".to_string(),
             );
         }
     }
@@ -671,6 +729,18 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         HungerState::Hungry => ctx.print_color(50, 44, RGB::named(ORANGE), black, "Hungry"),
         HungerState::Starving => ctx.print_color(50, 44, RGB::named(RED), black, "Starving"),
     }
+
+    // Logs
+    let log = ecs.fetch::<GameLog>();
+    let mut y = 46;
+    for s in log.entries.iter().rev() {
+        if y < 59 {
+            ctx.print(2, y, s);
+        }
+        y += 1;
+    }
+
+    draw_tooltips(ecs, ctx);
 }
 
 fn draw_attribute(name: &str, attribute: &Attribute, y: i32, ctx: &mut BTerm) {
