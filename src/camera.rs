@@ -12,6 +12,9 @@ use crate::{Map, DEBUGGING, SCREEN_X, SCREEN_Y};
 
 const SHOW_BOUNDARIES: bool = true;
 
+const VIEWPORT_X: i32 = SCREEN_X - 31;
+const VIEWPORT_Y: i32 = SCREEN_Y - 15;
+
 pub fn render_map(map: &Map, ctx: &mut BTerm) {
     let (min_x, max_x, min_y, max_y) = (0, map.width, 0, map.height);
 
@@ -80,6 +83,9 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                 && entity_screen_x < map_width
                 && entity_screen_y > 0
                 && entity_screen_y < map_height
+            // Had to put this here to stop entities rendering outside the map window
+                && entity_screen_x < VIEWPORT_X
+                && entity_screen_y < VIEWPORT_Y
             {
                 ctx.set(
                     entity_screen_x,
@@ -132,9 +138,9 @@ pub fn get_screen_bounds(ecs: &World, ctx: &mut BTerm) -> (i32, i32, i32, i32) {
     // Use the screen dimensions to offset where the camera is looking. This is to preserve the
     // viewport with the addition of the GUI
     let (x_chars, y_chars) = (
-        49, 45,
-        // (SCREEN_X as f32 * 0.7) as i32,
-        // (SCREEN_Y as f32 * 0.7) as i32,
+        VIEWPORT_X,
+        VIEWPORT_Y, // (SCREEN_X as f32 * 0.7) as i32,
+                   // (SCREEN_Y as f32 * 0.7) as i32,
     );
 
     let center_x = (x_chars / 2) as i32;
