@@ -73,10 +73,10 @@ mod util {
 }
 
 const SHOW_MAPGEN_VISUALIZATION: bool = false;
-const DEBUGGING: bool = true;
+const DEBUGGING: bool = false;
 
-const SCREEN_X: i32 = 80;
-const SCREEN_Y: i32 = 60;
+const SCREEN_X: i32 = 120;
+const SCREEN_Y: i32 = 90;
 
 const MAP_X: i32 = 100;
 const MAP_Y: i32 = 72;

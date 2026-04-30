@@ -7,7 +7,7 @@ use bracket_lib::prelude::{
 use bracket_lib::terminal::FontCharType;
 use specs::prelude::*;
 
-use crate::camera::get_screen_bounds;
+use crate::camera::{get_screen_bounds, VIEWPORT_X, VIEWPORT_Y};
 use crate::components::{
     Attribute, Attributes, Consumable, Equipped, Hidden, HungerClock, HungerState, InBackpack,
     Name, Player, Pools, Position, Viewshed,
@@ -206,7 +206,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     let arrow;
     let arrow_x;
     let arrow_y = mouse_pos.1;
-    if mouse_pos.0 < 40 {
+    if mouse_pos.0 < VIEWPORT_X / 2 {
         arrow = to_cp437('←');
         arrow_x = mouse_pos.0 + 1;
     } else {
@@ -226,7 +226,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     }
 
     for tt in tip_boxes.iter() {
-        let x = if mouse_pos.0 < 40 {
+        let x = if mouse_pos.0 < VIEWPORT_X / 2 {
             mouse_pos.0 + 2
         } else {
             mouse_pos.0 - (1 + tt.width())
@@ -236,18 +236,18 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     }
 
     ctx.print(
-        GUIWIDTH - 20,
-        GUIY + 1,
+        VIEWPORT_X + 20,
+        VIEWPORT_Y + 1,
         format!("Window X/Y: ({},{})", mouse_pos.0, mouse_pos.1),
     );
     ctx.print(
-        GUIWIDTH - 20,
-        GUIY + 2,
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 2,
         format!("Map X/Y: ({},{})", mouse_map_pos.0, mouse_map_pos.1),
     );
     ctx.print(
-        GUIWIDTH - 20,
-        GUIY + 3,
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 3,
         format!(
             "Tile: {:?}",
             map.tiles[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize]
@@ -256,8 +256,8 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     if let Some(dkm) = dkm {
         if DEBUGGING {
             ctx.print(
-                GUIWIDTH - 25,
-                GUIY + 2,
+                VIEWPORT_X - 25,
+                VIEWPORT_Y + 2,
                 format!(
                     "Dijkstra score: {}",
                     dkm.map[(mouse_pos.1 * map.width + mouse_pos.0) as usize]
@@ -501,7 +501,14 @@ pub fn main_menu(gs: &mut State, ctx: &mut BTerm) -> MainMenuResult {
     // ctx.render_xp_sprite(&assets.menu, -60, -50);
     ctx.render_xp_sprite(&assets.menu, 0, 0);
 
-    ctx.draw_box_double(34, 18, 31, 10, RGB::named(WHEAT), RGB::named(BLACK));
+    ctx.draw_box_double(
+        (SCREEN_X / 2) - 16,
+        18,
+        31,
+        10,
+        RGB::named(WHEAT),
+        RGB::named(BLACK),
+    );
     ctx.print_color_centered(
         20,
         RGB::named(YELLOW),
@@ -634,16 +641,22 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let white = RGB::named(WHITE);
 
     // boarders
-    draw_hollow_box(ctx, 0, 0, 79, 59, box_gray, black);
-    draw_hollow_box(ctx, 0, 0, 49, 45, box_gray, black);
-    draw_hollow_box(ctx, 0, 45, 79, 14, box_gray, black);
-    draw_hollow_box(ctx, 49, 0, 30, 8, box_gray, black);
-    ctx.set(0, 45, box_gray, black, to_cp437('├'));
-    ctx.set(49, 8, box_gray, black, to_cp437('├'));
-    ctx.set(49, 0, box_gray, black, to_cp437('┬'));
-    ctx.set(49, 45, box_gray, black, to_cp437('┴'));
-    ctx.set(79, 8, box_gray, black, to_cp437('┤'));
-    ctx.set(79, 45, box_gray, black, to_cp437('┤'));
+    draw_hollow_box(ctx, 0, 0, SCREEN_X - 1, SCREEN_Y - 1, box_gray, black);
+    draw_hollow_box(ctx, 0, 0, VIEWPORT_X - 1, VIEWPORT_Y - 1, box_gray, black);
+    draw_hollow_box(ctx, 0, VIEWPORT_Y - 1, SCREEN_X - 1, 15, box_gray, black);
+    draw_hollow_box(ctx, VIEWPORT_X - 1, 0, 30, 8, box_gray, black);
+    ctx.set(0, VIEWPORT_Y - 1, box_gray, black, to_cp437('├'));
+    ctx.set(VIEWPORT_X - 1, 8, box_gray, black, to_cp437('├'));
+    ctx.set(VIEWPORT_X - 1, 0, box_gray, black, to_cp437('┬'));
+    ctx.set(
+        VIEWPORT_X - 1,
+        VIEWPORT_Y - 1,
+        box_gray,
+        black,
+        to_cp437('┴'),
+    );
+    ctx.set(SCREEN_X - 1, 8, box_gray, black, to_cp437('┤'));
+    ctx.set(SCREEN_X - 1, VIEWPORT_Y - 1, box_gray, black, to_cp437('┤'));
 
     // Map name
     let map = ecs.fetch::<Map>();
@@ -665,10 +678,10 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         "Mana:   {}/{}",
         player_pools.mana.current, player_pools.mana.max
     );
-    ctx.print_color(50, 1, white, black, &health);
-    ctx.print_color(50, 2, white, black, &mana);
+    ctx.print_color(VIEWPORT_X, 1, white, black, &health);
+    ctx.print_color(VIEWPORT_X, 2, white, black, &mana);
     ctx.draw_bar_horizontal(
-        64,
+        VIEWPORT_X + 14,
         1,
         14,
         player_pools.hit_points.current,
@@ -677,7 +690,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         RGB::named(BLACK),
     );
     ctx.draw_bar_horizontal(
-        64,
+        VIEWPORT_X + 14,
         2,
         14,
         player_pools.mana.current,
@@ -700,7 +713,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let name = ecs.read_storage::<Name>();
     for (equipped_by, item_name) in (&equipped, &name).join() {
         if equipped_by.owner == *player_entity {
-            ctx.print_color(50, y, white, black, &item_name.name);
+            ctx.print_color(VIEWPORT_X, y, white, black, &item_name.name);
             y += 1;
         }
     }
@@ -713,8 +726,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let mut idx = 1;
     for (carried_by, _c, item_name) in (&backpack, &consumables, &name).join() {
         if carried_by.owner == *player_entity && idx < 10 {
-            ctx.print_color(50, y, yellow, black, &format!("↑{}", idx));
-            ctx.print_color(53, y, green, black, &item_name.name);
+            ctx.print_color(VIEWPORT_X, y, yellow, black, &format!("↑{}", idx));
+            ctx.print_color(VIEWPORT_X + 3, y, green, black, &item_name.name);
             y += 1;
             idx += 1;
         }
@@ -723,18 +736,21 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     // Status
     let hunger = ecs.read_storage::<HungerClock>();
     let hc = hunger.get(*player_entity).unwrap();
-    match hc.state {
-        HungerState::WellFed => ctx.print_color(50, 44, green, black, "Well Fed"),
-        HungerState::Normal => {}
-        HungerState::Hungry => ctx.print_color(50, 44, RGB::named(ORANGE), black, "Hungry"),
-        HungerState::Starving => ctx.print_color(50, 44, RGB::named(RED), black, "Starving"),
+    let hunger_to_print = match hc.state {
+        HungerState::WellFed => Some((green, black, "Well Fed")),
+        HungerState::Normal => None,
+        HungerState::Hungry => Some((RGB::named(ORANGE), black, "Hungry")),
+        HungerState::Starving => Some((RGB::named(RED), black, "Starving")),
+    };
+    if let Some(printables) = hunger_to_print {
+        ctx.print_color(VIEWPORT_X, 44, printables.0, printables.1, printables.2);
     }
 
     // Logs
     let log = ecs.fetch::<GameLog>();
-    let mut y = 46;
+    let mut y = VIEWPORT_Y;
     for s in log.entries.iter().rev() {
-        if y < 59 {
+        if y < SCREEN_Y - 1 {
             ctx.print(2, y, s);
         }
         y += 1;
@@ -746,7 +762,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
 fn draw_attribute(name: &str, attribute: &Attribute, y: i32, ctx: &mut BTerm) {
     let black = RGB::named(BLACK);
     let attr_gray: RGB = RGB::from_hex("#CCCCCC").expect("fail");
-    ctx.print_color(50, y, attr_gray, black, name);
+    ctx.print_color(VIEWPORT_X, y, attr_gray, black, name);
     let color: RGB = if attribute.modifiers < 0 {
         RGB::from_f32(1., 0., 0.)
     } else if attribute.modifiers == 0 {
@@ -755,15 +771,21 @@ fn draw_attribute(name: &str, attribute: &Attribute, y: i32, ctx: &mut BTerm) {
         RGB::from_f32(0., 1., 0.)
     };
     ctx.print_color(
-        67,
+        VIEWPORT_X + 17,
         y,
         color,
         black,
         &format!("{}", attribute.base + attribute.modifiers),
     );
-    ctx.print_color(73, y, color, black, &format!("{}", attribute.bonus));
+    ctx.print_color(
+        VIEWPORT_X + 23,
+        y,
+        color,
+        black,
+        &format!("{}", attribute.bonus),
+    );
     if attribute.bonus > 0 {
-        ctx.set(72, y, color, black, to_cp437('+'))
+        ctx.set(VIEWPORT_X + 22, y, color, black, to_cp437('+'))
     };
 }
 

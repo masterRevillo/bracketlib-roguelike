@@ -10,10 +10,10 @@ use crate::components::{Hidden, Position, Renderable};
 use crate::map::tiletype::TileType;
 use crate::{Map, DEBUGGING, SCREEN_X, SCREEN_Y};
 
-const SHOW_BOUNDARIES: bool = true;
+const SHOW_BOUNDARIES: bool = false;
 
-const VIEWPORT_X: i32 = SCREEN_X - 31;
-const VIEWPORT_Y: i32 = SCREEN_Y - 15;
+pub const VIEWPORT_X: i32 = SCREEN_X - 31;
+pub const VIEWPORT_Y: i32 = SCREEN_Y - 15;
 
 pub fn render_map(map: &Map, ctx: &mut BTerm) {
     let (min_x, max_x, min_y, max_y) = (0, map.width, 0, map.height);
