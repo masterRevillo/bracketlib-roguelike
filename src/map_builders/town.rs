@@ -7,9 +7,9 @@ use bracket_lib::random::RandomNumberGenerator;
 use crate::components::Position;
 use crate::map::TileType;
 use crate::map::TileType::{Bridge, DownStairs, Floor, Road, Wall, WoodFloor};
-use crate::map_builders::area_starting_points::AreaStartingPoint;
-use crate::map_builders::distant_exit::DistantExit;
-use crate::map_builders::{random_start_position, BuilderChain, BuilderMap, InitialMapBuilder};
+use crate::map_builders::{
+    distant_exit::DistantExit, random_start_position, BuilderChain, BuilderMap, InitialMapBuilder,
+};
 
 #[derive(Debug)]
 enum BuildingTag {

@@ -12,6 +12,7 @@ pub enum TileType {
     WoodFloor,
     Bridge,
     Gravel,
+    Moss,
 }
 
 pub fn tile_walkable(tt: TileType) -> bool {
@@ -23,7 +24,8 @@ pub fn tile_walkable(tt: TileType) -> bool {
         | TileType::ShallowWater
         | TileType::WoodFloor
         | TileType::Bridge
-        | TileType::Gravel => true,
+        | TileType::Gravel
+        | TileType::Moss => true,
         _ => false,
     }
 }

@@ -20,7 +20,7 @@ use crate::{RunState, State, DEBUGGING, SCREEN_X, SCREEN_Y};
 
 const GUIHEIGHT: usize = 6;
 const GUIY: usize = SCREEN_Y as usize - GUIHEIGHT - 1;
-const GUIWIDTH: usize = SCREEN_X as usize - 1;
+const GUIWIDTH: usize = 30 - 1;
 
 pub fn dwaw_ui(ecs: &World, ctx: &mut BTerm) {
     ctx.draw_box(
@@ -221,7 +221,7 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
     }
 
     let mut y = mouse_pos.1 - (total_height / 2);
-    while y + (total_height / 2) > 50 {
+    while y + (total_height / 2) > VIEWPORT_Y {
         y -= 1;
     }
 
@@ -233,37 +233,6 @@ pub fn draw_tooltips(ecs: &World, ctx: &mut BTerm) {
         };
         tt.render(ctx, x, y);
         y += tt.height();
-    }
-
-    ctx.print(
-        VIEWPORT_X + 20,
-        VIEWPORT_Y + 1,
-        format!("Window X/Y: ({},{})", mouse_pos.0, mouse_pos.1),
-    );
-    ctx.print(
-        VIEWPORT_X - 20,
-        VIEWPORT_Y + 2,
-        format!("Map X/Y: ({},{})", mouse_map_pos.0, mouse_map_pos.1),
-    );
-    ctx.print(
-        VIEWPORT_X - 20,
-        VIEWPORT_Y + 3,
-        format!(
-            "Tile: {:?}",
-            map.tiles[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize]
-        ),
-    );
-    if let Some(dkm) = dkm {
-        if DEBUGGING {
-            ctx.print(
-                VIEWPORT_X - 25,
-                VIEWPORT_Y + 2,
-                format!(
-                    "Dijkstra score: {}",
-                    dkm.map[(mouse_pos.1 * map.width + mouse_pos.0) as usize]
-                ),
-            );
-        }
     }
 }
 
@@ -757,6 +726,36 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     }
 
     draw_tooltips(ecs, ctx);
+
+    let (min_x, _max_x, min_y, _max_y) = get_screen_bounds(ecs, ctx);
+    let mouse_pos = ctx.mouse_pos();
+    let mut mouse_map_pos = mouse_pos;
+    mouse_map_pos.0 += min_x;
+    mouse_map_pos.1 += min_y;
+
+    if !map.is_tile_in_bounds(mouse_map_pos.0, mouse_map_pos.1) {
+        return;
+    }
+
+    ctx.print(
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 1,
+        format!("Window X/Y: ({},{})", mouse_pos.0, mouse_pos.1),
+    );
+    ctx.print(
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 2,
+        format!("Map X/Y: ({},{})", mouse_map_pos.0, mouse_map_pos.1),
+    );
+    ctx.print(
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 3,
+        format!(
+            "Tile: {:?}; Noise: {}",
+            map.tiles[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize],
+            map.noise[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize],
+        ),
+    );
 }
 
 fn draw_attribute(name: &str, attribute: &Attribute, y: i32, ctx: &mut BTerm) {

@@ -1,5 +1,6 @@
 use std::any::{type_name_of_val, Any};
 
+use bracket_lib::noise::NoiseType;
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::{Builder, World};
@@ -10,10 +11,13 @@ use crate::map_builders::bsp_dungeon::BspDungeonBuilder;
 use crate::map_builders::bsp_interior::BspInteriorBuilder;
 use crate::map_builders::cellular_automata::CellularAutomataBuilder;
 use crate::map_builders::cull_unreachable::CullUnreachable;
+use crate::map_builders::debug_map::DebugMapBuilder;
 use crate::map_builders::distant_exit::DistantExit;
 use crate::map_builders::dla::DLABuilder;
 use crate::map_builders::drunkards::DrunkardsWalkBuilder;
 use crate::map_builders::maze::MazeBuilder;
+use crate::map_builders::noise::NoiseBuilder;
+use crate::map_builders::noise_vegitation::NoiseVegitationBuilder;
 use crate::map_builders::prefab_builder::prefab_levels::WFC_POPULATED;
 use crate::map_builders::prefab_builder::prefab_sections::UNDERGROUND_FORT;
 use crate::map_builders::prefab_builder::PrefabBuilder;
@@ -36,6 +40,7 @@ use crate::map_builders::voronoi_spawning::VoronoiSpawning;
 use crate::map_builders::waveform_collapse::WaveformCollapseBuilder;
 use crate::rect::Rect;
 use crate::spawner::{spawn_debug_items, spawn_entity, SpawnList};
+use crate::DEBUGGING;
 
 use super::{Map, SHOW_MAPGEN_VISUALIZATION};
 
@@ -45,11 +50,14 @@ mod bsp_interior;
 mod cellular_automata;
 mod common;
 mod cull_unreachable;
+mod debug_map;
 mod distant_exit;
 mod dla;
 mod door_placement;
 mod drunkards;
 mod maze;
+mod noise;
+mod noise_vegitation;
 mod prefab_builder;
 mod room_based_spawner;
 mod room_based_stairs;
@@ -180,8 +188,9 @@ pub fn level_builder(
     height: i32,
 ) -> BuilderChain {
     match new_depth {
-        1 => town_builder(new_depth, rng, width, height),
-        _ => random_builder(new_depth, rng, width, height),
+        // 1 => town_builder(new_depth, rng, width, height),
+        // _ => random_builder(new_depth, rng, width, height),
+        _ => debug_map_builder(new_depth, rng, width, height),
     }
 }
 
@@ -328,6 +337,29 @@ pub fn random_builder(
     // builder.with(VoronoiSpawning::new());
     // builder.with(DistantExit::new());
     // builder.with(DoorPlacement::new());
+    //
+    builder.with(NoiseBuilder::new(NoiseType::WhiteNoise));
+    builder.with(NoiseVegitationBuilder::new());
+
+    builder
+}
+
+pub fn debug_map_builder(
+    depth: i32,
+    rng: &mut RandomNumberGenerator,
+    width: i32,
+    height: i32,
+) -> BuilderChain {
+    let mut builder = BuilderChain::new(depth, width, height, "New Map");
+
+    builder.start_with(DebugMapBuilder::new());
+
+    builder.with(AreaStartingPoint::new(XStart::CENTER, YStart::CENTER));
+    builder.with(VoronoiSpawning::new());
+    builder.with(DistantExit::new());
+
+    builder.with(NoiseBuilder::new(NoiseType::CubicFractal));
+    // builder.with(NoiseVegitationBuilder::new());
 
     builder
 }

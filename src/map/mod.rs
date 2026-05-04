@@ -1,8 +1,11 @@
+use core::f32;
 use std::collections::HashSet;
+use std::usize;
 
 use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
 use bracket_lib::color::RGB;
 use bracket_lib::geometry::{DistanceAlg, Point};
+use bracket_lib::noise::{FastNoise, NoiseType};
 use bracket_lib::prelude::{to_cp437, BTerm, FontCharType};
 use serde::{Deserialize, Serialize};
 use specs::Entity;
@@ -25,6 +28,7 @@ pub struct Map {
     pub bloodstains: HashSet<(i32, i32)>,
     pub view_blocked: HashSet<(i32, i32)>,
     pub name: String,
+    pub noise: Vec<Vec<f32>>,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -102,6 +106,10 @@ impl BaseMap for Map {
 
 impl Map {
     pub fn new<S: ToString>(new_depth: i32, width: i32, height: i32, name: S) -> Map {
+        let mut noise = FastNoise::seeded(12 as u64);
+        noise.set_noise_type(NoiseType::Perlin);
+        noise.set_frequency(0.08);
+
         Map {
             tiles: vec![vec![TileType::Wall; height as usize]; width as usize],
             width,
@@ -114,6 +122,7 @@ impl Map {
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
             name: name.to_string(),
+            noise: vec![vec![0.; height as usize]; width as usize],
         }
     }
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {

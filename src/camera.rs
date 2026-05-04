@@ -158,55 +158,75 @@ fn get_tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let glyph;
     let mut fg;
     let mut bg = RGB::from_f32(0., 0., 0.);
+    let noise = map.noise[x][y];
 
-    match map.tiles[x][y] {
-        TileType::Floor => {
+    match (map.tiles[x][y], noise) {
+        (TileType::Floor, _) => {
             glyph = to_cp437('.');
             fg = RGB::from_u8(170, 131, 96);
-            bg = RGB::from_u8(170, 131, 96);
+            bg = RGB::from_u8(
+                (170.0 * noise * 0.75) as u8,
+                (131.0 * noise * 0.75) as u8,
+                (96.0 * noise * 0.75) as u8,
+            );
         }
-        TileType::Wall => {
+        // (TileType::Floor, _) => {
+        // glyph = to_cp437('~');
+        // fg = RGB::from_u8(140, 101, 66);
+        // bg = RGB::from_u8(170, 131, 96);
+        // }
+        (TileType::Wall, _) => {
             glyph = wall_glyph(map, x as i32, y as i32);
-            fg = RGB::from_u8(127, 30, 20);
+            fg = RGB::from_u8(
+                127 + (127.0 * noise * 0.5) as u8,
+                30 + (30.0 * noise * 0.5) as u8,
+                20 + (20.0 * noise * 0.5) as u8,
+            );
         }
-        TileType::DownStairs => {
+        (TileType::DownStairs, _) => {
             glyph = to_cp437('>');
             fg = RGB::from_f32(0., 1.0, 1.0);
         }
-        TileType::Bridge => {
+        (TileType::Bridge, _) => {
             glyph = to_cp437('|');
             fg = RGB::named(CHOCOLATE);
             bg = RGB::named(SADDLEBROWN);
         }
-        TileType::Road => {
+        (TileType::Road, _) => {
             glyph = to_cp437('~');
             fg = RGB::named(GREY);
             bg = RGB::named(LIGHT_GRAY);
         }
-        TileType::Grass => {
+        (TileType::Grass, _) => {
             glyph = to_cp437('"');
             fg = RGB::named(FORESTGREEN);
             bg = RGB::named(GREEN1);
         }
-        TileType::ShallowWater => {
+        (TileType::ShallowWater, _) => {
             glyph = to_cp437('≈');
             fg = RGB::named(CYAN);
             bg = RGB::named(MEDIUM_AQUAMARINE);
         }
-        TileType::DeepWater => {
+        (TileType::DeepWater, _) => {
             glyph = to_cp437('≈');
-            fg = RGB::named(NAVY_BLUE);
-            bg = RGB::named(CORNFLOWERBLUE);
+            fg = RGB::from_f32(0.1 * noise, 0.1 * noise, 0.6 * noise);
+            //100, 149, 237
+            bg = RGB::from_f32(0.45 * noise, 0.55 * noise, 0.9 * noise);
         }
-        TileType::WoodFloor => {
+        (TileType::WoodFloor, _) => {
             glyph = to_cp437('.');
             fg = RGB::named(CHOCOLATE);
             bg = RGB::named(CHOCOLATE2);
         }
-        TileType::Gravel => {
+        (TileType::Gravel, _) => {
             glyph = to_cp437('\'');
             fg = RGB::named(LIGHT_SLATE);
             bg = RGB::named(DARK_GRAY)
+        }
+        (TileType::Moss, _) => {
+            glyph = to_cp437('#');
+            fg = RGB::from_u8(91, 128, 125);
+            bg = RGB::from_u8(91, 168, 110);
         }
     }
     if map.bloodstains.contains(&(x as i32, y as i32)) {

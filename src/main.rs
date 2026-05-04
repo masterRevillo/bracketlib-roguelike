@@ -2,9 +2,12 @@
 extern crate lazy_static;
 extern crate strum;
 
+use std::collections::HashMap;
+
 use bracket_lib::color::{RGB, WHITE};
 use bracket_lib::prelude::{console, main_loop, BError, BTerm, BTermBuilder, GameState, Point};
 use bracket_lib::random::RandomNumberGenerator;
+use config::Config;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
@@ -68,6 +71,7 @@ mod trigger_system;
 mod visibility_system;
 
 mod util {
+    pub mod config;
     pub mod namegen;
     pub mod string_utils;
 }
@@ -76,10 +80,20 @@ const SHOW_MAPGEN_VISUALIZATION: bool = false;
 const DEBUGGING: bool = false;
 
 const SCREEN_X: i32 = 120;
-const SCREEN_Y: i32 = 90;
+const SCREEN_Y: i32 = 100;
 
 const MAP_X: i32 = 100;
 const MAP_Y: i32 = 72;
+
+lazy_static! {
+    static ref configs: HashMap<String, String> = Config::builder()
+        .add_source(config::File::with_name("settings"))
+        .build()
+        .unwrap()
+        .try_deserialize::<HashMap<String, String>>()
+        .unwrap();
+    static ref SCREEN_X_REF: i32 = configs.get("screen_x").unwrap().parse().unwrap();
+}
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
@@ -541,6 +555,8 @@ fn main() -> BError {
     });
 
     state.generate_world_map(1);
+
+    println!("{:?}", *configs);
 
     let mut bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
         .with_title("Rusty Roguelike V2")
