@@ -2,9 +2,9 @@ use std::num::NonZeroIsize;
 use std::u8;
 
 use bracket_lib::color::{
-    BLACK, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, DARK_GREEN, FORESTGREEN, GREEN, GREY,
-    LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, RGB, SANDYBROWN, SNOW, SPRING_GREEN,
-    WHITE, YELLOW,
+    BLACK, BLUE4, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, DARK_GREEN, FORESTGREEN, GREEN,
+    GREY, LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, ORANGE_RED, PALE_GREEN, RGB,
+    SANDYBROWN, SEAGREEN, SNOW, SPRING_GREEN, WEBGREEN, WHITE, YELLOW,
 };
 use bracket_lib::prelude::{console, to_cp437, BTerm, Point, CHOCOLATE, SADDLEBROWN};
 use bracket_lib::terminal::{FontCharType, GREEN1};
@@ -159,36 +159,52 @@ pub fn get_screen_bounds(ecs: &World, ctx: &mut BTerm) -> (i32, i32, i32, i32) {
 }
 
 fn get_floor_tile(n: f32, height: f32, temp: f32, humid: f32, biome: f32) -> RGB {
-    match (temp, humid) {
-        (-1.0..-0.5, -1.0..0.0) => {
-            // tundra
-            RGB::named(SNOW)
+    if height < 0.0 {
+        RGB::named(BLUE4)
+    } else {
+        match (temp, humid) {
+            (-1.0..-0.5, -1.0..0.0) => {
+                // tundra
+                RGB::named(SNOW)
+            }
+            (-0.5..0.0, -1.0..0.0) => {
+                // grassland
+                RGB::named(YELLOW)
+            }
+            (0.0..1.0, -1.0..0.0) => {
+                // desert
+                if biome > 0.0 {
+                    RGB::named(SANDYBROWN)
+                } else {
+                    RGB::named(ORANGE_RED)
+                }
+            }
+            (-1.0..-0.5, 0.0..0.5) => {
+                // taiga
+                if biome > 0.0 {
+                    RGB::named(GREEN)
+                } else {
+                    RGB::named(WEBGREEN)
+                }
+            }
+            (-0.5..0.0, 0.0..0.5) => {
+                // deciduous forest
+                if biome > 0.0 {
+                    RGB::named(FORESTGREEN)
+                } else {
+                    RGB::named(PALE_GREEN)
+                }
+            }
+            (0.0..1.0, 0.0..0.5) => {
+                // tropical forest
+                RGB::named(SPRING_GREEN)
+            }
+            (0.0..1.0, 0.0..1.0) => {
+                // tropical rainforest
+                RGB::named(DARK_GREEN)
+            }
+            (_, _) => RGB::named(WHITE),
         }
-        (-0.5..0.0, -1.0..0.0) => {
-            // grassland
-            RGB::named(YELLOW)
-        }
-        (0.0..1.0, -1.0..0.0) => {
-            // desert
-            RGB::named(SANDYBROWN)
-        }
-        (-1.0..-0.5, 0.0..0.5) => {
-            // taiga
-            RGB::named(GREEN)
-        }
-        (-0.5..0.0, 0.0..0.5) => {
-            // deciduous forest
-            RGB::named(FORESTGREEN)
-        }
-        (0.0..1.0, 0.0..0.5) => {
-            // tropical forest
-            RGB::named(SPRING_GREEN)
-        }
-        (0.0..1.0, 0.0..1.0) => {
-            // tropical rainforest
-            RGB::named(DARK_GREEN)
-        }
-        (_, _) => RGB::named(WHITE),
     }
 }
 

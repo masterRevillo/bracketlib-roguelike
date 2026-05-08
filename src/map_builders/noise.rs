@@ -25,19 +25,19 @@ impl NoiseBuilder {
 
         let mut n_height = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
         n_height.set_noise_type(self.noise_type);
-        n_height.set_frequency(0.01);
+        n_height.set_frequency(0.25);
 
         let mut n_temp = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
         n_temp.set_noise_type(self.noise_type);
-        n_temp.set_frequency(0.01);
+        n_temp.set_frequency(0.25);
 
         let mut n_humid = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
         n_humid.set_noise_type(self.noise_type);
-        n_humid.set_frequency(0.01);
+        n_humid.set_frequency(0.25);
 
         let mut n_biome = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
         n_biome.set_noise_type(self.noise_type);
-        n_biome.set_frequency(0.01);
+        n_biome.set_frequency(0.25);
 
         for y in 0..build_data.height {
             for x in 0..build_data.width {
