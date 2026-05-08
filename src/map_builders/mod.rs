@@ -355,11 +355,11 @@ pub fn debug_map_builder(
     builder.start_with(DebugMapBuilder::new());
 
     builder.with(AreaStartingPoint::new(XStart::CENTER, YStart::CENTER));
-    builder.with(VoronoiSpawning::new());
+    // builder.with(VoronoiSpawning::new());
     builder.with(DistantExit::new());
 
-    builder.with(NoiseBuilder::new(NoiseType::CubicFractal));
-    // builder.with(NoiseVegitationBuilder::new());
+    builder.with(NoiseBuilder::new(NoiseType::PerlinFractal));
+    builder.with(NoiseVegitationBuilder::new());
 
     builder
 }

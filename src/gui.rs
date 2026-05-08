@@ -756,6 +756,30 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             map.noise[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize],
         ),
     );
+    ctx.print(
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 4,
+        format!(
+            "Height Noise: {}",
+            map.n_height[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize],
+        ),
+    );
+    ctx.print(
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 5,
+        format!(
+            "temp Noise: {}",
+            map.n_temp[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize],
+        ),
+    );
+    ctx.print(
+        VIEWPORT_X - 20,
+        VIEWPORT_Y + 6,
+        format!(
+            "humid Noise: {}",
+            map.n_humid[mouse_map_pos.0 as usize][mouse_map_pos.1 as usize],
+        ),
+    );
 }
 
 fn draw_attribute(name: &str, attribute: &Attribute, y: i32, ctx: &mut BTerm) {

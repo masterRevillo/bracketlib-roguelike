@@ -3,9 +3,7 @@ use std::collections::HashSet;
 use std::usize;
 
 use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
-use bracket_lib::color::RGB;
 use bracket_lib::geometry::{DistanceAlg, Point};
-use bracket_lib::noise::{FastNoise, NoiseType};
 use bracket_lib::prelude::{to_cp437, BTerm, FontCharType};
 use serde::{Deserialize, Serialize};
 use specs::Entity;
@@ -29,6 +27,10 @@ pub struct Map {
     pub view_blocked: HashSet<(i32, i32)>,
     pub name: String,
     pub noise: Vec<Vec<f32>>,
+    pub n_height: Vec<Vec<f32>>,
+    pub n_temp: Vec<Vec<f32>>,
+    pub n_humid: Vec<Vec<f32>>,
+    pub n_biome: Vec<Vec<f32>>,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -106,10 +108,6 @@ impl BaseMap for Map {
 
 impl Map {
     pub fn new<S: ToString>(new_depth: i32, width: i32, height: i32, name: S) -> Map {
-        let mut noise = FastNoise::seeded(12 as u64);
-        noise.set_noise_type(NoiseType::Perlin);
-        noise.set_frequency(0.08);
-
         Map {
             tiles: vec![vec![TileType::Wall; height as usize]; width as usize],
             width,
@@ -123,6 +121,10 @@ impl Map {
             view_blocked: HashSet::new(),
             name: name.to_string(),
             noise: vec![vec![0.; height as usize]; width as usize],
+            n_height: vec![vec![0.; height as usize]; width as usize],
+            n_temp: vec![vec![0.; height as usize]; width as usize],
+            n_humid: vec![vec![0.; height as usize]; width as usize],
+            n_biome: vec![vec![0.; height as usize]; width as usize],
         }
     }
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
@@ -148,41 +150,6 @@ impl Map {
             }
         }
     }
-
-    // pub fn draw_map(&self, ctx: &mut BTerm) {
-    //     for x in 0..self.width {
-    //         for y in 0..self.height {
-    //             if self.revealed_tiles[x as usize][y as usize] {
-    //                 let glyph;
-    //                 let mut fg;
-    //                 let mut bg = RGB::from_f32(0., 0., 0.);
-    //                 match self.tiles[x as usize][y as usize] {
-    //                     TileType::Floor => {
-    //                         glyph = to_cp437('.');
-    //                         fg = RGB::from_u8(170, 131, 96);
-    //                         bg = RGB::from_u8(170, 131, 96);
-    //                     }
-    //                     TileType::Wall => {
-    //                         glyph = self.wall_glyph(x, y);
-    //                         fg = RGB::from_u8(127, 30, 20);
-    //                     }
-    //                     TileType::DownStairs => {
-    //                         glyph = to_cp437('>');
-    //                         fg = RGB::from_f32(0., 1.0, 1.0);
-    //                     }
-    //                 }
-    //                 if self.bloodstains.contains(&(x, y)) {
-    //                     bg = RGB::from_f32(0.75, 0., 0.);
-    //                 }
-    //                 if !self.visible_tiles[x as usize][y as usize] {
-    //                     fg = fg.to_greyscale();
-    //                     bg = RGB::from_f32(0., 0., 0.);
-    //                 }
-    //                 ctx.set(x, y, fg, bg, glyph)
-    //             }
-    //         }
-    //     }
-    // }
 
     pub fn is_tile_in_bounds(&self, x: i32, y: i32) -> bool {
         x >= 0 && x < self.width - 1 && y >= 0 && y < self.height - 1

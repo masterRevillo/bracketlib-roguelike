@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::hash::Hash;
 
 use bracket_lib::prelude::{a_star_search, console, DistanceAlg, Point};
 use bracket_lib::random::RandomNumberGenerator;
@@ -7,9 +6,7 @@ use bracket_lib::random::RandomNumberGenerator;
 use crate::components::Position;
 use crate::map::TileType;
 use crate::map::TileType::{Bridge, DownStairs, Floor, Road, Wall, WoodFloor};
-use crate::map_builders::{
-    distant_exit::DistantExit, random_start_position, BuilderChain, BuilderMap, InitialMapBuilder,
-};
+use crate::map_builders::{BuilderMap, InitialMapBuilder};
 
 #[derive(Debug)]
 enum BuildingTag {

@@ -1,6 +1,10 @@
+use std::num::NonZeroIsize;
+use std::u8;
+
 use bracket_lib::color::{
-    BLACK, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, FORESTGREEN, GREY, LIGHT_GRAY, LIGHT_SLATE,
-    MEDIUM_AQUAMARINE, NAVY_BLUE, RGB,
+    BLACK, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, DARK_GREEN, FORESTGREEN, GREEN, GREY,
+    LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, RGB, SANDYBROWN, SNOW, SPRING_GREEN,
+    WHITE, YELLOW,
 };
 use bracket_lib::prelude::{console, to_cp437, BTerm, Point, CHOCOLATE, SADDLEBROWN};
 use bracket_lib::terminal::{FontCharType, GREEN1};
@@ -154,27 +158,87 @@ pub fn get_screen_bounds(ecs: &World, ctx: &mut BTerm) -> (i32, i32, i32, i32) {
     (min_x, max_x, min_y, max_y)
 }
 
+fn get_floor_tile(n: f32, height: f32, temp: f32, humid: f32, biome: f32) -> RGB {
+    match (temp, humid) {
+        (-1.0..-0.5, -1.0..0.0) => {
+            // tundra
+            RGB::named(SNOW)
+        }
+        (-0.5..0.0, -1.0..0.0) => {
+            // grassland
+            RGB::named(YELLOW)
+        }
+        (0.0..1.0, -1.0..0.0) => {
+            // desert
+            RGB::named(SANDYBROWN)
+        }
+        (-1.0..-0.5, 0.0..0.5) => {
+            // taiga
+            RGB::named(GREEN)
+        }
+        (-0.5..0.0, 0.0..0.5) => {
+            // deciduous forest
+            RGB::named(FORESTGREEN)
+        }
+        (0.0..1.0, 0.0..0.5) => {
+            // tropical forest
+            RGB::named(SPRING_GREEN)
+        }
+        (0.0..1.0, 0.0..1.0) => {
+            // tropical rainforest
+            RGB::named(DARK_GREEN)
+        }
+        (_, _) => RGB::named(WHITE),
+    }
+}
+
 fn get_tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let glyph;
     let mut fg;
     let mut bg = RGB::from_f32(0., 0., 0.);
     let noise = map.noise[x][y];
+    let noise_b = map.n_height[x][y];
 
-    match (map.tiles[x][y], noise) {
+    match (map.tiles[x][y], noise + noise_b) {
         (TileType::Floor, _) => {
-            glyph = to_cp437('.');
+            glyph = to_cp437('-');
             fg = RGB::from_u8(170, 131, 96);
+            let scaler = 0.5;
             bg = RGB::from_u8(
-                (170.0 * noise * 0.75) as u8,
-                (131.0 * noise * 0.75) as u8,
-                (96.0 * noise * 0.75) as u8,
+                (170. + (100.0 * noise_b * scaler)) as u8,
+                (131. + (100.0 * noise_b * scaler)) as u8,
+                (96.) as u8,
+            );
+            bg = get_floor_tile(
+                noise,
+                noise_b,
+                map.n_temp[x][y],
+                map.n_humid[x][y],
+                map.n_biome[x][y],
             );
         }
-        // (TileType::Floor, _) => {
-        // glyph = to_cp437('~');
-        // fg = RGB::from_u8(140, 101, 66);
-        // bg = RGB::from_u8(170, 131, 96);
-        // }
+        /*
+                (TileType::Floor, -1.0..0.0) => {
+                    glyph = to_cp437('.');
+                    fg = RGB::from_u8(170, 131, 96);
+                    let scaler = 0.5;
+                    bg = RGB::from_u8(
+                        (170. + (100.0 * noise_b * scaler)) as u8,
+                        (131. + (100.0 * noise_b * scaler)) as u8,
+                        (96.) as u8,
+                    );
+                }
+                (TileType::Floor, 0.0..1.0) => {
+                    glyph = to_cp437('*');
+                    fg = RGB::from_u8(140, 101, 66);
+                    bg = RGB::from_u8(140, 131, 96);
+                }
+                (TileType::Floor, _) => {
+                    glyph = to_cp437(';');
+                    fg = RGB::from_u8(140, 101, 66);
+                    bg = RGB::from_u8(140, 131, 96);
+                }
+        */
         (TileType::Wall, _) => {
             glyph = wall_glyph(map, x as i32, y as i32);
             fg = RGB::from_u8(

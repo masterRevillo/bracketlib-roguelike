@@ -82,8 +82,8 @@ const DEBUGGING: bool = false;
 const SCREEN_X: i32 = 120;
 const SCREEN_Y: i32 = 100;
 
-const MAP_X: i32 = 100;
-const MAP_Y: i32 = 72;
+const MAP_X: i32 = 150;
+const MAP_Y: i32 = 100;
 
 lazy_static! {
     static ref configs: HashMap<String, String> = Config::builder()
