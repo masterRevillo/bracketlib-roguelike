@@ -1,5 +1,4 @@
 use std::num::NonZeroIsize;
-use std::u8;
 
 use bracket_lib::color::{
     BLACK, BLUE4, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, DARK_GREEN, FORESTGREEN, GREEN,
@@ -11,6 +10,7 @@ use bracket_lib::terminal::{FontCharType, GREEN1};
 use specs::{Join, World, WorldExt};
 
 use crate::components::{Hidden, Position, Renderable};
+use crate::map::themes::tile_glyph;
 use crate::map::tiletype::TileType;
 use crate::{Map, DEBUGGING, SCREEN_X, SCREEN_Y};
 
@@ -33,7 +33,7 @@ pub fn render_map(map: &Map, ctx: &mut BTerm) {
         for tx in min_x..max_x {
             if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
                 if map.revealed_tiles[tx as usize][ty as usize] {
-                    let (glyph, fg, bg) = get_tile_glyph(tx as usize, ty as usize, map);
+                    let (glyph, fg, bg) = tile_glyph(tx as usize, ty as usize, map);
                     ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
@@ -60,7 +60,7 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
         for tx in min_x..max_x {
             if tx >= 0 && tx < map_width && ty >= 0 && ty < map_height {
                 if map.revealed_tiles[tx as usize][ty as usize] || DEBUGGING {
-                    let (glyph, fg, bg) = get_tile_glyph(tx as usize, ty as usize, &*map);
+                    let (glyph, fg, bg) = tile_glyph(tx as usize, ty as usize, &*map);
                     ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
@@ -124,7 +124,7 @@ pub fn render_debug_map(map: &Map, ctx: &mut BTerm) {
         for tx in min_x..max_x {
             if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
                 if map.revealed_tiles[tx as usize][ty as usize] {
-                    let (glyph, fg, bg) = get_tile_glyph(tx as usize, ty as usize, &*map);
+                    let (glyph, fg, bg) = tile_glyph(tx as usize, ty as usize, &*map);
                     ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
@@ -156,210 +156,4 @@ pub fn get_screen_bounds(ecs: &World, ctx: &mut BTerm) -> (i32, i32, i32, i32) {
     let max_y = min_y + y_chars as i32;
 
     (min_x, max_x, min_y, max_y)
-}
-
-fn get_floor_tile(n: f32, height: f32, temp: f32, humid: f32, biome: f32) -> RGB {
-    if height < 0.0 {
-        RGB::named(BLUE4)
-    } else {
-        match (temp, humid) {
-            (-1.0..-0.5, -1.0..0.0) => {
-                // tundra
-                RGB::named(SNOW)
-            }
-            (-0.5..0.0, -1.0..0.0) => {
-                // grassland
-                RGB::named(YELLOW)
-            }
-            (0.0..1.0, -1.0..0.0) => {
-                // desert
-                if biome > 0.0 {
-                    RGB::named(SANDYBROWN)
-                } else {
-                    RGB::named(ORANGE_RED)
-                }
-            }
-            (-1.0..-0.5, 0.0..0.5) => {
-                // taiga
-                if biome > 0.0 {
-                    RGB::named(GREEN)
-                } else {
-                    RGB::named(WEBGREEN)
-                }
-            }
-            (-0.5..0.0, 0.0..0.5) => {
-                // deciduous forest
-                if biome > 0.0 {
-                    RGB::named(FORESTGREEN)
-                } else {
-                    RGB::named(PALE_GREEN)
-                }
-            }
-            (0.0..1.0, 0.0..0.5) => {
-                // tropical forest
-                RGB::named(SPRING_GREEN)
-            }
-            (0.0..1.0, 0.0..1.0) => {
-                // tropical rainforest
-                RGB::named(DARK_GREEN)
-            }
-            (_, _) => RGB::named(WHITE),
-        }
-    }
-}
-
-fn get_tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
-    let glyph;
-    let mut fg;
-    let mut bg = RGB::from_f32(0., 0., 0.);
-    let noise = map.noise[x][y];
-    let noise_b = map.n_height[x][y];
-
-    match (map.tiles[x][y], noise + noise_b) {
-        (TileType::Floor, _) => {
-            glyph = to_cp437('-');
-            fg = RGB::from_u8(170, 131, 96);
-            let scaler = 0.5;
-            bg = RGB::from_u8(
-                (170. + (100.0 * noise_b * scaler)) as u8,
-                (131. + (100.0 * noise_b * scaler)) as u8,
-                (96.) as u8,
-            );
-            bg = get_floor_tile(
-                noise,
-                noise_b,
-                map.n_temp[x][y],
-                map.n_humid[x][y],
-                map.n_biome[x][y],
-            );
-        }
-        /*
-                (TileType::Floor, -1.0..0.0) => {
-                    glyph = to_cp437('.');
-                    fg = RGB::from_u8(170, 131, 96);
-                    let scaler = 0.5;
-                    bg = RGB::from_u8(
-                        (170. + (100.0 * noise_b * scaler)) as u8,
-                        (131. + (100.0 * noise_b * scaler)) as u8,
-                        (96.) as u8,
-                    );
-                }
-                (TileType::Floor, 0.0..1.0) => {
-                    glyph = to_cp437('*');
-                    fg = RGB::from_u8(140, 101, 66);
-                    bg = RGB::from_u8(140, 131, 96);
-                }
-                (TileType::Floor, _) => {
-                    glyph = to_cp437(';');
-                    fg = RGB::from_u8(140, 101, 66);
-                    bg = RGB::from_u8(140, 131, 96);
-                }
-        */
-        (TileType::Wall, _) => {
-            glyph = wall_glyph(map, x as i32, y as i32);
-            fg = RGB::from_u8(
-                127 + (127.0 * noise * 0.5) as u8,
-                30 + (30.0 * noise * 0.5) as u8,
-                20 + (20.0 * noise * 0.5) as u8,
-            );
-        }
-        (TileType::DownStairs, _) => {
-            glyph = to_cp437('>');
-            fg = RGB::from_f32(0., 1.0, 1.0);
-        }
-        (TileType::Bridge, _) => {
-            glyph = to_cp437('|');
-            fg = RGB::named(CHOCOLATE);
-            bg = RGB::named(SADDLEBROWN);
-        }
-        (TileType::Road, _) => {
-            glyph = to_cp437('~');
-            fg = RGB::named(GREY);
-            bg = RGB::named(LIGHT_GRAY);
-        }
-        (TileType::Grass, _) => {
-            glyph = to_cp437('"');
-            fg = RGB::named(FORESTGREEN);
-            bg = RGB::named(GREEN1);
-        }
-        (TileType::ShallowWater, _) => {
-            glyph = to_cp437('≈');
-            fg = RGB::named(CYAN);
-            bg = RGB::named(MEDIUM_AQUAMARINE);
-        }
-        (TileType::DeepWater, _) => {
-            glyph = to_cp437('≈');
-            fg = RGB::from_f32(0.1 * noise, 0.1 * noise, 0.6 * noise);
-            //100, 149, 237
-            bg = RGB::from_f32(0.45 * noise, 0.55 * noise, 0.9 * noise);
-        }
-        (TileType::WoodFloor, _) => {
-            glyph = to_cp437('.');
-            fg = RGB::named(CHOCOLATE);
-            bg = RGB::named(CHOCOLATE2);
-        }
-        (TileType::Gravel, _) => {
-            glyph = to_cp437('\'');
-            fg = RGB::named(LIGHT_SLATE);
-            bg = RGB::named(DARK_GRAY)
-        }
-        (TileType::Moss, _) => {
-            glyph = to_cp437('#');
-            fg = RGB::from_u8(91, 128, 125);
-            bg = RGB::from_u8(91, 168, 110);
-        }
-    }
-    if map.bloodstains.contains(&(x as i32, y as i32)) {
-        bg = RGB::from_f32(0.75, 0., 0.);
-    }
-    if !map.visible_tiles[x][y] {
-        fg = fg.lerp(RGB::named(BLACK), 0.5);
-        bg = bg.lerp(RGB::named(BLACK), 0.7);
-        // bg = RGB::from_f32(0., 0., 0.);
-    }
-    (glyph, fg, bg)
-}
-
-fn wall_glyph(map: &Map, x: i32, y: i32) -> FontCharType {
-    if x < 1 || x > map.width - 2 || y < 1 || y > map.height - 2i32 {
-        return 35;
-    }
-    let mut mask: u8 = 0;
-
-    if is_revealed_and_wall(map, x, y - 1) {
-        mask += 1;
-    }
-    if is_revealed_and_wall(map, x, y + 1) {
-        mask += 2;
-    }
-    if is_revealed_and_wall(map, x - 1, y) {
-        mask += 4;
-    }
-    if is_revealed_and_wall(map, x + 1, y) {
-        mask += 8;
-    }
-
-    match mask {
-        0 => 9,
-        1 => 186,
-        2 => 186,
-        3 => 186,
-        4 => 205,
-        5 => 188,
-        6 => 187,
-        7 => 185,
-        8 => 205,
-        9 => 200,
-        10 => 201,
-        11 => 204,
-        12 => 205,
-        13 => 202,
-        14 => 203,
-        15 => 206,
-        _ => 35,
-    }
-}
-fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
-    map.tiles[x as usize][y as usize] == TileType::Wall
-        && map.revealed_tiles[x as usize][y as usize]
 }

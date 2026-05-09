@@ -15,6 +15,7 @@ use crate::map_builders::debug_map::DebugMapBuilder;
 use crate::map_builders::distant_exit::DistantExit;
 use crate::map_builders::dla::DLABuilder;
 use crate::map_builders::drunkards::DrunkardsWalkBuilder;
+use crate::map_builders::forest::forest_builder;
 use crate::map_builders::maze::MazeBuilder;
 use crate::map_builders::noise::NoiseBuilder;
 use crate::map_builders::noise_vegitation::NoiseVegitationBuilder;
@@ -55,6 +56,7 @@ mod distant_exit;
 mod dla;
 mod door_placement;
 mod drunkards;
+mod forest;
 mod maze;
 mod noise;
 mod noise_vegitation;
@@ -188,7 +190,8 @@ pub fn level_builder(
     height: i32,
 ) -> BuilderChain {
     match new_depth {
-        // 1 => town_builder(new_depth, rng, width, height),
+        1 => town_builder(new_depth, rng, width, height),
+        2 => forest_builder(new_depth, rng, width, height),
         // _ => random_builder(new_depth, rng, width, height),
         _ => debug_map_builder(new_depth, rng, width, height),
     }

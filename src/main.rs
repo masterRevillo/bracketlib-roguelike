@@ -560,9 +560,9 @@ fn main() -> BError {
 
     let mut bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
         .with_title("Rusty Roguelike V2")
-        .with_tile_dimensions(8, 8)
+        .with_tile_dimensions(12, 12)
         .with_fps_cap(120.)
-        .with_fitscreen(true)
+        .with_fitscreen(false)
         .build()?;
     bterm.with_post_scanlines(true);
     bterm.screen_burn_color(RGB::named(WHITE));

@@ -43,7 +43,10 @@ impl TownBuilder {
         let doors = self.add_doors(rng, build_data, &mut buildings, wall_gap_y);
         self.add_paths(build_data, &doors);
 
-        build_data.map.tiles[(build_data.width - 5) as usize][wall_gap_y as usize] = DownStairs;
+        //build_data.map.tiles[(build_data.width - 5) as usize][wall_gap_y as usize] = DownStairs;
+        for y in wall_gap_y - 3..wall_gap_y + 4 {
+            build_data.map.tiles[(build_data.width - 2) as usize][y as usize] = DownStairs;
+        }
 
         let building_size = self.sort_buildings(&buildings);
         self.building_factory(rng, build_data, &buildings, &building_size);

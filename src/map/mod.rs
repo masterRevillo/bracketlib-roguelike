@@ -12,6 +12,7 @@ pub use tiletype::{tile_opaque, tile_walkable, TileType};
 
 use crate::map::tiletype::tile_cost;
 
+pub mod themes;
 pub mod tiletype;
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
@@ -27,6 +28,7 @@ pub struct Map {
     pub view_blocked: HashSet<(i32, i32)>,
     pub name: String,
     pub noise: Vec<Vec<f32>>,
+    pub w_noise: Vec<Vec<f32>>,
     pub n_height: Vec<Vec<f32>>,
     pub n_temp: Vec<Vec<f32>>,
     pub n_humid: Vec<Vec<f32>>,
@@ -121,6 +123,7 @@ impl Map {
             view_blocked: HashSet::new(),
             name: name.to_string(),
             noise: vec![vec![0.; height as usize]; width as usize],
+            w_noise: vec![vec![0.; height as usize]; width as usize],
             n_height: vec![vec![0.; height as usize]; width as usize],
             n_temp: vec![vec![0.; height as usize]; width as usize],
             n_humid: vec![vec![0.; height as usize]; width as usize],

@@ -23,6 +23,10 @@ impl NoiseBuilder {
         noise.set_noise_type(self.noise_type);
         noise.set_frequency(0.08);
 
+        let mut w_noise = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
+        w_noise.set_noise_type(NoiseType::WhiteNoise);
+        w_noise.set_frequency(0.1);
+
         let mut n_height = FastNoise::seeded(rng.roll_dice(1, 65536) as u64);
         n_height.set_noise_type(self.noise_type);
         n_height.set_frequency(0.25);
@@ -42,6 +46,8 @@ impl NoiseBuilder {
         for y in 0..build_data.height {
             for x in 0..build_data.width {
                 build_data.map.noise[x as usize][y as usize] = noise.get_noise(x as f32, y as f32);
+                build_data.map.w_noise[x as usize][y as usize] =
+                    w_noise.get_noise(x as f32, y as f32);
                 build_data.map.n_height[x as usize][y as usize] =
                     n_height.get_noise(x as f32, y as f32);
                 build_data.map.n_temp[x as usize][y as usize] =
