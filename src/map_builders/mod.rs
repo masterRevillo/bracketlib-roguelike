@@ -78,6 +78,7 @@ mod town;
 mod voronoi;
 mod voronoi_spawning;
 mod waveform_collapse;
+pub mod yellow_brick_road;
 
 pub struct BuilderMap {
     pub spawn_list: SpawnList,

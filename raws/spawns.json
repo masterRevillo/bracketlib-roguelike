@@ -283,6 +283,22 @@
       }
     },
     {
+      "id" : "Stick",
+      "name" : "Stick",
+      "renderable": {
+        "glyph" : "|",
+        "fg" : "#664A16",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "weapon" : {
+        "range" : "melee",
+        "attribute": "Might",
+        "base_damage": "1d8-1,",
+        "hit_bonus": -1
+      }
+    },
+    {
       "id" : "Dagger",
       "name" : "Dagger",
       "renderable": {
@@ -593,8 +609,89 @@
       "vision_range" : 8,
       "ai": "melee",
       "attributes": {
-        "Might": 3,
-        "Fitness": 3
+        "might": 3,
+        "fitness": 3
+      },
+      "skills" : {
+        "Melee": -1,
+        "Defense": -1
+      },
+      "natural" : {
+        "armor_class": 11,
+        "attacks": [
+          { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+        ]
+      }
+    },
+    {
+      "id" : "Wolf",
+      "name" : "Wolf",
+      "renderable": {
+        "glyph" : "w",
+        "fg" : "#678691",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "vision_range" : 8,
+      "ai": "melee",
+      "attributes": {
+        "might": 3,
+        "fitness": 3
+      },
+      "skills" : {
+        "Melee": -1,
+        "Defense": -1
+      },
+      "natural" : {
+        "armor_class": 12,
+        "attacks": [
+          { "name":  "bite", "hit_bonus":  0, "damage": "1d6" }
+        ]
+      }
+    },
+    {
+      "id" : "Fox",
+      "name" : "Fox",
+      "renderable": {
+        "glyph" : "f",
+        "fg" : "#C77140",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "vision_range" : 8,
+      "ai": "melee",
+      "attributes": {
+        "might": 3,
+        "fitness": 3
+      },
+      "skills" : {
+        "Melee": -1,
+        "Defense": -1
+      },
+      "natural" : {
+        "armor_class": 11,
+        "attacks": [
+          { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+        ]
+      }
+    },
+    {
+      "id" : "Deer",
+      "name" : "Deer",
+      "renderable": {
+        "glyph" : "d",
+        "fg" : "#FFFF00",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "vision_range" : 8,
+      "ai": "bystander",
+      "attributes": {
+        "might": 3,
+        "fitness": 3
       },
       "skills" : {
         "Melee": -1,
@@ -619,7 +716,15 @@
       "blocks_tile" : true,
       "vision_range" : 8,
       "ai": "melee",
-      "attributes": {}
+      "attributes": {
+        "might": 8,
+        "fitness":12 
+      },
+      "skills" : {
+        "Melee": 1,
+        "Defense": 2
+      },
+      "equipped" : [ "ClothTunic", "ClothPants", "Dagger" ]
     },
     {
       "id" : "Bisat",
@@ -633,7 +738,16 @@
       "blocks_tile" : true,
     "vision_range" : 8,
       "ai": "melee",
-      "attributes": {}
+      "attributes": {
+        "might": 4,
+        "fitness":10,
+        "quickness": 12
+      },
+      "skills" : {
+        "Melee": 0,
+        "Defense": 0
+      },
+      "equipped" : [ "ClothPants", "Stick" ]
     },
     {
       "id" : "Spectre",
@@ -647,7 +761,17 @@
       "blocks_tile" : true,
       "vision_range" : 10,
       "ai": "melee",
-      "attributes": {}
+      "attributes": {
+        "might": 12,
+        "fitness": 10,
+        "intelligence": 11,
+        "quickness": 9
+      },
+      "skills" : {
+        "Melee": 1,
+        "Defense": 0,
+        "Magic": 2
+      }
     },
     {
       "id" : "TukkaWarrior",
@@ -661,7 +785,16 @@
       "blocks_tile" : true,
       "vision_range" : 6,
       "ai": "melee",
-      "attributes": {}
+      "attributes": {
+        "might": 7,
+        "fitness": 12,
+        "intelligence": 6,
+        "quickness": 7 
+      },
+      "skills" : {
+        "Melee": 2,
+        "Magic": -1 
+      }
     }
   ],
   "props" : [
@@ -852,15 +985,19 @@
     }
   ],
   "spawn_table" : [
-    { "id" : "Rat", "weight" : 20, "min_depth" : 0, "max_depth" : 3 },
-    { "id" : "Bisat", "weight" : 10, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "Ogur", "weight" : 3, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "id" : "Spectre", "weight" : 3, "min_depth" : 2, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "id" : "TukkaWarrior", "weight" : 4, "min_depth" : 4, "max_depth" : 100 },
+    { "id" : "Rat", "weight" : 15, "min_depth" : 2, "max_depth" : 3 },
+    { "id" : "Wolf", "weight" : 13, "min_depth" : 2, "max_depth" : 3 },
+    { "id" : "Fox", "weight" : 15, "min_depth" : 2, "max_depth" : 3 },
+    { "id" : "Deer", "weight" : 14, "min_depth" : 2, "max_depth" : 3 },
+    { "id" : "Bisat", "weight" : 10, "min_depth" : 3, "max_depth" : 100 },
+    { "id" : "Ogur", "weight" : 3, "min_depth" : 3, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "id" : "Spectre", "weight" : 1, "min_depth" : 5, "max_depth" : 100, "add_map_depth_to_weight" : true },
+    { "id" : "TukkaWarrior", "weight" : 3, "min_depth" : 7, "max_depth" : 100 },
     { "id" : "HealthPotion", "weight" : 7, "min_depth" : 0, "max_depth" : 100 },
     { "id" : "FireballScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
     { "id" : "ConfusionScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
     { "id" : "MagicMissileScroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
+    { "id" : "MagicMappingScroll", "weight" : 1, "min_depth" : 0, "max_depth" : 100 },
     { "id" : "Dagger", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
     { "id" : "Shield", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
     { "id" : "Longsword", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },

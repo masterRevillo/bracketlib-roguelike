@@ -1,11 +1,13 @@
-use bracket_lib::random::RandomNumberGenerator;
+use bracket_lib::{noise::NoiseType, random::RandomNumberGenerator};
 
 use crate::map_builders::{
     area_starting_points::{AreaStartingPoint, XStart, YStart},
     cellular_automata::CellularAutomataBuilder,
     cull_unreachable::CullUnreachable,
     distant_exit::DistantExit,
+    noise::NoiseBuilder,
     voronoi_spawning::VoronoiSpawning,
+    yellow_brick_road::YellowBrickRoad,
     BuilderChain,
 };
 
@@ -22,6 +24,7 @@ pub fn forest_builder(
     chain.with(AreaStartingPoint::new(XStart::LEFT, YStart::CENTER));
 
     chain.with(VoronoiSpawning::new());
-    chain.with(DistantExit::new());
+    chain.with(YellowBrickRoad::new());
+    chain.with(NoiseBuilder::new(NoiseType::Perlin));
     chain
 }

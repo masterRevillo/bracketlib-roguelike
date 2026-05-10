@@ -1,7 +1,7 @@
 use bracket_lib::{
     color::{
         BLACK, CHOCOLATE, CHOCOLATE2, CYAN, DARK_GRAY, FORESTGREEN, GREEN1, GREY, LIGHT_GRAY,
-        LIGHT_SLATE, MEDIUM_AQUAMARINE, RGB, SADDLEBROWN,
+        LIGHT_SLATE, MEDIUM_AQUAMARINE, RGB, SADDLEBROWN, YELLOW,
     },
     prelude::{to_cp437, FontCharType},
 };
@@ -65,7 +65,7 @@ fn get_forest_glyph(x: usize, y: usize, map: &Map) -> (u16, RGB, RGB) {
         }
         (TileType::Road, _) => {
             glyph = to_cp437('~');
-            fg = RGB::named(GREY);
+            fg = RGB::named(YELLOW);
             bg = RGB::named(LIGHT_GRAY);
         }
         (TileType::Grass, _) => {
@@ -143,7 +143,7 @@ fn get_tile_glyph_default(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, 
         }
         (TileType::Road, _) => {
             glyph = to_cp437('~');
-            fg = RGB::named(GREY);
+            fg = RGB::named(YELLOW);
             bg = RGB::named(LIGHT_GRAY);
         }
         (TileType::Grass, _) => {
