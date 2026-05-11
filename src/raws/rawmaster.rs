@@ -464,6 +464,23 @@ pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
     rt
 }
 
+pub fn get_item_drop(
+    raws: &RawMaster,
+    rng: &mut RandomNumberGenerator,
+    table: &str,
+) -> Option<String> {
+    if raws.loot_index.contains_key(table) {
+        let mut rt = RandomTable::new();
+        let avail_options = &raws.raws.loot_tables[raws.loot_index[table]];
+        for item in avail_options.drops.iter() {
+            rt = rt.add(item.name.clone(), item.weight);
+        }
+        Some(rt.roll(rng))
+    } else {
+        None
+    }
+}
+
 pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
     lazy_static! {
         static ref DICE_RE: Regex = Regex::new(r"(\d+)d(\d+)([\+\-]\d+)?").unwrap();
