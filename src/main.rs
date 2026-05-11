@@ -5,7 +5,7 @@ extern crate strum;
 use std::collections::HashMap;
 
 use bracket_lib::color::{RGB, WHITE};
-use bracket_lib::prelude::{console, main_loop, BError, BTerm, BTermBuilder, GameState, Point};
+use bracket_lib::prelude::{main_loop, BError, BTerm, BTermBuilder, GameState, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use config::Config;
 use specs::prelude::*;
@@ -16,23 +16,14 @@ use crate::camera::render_debug_map;
 use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion,
     Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden,
-    HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name,
-    NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing,
-    Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills,
-    SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
+    HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper, MeleeWeapon, Monster,
+    Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood,
+    ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation,
+    Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
     WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
-use crate::gui::ItemMenuResult::NoResponse;
-use crate::gui::{
-    drop_item_menu, ranged_target, show_inventory, GameOverResult, ItemMenuResult, MainMenuResult,
-    MainMenuSelection,
-};
-use crate::hunger_system::HungerSystem;
-use crate::inventory_system::{
-    ItemCollectionSystem, ItemDropSystem, ItemUnequippingSystem, ItemUseSystem,
-};
 use crate::map::Map;
 use crate::map_indexing_system::MapIndexingSystem;
 use crate::melee_combat_system::MeleeCombatSystem;
@@ -44,6 +35,17 @@ use crate::spawner::player;
 use crate::trigger_system::TriggerSystem;
 use crate::visibility_system::VisibilitySystem;
 use crate::RunState::MainMenu;
+use crate::{
+    gui::{
+        drop_item_menu, ranged_target, show_inventory, GameOverResult,
+        ItemMenuResult::{self, NoResponse},
+        MainMenuResult, MainMenuSelection,
+    },
+    hunger_system::HungerSystem,
+    inventory_system::{
+        ItemCollectionSystem, ItemDropSystem, ItemUnequippingSystem, ItemUseSystem,
+    },
+};
 
 mod bystander_ai_system;
 mod camera;
@@ -533,6 +535,7 @@ fn main() -> BError {
     state.ecs.register::<Skills>();
     state.ecs.register::<Pools>();
     state.ecs.register::<NaturalAttackDefense>();
+    state.ecs.register::<LootTable>();
 
     raws::load_raws();
 

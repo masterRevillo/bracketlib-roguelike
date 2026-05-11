@@ -373,6 +373,31 @@
         "slot" : "Shield",
         "armor_class": 1.0
       }
+    },
+    {
+      "id" : "Meat",
+      "name" : "Meat",
+      "renderable": {
+        "glyph" : "%",
+        "fg" : "#00FF00",
+        "bg" : "#000000",
+        "order" : 2
+      },
+      "consumable" : {
+        "effects" : {
+          "food": ""
+        }
+      }
+    },
+    {
+      "id" : "Hide",
+      "name" : "Hide",
+      "renderable": {
+        "glyph" : "ß",
+        "fg" : "#A52A2A",
+        "bg" : "#000000",
+        "order" : 2
+      }    
     }
   ],
   "mobs" : [
@@ -648,7 +673,8 @@
         "attacks": [
           { "name":  "bite", "hit_bonus":  0, "damage": "1d6" }
         ]
-      }
+      },
+      "loot_table": "Animal"
     },
     {
       "id" : "Fox",
@@ -701,6 +727,35 @@
         "armor_class": 11,
         "attacks": [
           { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+        ]
+      },
+      "loot_table": "Animal"
+    },
+    {
+      "id" : "Cat",
+      "name" : "Cat",
+      "renderable": {
+        "glyph" : "c",
+        "fg" : "#68F72A",
+        "bg" : "#000000",
+        "order" : 1
+      },
+      "blocks_tile" : true,
+      "vision_range" : 8,
+      "ai": "bystander",
+      "attributes": {
+        "might": 3,
+        "fitness": 3,
+        "quickness": 13
+      },
+      "skills" : {
+        "Melee": -1,
+        "Defense": -1
+      },
+      "natural" : {
+        "armor_class": 11,
+        "attacks": [
+          { "name":  "claw", "hit_bonus":  0, "damage": "1d4" }
         ]
       }
     },
@@ -989,6 +1044,7 @@
     { "id" : "Wolf", "weight" : 13, "min_depth" : 2, "max_depth" : 3 },
     { "id" : "Fox", "weight" : 15, "min_depth" : 2, "max_depth" : 3 },
     { "id" : "Deer", "weight" : 14, "min_depth" : 2, "max_depth" : 3 },
+    { "id" : "Cat", "weight" : 5, "min_depth" : 2, "max_depth" : 3 },
     { "id" : "Bisat", "weight" : 10, "min_depth" : 3, "max_depth" : 100 },
     { "id" : "Ogur", "weight" : 3, "min_depth" : 3, "max_depth" : 100, "add_map_depth_to_weight" : true },
     { "id" : "Spectre", "weight" : 1, "min_depth" : 5, "max_depth" : 100, "add_map_depth_to_weight" : true },
@@ -1009,5 +1065,13 @@
     { "id" : "MagicMappingScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
     { "id" : "BearTrap", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
     { "id" : "Artefact", "weight" : 1, "min_depth" : 2, "max_depth" : 100 }
+  ],
+  "loot_tables": [
+    { "name": "Animal",
+      "drops": [
+        { "name": "Hide", "weight": 10 },
+        { "name": "Meat", "weight": 10 }
+      ]
+    }
   ]
 }

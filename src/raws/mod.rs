@@ -1,25 +1,27 @@
 use std::sync::Mutex;
 
-use bracket_embedding::{embedded_resource, link_resource};
 use bracket_embedding::prelude::EMBED;
+use bracket_embedding::{embedded_resource, link_resource};
 use serde::Deserialize;
 
 use rawmaster::*;
 
-use crate::raws::item_structs::{Item};
+use crate::raws::item_structs::Item;
+use crate::raws::loot_structs::LootTable;
 use crate::raws::mob_structs::Mob;
 use crate::raws::prop_structs::Prop;
 use crate::raws::spawn_table_structs::SpawnTableEntry;
 
 mod item_structs;
-pub mod rawmaster;
+mod loot_structs;
 mod mob_structs;
 mod prop_structs;
+pub mod rawmaster;
 mod spawn_table_structs;
 
 embedded_resource!(RAW_FILE, "../../raws/spawns.json");
 
-lazy_static!{
+lazy_static! {
     pub static ref RAWS: Mutex<RawMaster> = Mutex::new(RawMaster::empty());
 }
 
@@ -40,5 +42,6 @@ pub struct Raws {
     pub items: Vec<Item>,
     pub mobs: Vec<Mob>,
     pub props: Vec<Prop>,
-    pub spawn_table: Vec<SpawnTableEntry>
+    pub spawn_table: Vec<SpawnTableEntry>,
+    pub loot_tables: Vec<LootTable>,
 }

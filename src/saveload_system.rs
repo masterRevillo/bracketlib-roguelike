@@ -3,11 +3,21 @@ use std::fs::File;
 use std::path::Path;
 
 use bracket_lib::prelude::Point;
-use specs::{Builder, Entity, Join, World, WorldExt};
 use specs::error::NoError;
-use specs::saveload::{DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator};
+use specs::saveload::{
+    DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator,
+};
+use specs::{Builder, Entity, Join, World, WorldExt};
 
-use crate::components::{AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion, Consumable, Wearable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden, HungerClock, InBackpack, InflictsDamage, Item, MagicMapper, MeleeWeapon, Monster, Name, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, NaturalAttackDefense};
+use crate::components::{
+    AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion,
+    Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden,
+    HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper, MeleeWeapon, Monster,
+    Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood,
+    ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation,
+    Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
+    WantsToUnequipItem, WantsToUseItem, Wearable,
+};
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
@@ -48,12 +58,17 @@ pub fn save_game(ecs: &mut World) {
         .build();
     // do the serializing
     {
-        let data = ( ecs.entities(), ecs.read_storage::<SimpleMarker<SerializeMe>>() );
+        let data = (
+            ecs.entities(),
+            ecs.read_storage::<SimpleMarker<SerializeMe>>(),
+        );
 
         let writer = File::create("./savegame.json").unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
-        serialize_individually! (
-            ecs, serializer, data,
+        serialize_individually!(
+            ecs,
+            serializer,
+            data,
             Position,
             Renderable,
             Player,
@@ -98,10 +113,12 @@ pub fn save_game(ecs: &mut World) {
             Attributes,
             Skills,
             Pools,
-            NaturalAttackDefense
+            NaturalAttackDefense,
+            LootTable
         );
     }
-    ecs.delete_entity(savehelper).expect("Couldn't clean up helper")
+    ecs.delete_entity(savehelper)
+        .expect("Couldn't clean up helper")
 }
 
 pub fn does_save_exist() -> bool {
@@ -125,11 +142,13 @@ pub fn load_game(ecs: &mut World) {
         let mut d = (
             &mut ecs.entities(),
             &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(),
-            &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>()
+            &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>(),
         );
 
         deserialize_individually!(
-            ecs, de, d,
+            ecs,
+            de,
+            d,
             Position,
             Renderable,
             Player,
@@ -174,7 +193,8 @@ pub fn load_game(ecs: &mut World) {
             Attributes,
             Skills,
             Pools,
-            NaturalAttackDefense
+            NaturalAttackDefense,
+            LootTable
         );
     }
     let mut deleteme: Option<Entity> = None;
@@ -183,20 +203,22 @@ pub fn load_game(ecs: &mut World) {
         let helper = ecs.read_storage::<SerializationHelper>();
         let player = ecs.read_storage::<Player>();
         let position = ecs.read_storage::<Position>();
-        for (e,h) in (&entities, &helper).join() {
+        for (e, h) in (&entities, &helper).join() {
             let mut worldmap = ecs.write_resource::<super::map::Map>();
             *worldmap = h.map.clone();
-            worldmap.tile_content = vec![vec![Vec::new(); worldmap.height as usize]; worldmap.width as usize];
+            worldmap.tile_content =
+                vec![vec![Vec::new(); worldmap.height as usize]; worldmap.width as usize];
             deleteme = Some(e);
         }
-        for (e,_p,pos) in (&entities, &player, &position).join() {
+        for (e, _p, pos) in (&entities, &player, &position).join() {
             let mut ppos = ecs.write_resource::<Point>();
             *ppos = Point::new(pos.x, pos.y);
             let mut player_resource = ecs.write_resource::<Entity>();
             *player_resource = e;
         }
     }
-    ecs.delete_entity(deleteme.unwrap()).expect("Unable to delete helper");
+    ecs.delete_entity(deleteme.unwrap())
+        .expect("Unable to delete helper");
 }
 
 pub fn delete_save() {

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use serde::Deserialize;
 use crate::raws::item_structs::Renderable;
+use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
 pub struct Mob {
@@ -17,20 +17,21 @@ pub struct Mob {
     pub hp: Option<i32>,
     pub mana: Option<i32>,
     pub equipped: Option<Vec<String>>,
-    pub natural: Option<MobNatural>
+    pub natural: Option<MobNatural>,
+    pub loot_table: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct MobNatural {
     pub armor_class: Option<i32>,
-    pub attacks: Option<Vec<NaturalAttack>>
+    pub attacks: Option<Vec<NaturalAttack>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct NaturalAttack {
     pub name: String,
     pub hit_bonus: i32,
-    pub damage: String
+    pub damage: String,
 }
 
 #[derive(Deserialize, Debug)]
