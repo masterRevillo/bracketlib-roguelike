@@ -11,16 +11,17 @@ use config::Config;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
+use crate::animal_ai_system::AnimalAI;
 use crate::bystander_ai_system::BystanderAI;
 use crate::camera::render_debug_map;
 use crate::components::{
-    AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion,
-    Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden,
-    HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper, MeleeWeapon, Monster,
-    Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood,
-    ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation,
-    Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
-    WantsToUnequipItem, WantsToUseItem, Wearable,
+    AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
+    Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable,
+    Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper,
+    MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position,
+    ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe,
+    SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee,
+    WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
@@ -38,7 +39,7 @@ use crate::RunState::MainMenu;
 use crate::{
     gui::{
         drop_item_menu, ranged_target, show_inventory, GameOverResult,
-        ItemMenuResult::{self, NoResponse},
+        ItemMenuResult::{self},
         MainMenuResult, MainMenuSelection,
     },
     hunger_system::HungerSystem,
@@ -47,6 +48,7 @@ use crate::{
     },
 };
 
+mod animal_ai_system;
 mod bystander_ai_system;
 mod camera;
 mod components;
@@ -132,6 +134,8 @@ impl State {
         mob.run_now(&self.ecs);
         let mut bystandar_ai = BystanderAI {};
         bystandar_ai.run_now(&self.ecs);
+        let mut animal_ai = AnimalAI {};
+        animal_ai.run_now(&self.ecs);
         let mut triggers = TriggerSystem {};
         triggers.run_now(&self.ecs);
         let mut mapindex = MapIndexingSystem {};
@@ -326,7 +330,7 @@ impl GameState for State {
             RunState::PreRun => {
                 self.run_systems();
                 self.ecs.maintain();
-                if (SHOW_MAPGEN_VISUALIZATION) {
+                if SHOW_MAPGEN_VISUALIZATION {
                     new_runstate = RunState::ShowMapVisualization;
                     self.mapgen_next_state = Some(RunState::AwaitingInput);
                 } else {
@@ -536,6 +540,8 @@ fn main() -> BError {
     state.ecs.register::<Pools>();
     state.ecs.register::<NaturalAttackDefense>();
     state.ecs.register::<LootTable>();
+    state.ecs.register::<Carnivore>();
+    state.ecs.register::<Herbivore>();
 
     raws::load_raws();
 

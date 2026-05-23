@@ -302,3 +302,11 @@ pub struct Pools {
 pub struct LootTable {
     pub table: String,
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Herbivore {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Carnivore {
+    pub hunting: Vec<String>,
+}

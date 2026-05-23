@@ -1,49 +1,15 @@
-use std::num::NonZeroIsize;
-
-use bracket_lib::color::{
-    BLACK, BLUE4, CHOCOLATE2, CORNFLOWERBLUE, CYAN, DARK_GRAY, DARK_GREEN, FORESTGREEN, GREEN,
-    GREY, LIGHT_GRAY, LIGHT_SLATE, MEDIUM_AQUAMARINE, NAVY_BLUE, ORANGE_RED, PALE_GREEN, RGB,
-    SANDYBROWN, SEAGREEN, SNOW, SPRING_GREEN, WEBGREEN, WHITE, YELLOW,
-};
-use bracket_lib::prelude::{console, to_cp437, BTerm, Point, CHOCOLATE, SADDLEBROWN};
-use bracket_lib::terminal::{FontCharType, GREEN1};
+use bracket_lib::color::{BLACK, GREY, RGB};
+use bracket_lib::prelude::{to_cp437, BTerm, Point};
 use specs::{Join, World, WorldExt};
 
 use crate::components::{Hidden, Position, Renderable};
 use crate::map::themes::tile_glyph;
-use crate::map::tiletype::TileType;
 use crate::{Map, DEBUGGING, SCREEN_X, SCREEN_Y};
 
 const SHOW_BOUNDARIES: bool = false;
 
 pub const VIEWPORT_X: i32 = SCREEN_X - 31;
 pub const VIEWPORT_Y: i32 = SCREEN_Y - 15;
-
-pub fn render_map(map: &Map, ctx: &mut BTerm) {
-    let (min_x, max_x, min_y, max_y) = (0, map.width, 0, map.height);
-
-    let map_width = map.width - 1;
-    let map_height = map.height - 1;
-
-    // x and y are the coordinates on the screen
-    // tx and ty are coordinates of the Tiles
-    let mut y = 0;
-    for ty in min_y..max_y {
-        let mut x = 0;
-        for tx in min_x..max_x {
-            if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
-                if map.revealed_tiles[tx as usize][ty as usize] {
-                    let (glyph, fg, bg) = tile_glyph(tx as usize, ty as usize, map);
-                    ctx.set(x, y, fg, bg, glyph);
-                }
-            } else if SHOW_BOUNDARIES {
-                ctx.set(x, y, RGB::named(GREY), RGB::named(BLACK), to_cp437('.'))
-            }
-            x += 1;
-        }
-        y += 1;
-    }
-}
 
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();

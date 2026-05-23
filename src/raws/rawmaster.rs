@@ -10,10 +10,11 @@ use specs::{Builder, Entity, EntityBuilder, World, WorldExt};
 
 use crate::components::{
     AreaOfEffect, Artefact, Attribute, Attributes, BlocksTile, BlocksVisibility, Bystander,
-    Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Equipped, Hidden,
-    InBackpack, InflictsDamage, LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttack,
-    NaturalAttackDefense, Pool, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged,
-    SerializeMe, SingleActivation, Skill, Skills, Vendor, Viewshed, WeaponAttribute, Wearable,
+    Carnivore, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Equipped,
+    Herbivore, Hidden, InBackpack, InflictsDamage, LootTable, MagicMapper, MeleeWeapon, Monster,
+    Name, NaturalAttack, NaturalAttackDefense, Pool, Pools, Position, ProvidesFood,
+    ProvidesHealing, Quips, Ranged, SerializeMe, SingleActivation, Skill, Skills, Vendor, Viewshed,
+    WeaponAttribute, Wearable,
 };
 use crate::gamesystem::{attr_bonus, mana_at_level, npc_hp};
 use crate::random_tables::RandomTable;
@@ -79,11 +80,20 @@ impl RawMaster {
         for (i, prop) in self.raws.props.iter().enumerate() {
             if entries_used.contains(&prop.id) {
                 console::log(format!(
-                    "WARNING - duplicate mob type in raw file [{}]",
+                    "WARNING - duplicate prop type in raw file [{}]",
                     prop.id
                 ))
             }
             self.prop_index.insert(prop.id.to_string(), i);
+        }
+        for (i, table) in self.raws.loot_tables.iter().enumerate() {
+            if entries_used.contains(&table.name) {
+                console::log(format!(
+                    "WARNING - duplicate loot table in raw file [{}]",
+                    table.name
+                ))
+            }
+            self.loot_index.insert(table.name.to_string(), i);
         }
     }
 }
@@ -94,7 +104,7 @@ fn spawn_position<'a>(
     tag: String,
     raws: &RawMaster,
 ) -> EntityBuilder<'a> {
-    let mut eb = new_entity;
+    let eb = new_entity;
     match pos {
         AtPosition { x, y } => eb.with(Position { x, y }),
         SpawnType::Equipped { by } => {
@@ -282,6 +292,18 @@ pub fn spawn_named_mob(
             "melee" => eb = eb.with(Monster {}),
             "bystander" => eb = eb.with(Bystander {}),
             "vendor" => eb = eb.with(Vendor {}),
+            "carnivore" => {
+                eb = eb.with(Carnivore {
+                    hunting: mob_template.hunting.clone().expect(
+                        format!(
+                            "You must provide a hunted list for carnivore {}",
+                            mob_template.name
+                        )
+                        .as_str(),
+                    ),
+                })
+            }
+            "herbivore" => eb = eb.with(Herbivore {}),
             _ => {}
         }
         let might = mob_template.attributes.might.unwrap_or(11);

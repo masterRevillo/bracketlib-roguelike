@@ -4,7 +4,6 @@ use std::usize;
 
 use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
 use bracket_lib::geometry::{DistanceAlg, Point};
-use bracket_lib::prelude::{to_cp437, BTerm, FontCharType};
 use serde::{Deserialize, Serialize};
 use specs::Entity;
 
@@ -163,49 +162,6 @@ impl Map {
             return false;
         }
         !self.blocked[x as usize][y as usize]
-    }
-    fn wall_glyph(&self, x: i32, y: i32) -> FontCharType {
-        if x < 1 || x > self.width - 2 || y < 1 || y > self.height - 2i32 {
-            return 35;
-        }
-        let mut mask: u8 = 0;
-
-        if self.is_revealed_and_wall(x, y - 1) {
-            mask += 1;
-        }
-        if self.is_revealed_and_wall(x, y + 1) {
-            mask += 2;
-        }
-        if self.is_revealed_and_wall(x - 1, y) {
-            mask += 4;
-        }
-        if self.is_revealed_and_wall(x + 1, y) {
-            mask += 8;
-        }
-
-        match mask {
-            0 => 9,
-            1 => 186,
-            2 => 186,
-            3 => 186,
-            4 => 205,
-            5 => 188,
-            6 => 187,
-            7 => 185,
-            8 => 205,
-            9 => 200,
-            10 => 201,
-            11 => 204,
-            12 => 205,
-            13 => 202,
-            14 => 203,
-            15 => 206,
-            _ => 35,
-        }
-    }
-    fn is_revealed_and_wall(&self, x: i32, y: i32) -> bool {
-        self.tiles[x as usize][y as usize] == TileType::Wall
-            && self.revealed_tiles[x as usize][y as usize]
     }
 
     pub fn get_total_floor_tiles(&self) -> usize {

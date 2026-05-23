@@ -1,9 +1,9 @@
-use std::any::{type_name_of_val, Any};
+use std::any::type_name_of_val;
 
 use bracket_lib::noise::NoiseType;
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
-use specs::{Builder, World};
+use specs::World;
 
 use crate::components::Position;
 use crate::map_builders::area_starting_points::{AreaStartingPoint, XStart, YStart};
@@ -20,7 +20,7 @@ use crate::map_builders::maze::MazeBuilder;
 use crate::map_builders::noise::NoiseBuilder;
 use crate::map_builders::noise_vegitation::NoiseVegitationBuilder;
 use crate::map_builders::prefab_builder::prefab_levels::WFC_POPULATED;
-use crate::map_builders::prefab_builder::prefab_sections::UNDERGROUND_FORT;
+use crate::map_builders::prefab_builder::prefab_sections::{NESTED_ROOMS, UNDERGROUND_FORT};
 use crate::map_builders::prefab_builder::PrefabBuilder;
 use crate::map_builders::room_based_spawner::RoomBasedSpawner;
 use crate::map_builders::room_based_stairs::RoomBasedStairs;
@@ -39,9 +39,9 @@ use crate::map_builders::town::TownBuilder;
 use crate::map_builders::voronoi::VoronoiCellBuilder;
 use crate::map_builders::voronoi_spawning::VoronoiSpawning;
 use crate::map_builders::waveform_collapse::WaveformCollapseBuilder;
+use crate::map_builders::yellow_brick_road::YellowBrickRoad;
 use crate::rect::Rect;
 use crate::spawner::{spawn_debug_items, spawn_entity, SpawnList};
-use crate::DEBUGGING;
 
 use super::{Map, SHOW_MAPGEN_VISUALIZATION};
 
@@ -191,8 +191,8 @@ pub fn level_builder(
     height: i32,
 ) -> BuilderChain {
     match new_depth {
-        1 => town_builder(new_depth, rng, width, height),
-        2 => forest_builder(new_depth, rng, width, height),
+        // 1 => town_builder(new_depth, rng, width, height),
+        // 2 => forest_builder(new_depth, rng, width, height),
         // _ => random_builder(new_depth, rng, width, height),
         _ => debug_map_builder(new_depth, rng, width, height),
     }
@@ -332,8 +332,10 @@ pub fn random_builder(
         builder.with(VoronoiSpawning::new());
         builder.with(DistantExit::new());
     }
-    if rng.roll_dice(1, 20) == 1 {
-        builder.with(PrefabBuilder::sectional(UNDERGROUND_FORT));
+    match rng.roll_dice(1, 20) {
+        1 => builder.with(PrefabBuilder::sectional(UNDERGROUND_FORT)),
+        2 => builder.with(PrefabBuilder::sectional(NESTED_ROOMS)),
+        _ => {}
     }
     // builder.start_with(CellularAutomataBuilder::new());
     // let (start_x, start_y) = random_start_position(rng);
@@ -350,7 +352,7 @@ pub fn random_builder(
 
 pub fn debug_map_builder(
     depth: i32,
-    rng: &mut RandomNumberGenerator,
+    _rng: &mut RandomNumberGenerator,
     width: i32,
     height: i32,
 ) -> BuilderChain {
@@ -359,8 +361,9 @@ pub fn debug_map_builder(
     builder.start_with(DebugMapBuilder::new());
 
     builder.with(AreaStartingPoint::new(XStart::CENTER, YStart::CENTER));
-    // builder.with(VoronoiSpawning::new());
+    builder.with(VoronoiSpawning::new());
     builder.with(DistantExit::new());
+    builder.with(YellowBrickRoad::new());
 
     builder.with(NoiseBuilder::new(NoiseType::PerlinFractal));
     builder.with(NoiseVegitationBuilder::new());

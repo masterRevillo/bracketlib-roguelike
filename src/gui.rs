@@ -16,7 +16,7 @@ use crate::gamelog::GameLog;
 use crate::map::Map;
 use crate::rex_assets::RexAssets;
 use crate::saveload_system::does_save_exist;
-use crate::{RunState, State, DEBUGGING, SCREEN_X, SCREEN_Y};
+use crate::{RunState, State, SCREEN_X, SCREEN_Y};
 
 const GUIHEIGHT: usize = 6;
 const GUIY: usize = SCREEN_Y as usize - GUIHEIGHT - 1;

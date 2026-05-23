@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
+#[allow(dead_code)]
 pub struct Mob {
     pub id: String,
     pub name: String,
@@ -10,6 +11,7 @@ pub struct Mob {
     pub blocks_tile: bool,
     pub vision_range: i32,
     pub ai: String,
+    pub hunting: Option<Vec<String>>,
     pub quips: Option<Vec<String>>,
     pub attributes: MobAttributes,
     pub skills: Option<HashMap<String, i32>>,

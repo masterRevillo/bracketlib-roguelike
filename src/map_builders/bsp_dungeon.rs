@@ -1,6 +1,5 @@
-use bracket_lib::prelude::console;
-use bracket_lib::random::RandomNumberGenerator;
 use crate::map::tiletype::TileType;
+use bracket_lib::random::RandomNumberGenerator;
 
 use crate::map_builders::{BuilderMap, InitialMapBuilder};
 use crate::rect::Rect;
@@ -16,17 +15,18 @@ impl InitialMapBuilder for BspDungeonBuilder {
 }
 
 impl BspDungeonBuilder {
-
     pub fn new() -> Box<Self> {
-        Box::new(Self {
-            rects: Vec::new()
-        })
+        Box::new(Self { rects: Vec::new() })
     }
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         let mut rooms: Vec<Rect> = Vec::new();
         self.rects.clear();
-        self.rects
-            .push(Rect::new(2, 2, build_data.map.width - 5, build_data.map.height - 5));
+        self.rects.push(Rect::new(
+            2,
+            2,
+            build_data.map.width - 5,
+            build_data.map.height - 5,
+        ));
         let first_room = self.rects[0];
         self.add_subrects(first_room);
 
@@ -44,7 +44,6 @@ impl BspDungeonBuilder {
         }
         build_data.rooms = Some(rooms);
     }
-
 
     fn add_subrects(&mut self, rect: Rect) {
         let width = i32::abs(rect.x1 - rect.x2);

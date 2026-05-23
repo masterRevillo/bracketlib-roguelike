@@ -1,12 +1,11 @@
 use bracket_lib::color::RGB;
-use bracket_lib::prelude::to_cp437;
+use bracket_lib::prelude::{console, to_cp437};
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
-use specs::rayon::vec;
 
 use crate::components::{
-    BlocksTile, Equipped, InBackpack, LootTable, Monster, Name, Player, Pools, Position,
-    Renderable, SufferDamage,
+    BlocksTile, Carnivore, Equipped, Herbivore, InBackpack, LootTable, Monster, Name, Player,
+    Pools, Position, Renderable, SufferDamage,
 };
 use crate::gamelog::GameLog;
 use crate::map::Map;
@@ -42,8 +41,8 @@ impl<'a> System<'a> for DamageSystem {
 impl DamageSystem {
     pub fn delete_the_dead(ecs: &mut World) -> bool {
         let mut dead: Vec<Entity> = Vec::new();
-        let mut pools = ecs.write_storage::<Pools>();
         {
+            let pools = ecs.write_storage::<Pools>();
             let players = ecs.read_storage::<Player>();
             let entities = ecs.entities();
             let mut names = ecs.write_storage::<Name>();
@@ -76,8 +75,6 @@ impl DamageSystem {
                 }
             }
         }
-        let mut monsters = ecs.write_storage::<Monster>();
-        let mut blockers = ecs.write_storage::<BlocksTile>();
 
         // drop equipped items
         let mut to_spawn: Vec<(String, Position)> = Vec::new();
@@ -101,6 +98,10 @@ impl DamageSystem {
                     }
                 }
                 if let Some(table) = loot_tables.get(*victim) {
+                    console::log(format!(
+                        "Found a dead thing with a loot table: {}",
+                        &table.table
+                    ));
                     let drop_finder = get_item_drop(&RAWS.lock().unwrap(), &mut rng, &table.table);
                     if let Some(tag) = drop_finder {
                         let pos = positions.get(*victim);
@@ -133,10 +134,17 @@ impl DamageSystem {
             }
         }
 
+        let mut pools = ecs.write_storage::<Pools>();
+        let mut monsters = ecs.write_storage::<Monster>();
+        let mut blockers = ecs.write_storage::<BlocksTile>();
+        let mut herbivore = ecs.write_storage::<Herbivore>();
+        let mut carnivore = ecs.write_storage::<Carnivore>();
         for victim in &dead {
             monsters.remove(*victim);
             blockers.remove(*victim);
             pools.remove(*victim);
+            herbivore.remove(*victim);
+            carnivore.remove(*victim);
         }
         !&dead.is_empty()
     }

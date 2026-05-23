@@ -1,820 +1,992 @@
 {
-  "items" : [
+  "items": [
     {
-      "id" : "Cudgel",
-      "name" : "Cudgel",
+      "id": "Cudgel",
+      "name": "Cudgel",
       "renderable": {
-        "glyph" : "/",
-        "fg" : "#A52A2A",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "/",
+        "fg": "#A52A2A",
+        "bg": "#000000",
+        "order": 2
       },
-      "weapon" : {
-        "range" : "melee",
-        "attribute" : "Quickness",
-        "base_damage" : "1d4",
-        "hit_bonus" : 0
+      "weapon": {
+        "range": "melee",
+        "attribute": "Quickness",
+        "base_damage": "1d4",
+        "hit_bonus": 0
       }
     },
     {
-      "id" : "ClothTunic",
-      "name" : "Cloth Tunic",
+      "id": "ClothTunic",
+      "name": "Cloth Tunic",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#00FF00",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#00FF00",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Torso",
-        "armor_class" : 0.1
+      "wearable": {
+        "slot": "Torso",
+        "armor_class": 0.1
       }
     },
     {
-      "id" : "ClothPants",
-      "name" : "Cloth Pants",
+      "id": "ClothPants",
+      "name": "Cloth Pants",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#00FFFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#00FFFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Legs",
-        "armor_class" : 0.1
+      "wearable": {
+        "slot": "Legs",
+        "armor_class": 0.1
       }
     },
     {
-      "id" : "Slippers",
-      "name" : "Slippers",
+      "id": "Slippers",
+      "name": "Slippers",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#FF9999",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#FF9999",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Legs",
-        "armor_class" : 0.1
+      "wearable": {
+        "slot": "Legs",
+        "armor_class": 0.1
       }
     },
     {
-      "id" : "StainedTunic",
-      "name" : "Stained Tunic",
+      "id": "StainedTunic",
+      "name": "Stained Tunic",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#00FF00",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#00FF00",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Torso",
-        "armor_class" : 0.1
+      "wearable": {
+        "slot": "Torso",
+        "armor_class": 0.1
       }
     },
     {
-      "id" : "TornTrousers",
-      "name" : "Torn Trousers",
+      "id": "TornTrousers",
+      "name": "Torn Trousers",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#00FFFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#00FFFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Legs",
-        "armor_class" : 0.1
+      "wearable": {
+        "slot": "Legs",
+        "armor_class": 0.1
       }
     },
     {
-      "id" : "OldBoots",
-      "name" : "Old Boots",
+      "id": "OldBoots",
+      "name": "Old Boots",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#FF9999",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#FF9999",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Legs",
-        "armor_class" : 0.1
+      "wearable": {
+        "slot": "Legs",
+        "armor_class": 0.1
       }
     },
     {
       "id": "HealthPotion",
       "name": "Health Potion",
       "renderable": {
-        "glyph" : "!",
-        "fg" : "#FF00FF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "!",
+        "fg": "#FF00FF",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : { "provides_healing" : "8" }
+      "consumable": {
+        "effects": {
+          "provides_healing": "8"
+        }
       }
     },
     {
       "id": "MagicMissileScroll",
       "name": "Magic Missile Scroll",
       "renderable": {
-        "glyph" : "~",
-        "fg" : "#00FFFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "~",
+        "fg": "#00FFFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "ranged" : "6",
-          "damage" : "20"
+      "consumable": {
+        "effects": {
+          "ranged": "6",
+          "damage": "20"
         }
       }
     },
     {
-      "id" : "FireballScroll",
-      "name" : "Fireball Scroll",
+      "id": "FireballScroll",
+      "name": "Fireball Scroll",
       "renderable": {
-        "glyph" : "~",
-        "fg" : "#FFA500",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "~",
+        "fg": "#FFA500",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "ranged" : "6",
-          "damage" : "20",
-          "area_of_effect" : "3"
+      "consumable": {
+        "effects": {
+          "ranged": "6",
+          "damage": "20",
+          "area_of_effect": "3"
         }
       }
     },
     {
-      "id" : "ConfusionScroll",
-      "name" : "Confusion Scroll",
+      "id": "ConfusionScroll",
+      "name": "Confusion Scroll",
       "renderable": {
-        "glyph" : "~",
-        "fg" : "#FFAAAA",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "~",
+        "fg": "#FFAAAA",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "ranged" : "6",
-          "damage" : "20",
-          "confusion" : "4"
+      "consumable": {
+        "effects": {
+          "ranged": "6",
+          "damage": "20",
+          "confusion": "4"
         }
       }
     },
     {
-      "id" : "MagicMappingScroll",
-      "name" : "Magic Mapping Scroll",
+      "id": "MagicMappingScroll",
+      "name": "Magic Mapping Scroll",
       "renderable": {
-        "glyph" : "~",
-        "fg" : "#AAAAFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "~",
+        "fg": "#AAAAFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "magic_mapping" : ""
+      "consumable": {
+        "effects": {
+          "magic_mapping": ""
         }
       }
     },
     {
-      "id" : "Sandwich",
-      "name" : "Sandwich",
+      "id": "Sandwich",
+      "name": "Sandwich",
       "renderable": {
-        "glyph" : "=",
-        "fg" : "#cd661d",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "=",
+        "fg": "#cd661d",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "food" : "200"
+      "consumable": {
+        "effects": {
+          "food": "200"
         }
       }
     },
     {
-      "id" : "ChickenLeg",
-      "name" : "Chicken Leg",
+      "id": "ChickenLeg",
+      "name": "Chicken Leg",
       "renderable": {
-        "glyph" : "q",
-        "fg" : "#cd661d",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "q",
+        "fg": "#cd661d",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "food" : "150"
+      "consumable": {
+        "effects": {
+          "food": "150"
         }
       }
     },
     {
-      "id" : "DriedSausage",
-      "name" : "Dried Sausage",
+      "id": "DriedSausage",
+      "name": "Dried Sausage",
       "renderable": {
-        "glyph" : "%",
-        "fg" : "#00FF00",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "%",
+        "fg": "#00FF00",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "food" : "150"
+      "consumable": {
+        "effects": {
+          "food": "150"
         }
       }
     },
     {
-      "id" : "Beer",
-      "name" : "Beer",
+      "id": "Beer",
+      "name": "Beer",
       "renderable": {
-        "glyph" : "!",
-        "fg" : "#FF00FF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "!",
+        "fg": "#FF00FF",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
+      "consumable": {
+        "effects": {
           "provides_healing": "4"
         }
       }
     },
     {
-      "id" : "GobletOfWine",
-      "name" : "Goblet Of Wine",
+      "id": "GobletOfWine",
+      "name": "Goblet Of Wine",
       "renderable": {
-        "glyph" : "u",
-        "fg" : "#b0305f",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "u",
+        "fg": "#b0305f",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "food" : "25"
+      "consumable": {
+        "effects": {
+          "food": "25"
         }
       }
     },
     {
-      "id" : "Artefact",
-      "name" : "Artefact",
+      "id": "Artefact",
+      "name": "Artefact",
       "renderable": {
-        "glyph" : "{",
-        "fg" : "#ffd700",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "{",
+        "fg": "#ffd700",
+        "bg": "#000000",
+        "order": 2
       },
-      "artefact" : {
+      "artefact": {
         "effects": {}
       }
     },
     {
-      "id" : "RustyLongsword",
-      "name" : "Rusty Longsword",
+      "id": "RustyLongsword",
+      "name": "Rusty Longsword",
       "renderable": {
-        "glyph" : "/",
-        "fg" : "#BB77BB",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "/",
+        "fg": "#BB77BB",
+        "bg": "#000000",
+        "order": 2
       },
-      "weapon" : {
-        "range" : "melee",
+      "weapon": {
+        "range": "melee",
         "attribute": "Might",
         "base_damage": "1d8-1,",
         "hit_bonus": -1
       }
     },
     {
-      "id" : "Stick",
-      "name" : "Stick",
+      "id": "Stick",
+      "name": "Stick",
       "renderable": {
-        "glyph" : "|",
-        "fg" : "#664A16",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "|",
+        "fg": "#664A16",
+        "bg": "#000000",
+        "order": 2
       },
-      "weapon" : {
-        "range" : "melee",
+      "weapon": {
+        "range": "melee",
         "attribute": "Might",
         "base_damage": "1d8-1,",
         "hit_bonus": -1
       }
     },
     {
-      "id" : "Dagger",
-      "name" : "Dagger",
+      "id": "Dagger",
+      "name": "Dagger",
       "renderable": {
-        "glyph" : "-",
-        "fg" : "#FFAAAA",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "-",
+        "fg": "#FFAAAA",
+        "bg": "#000000",
+        "order": 2
       },
-      "weapon" : {
-        "range" : "melee",
+      "weapon": {
+        "range": "melee",
         "attribute": "Quickness",
         "base_damage": "1d4,",
         "hit_bonus": 0
       }
     },
     {
-      "id" : "Longsword",
-      "name" : "Longsword",
+      "id": "Longsword",
+      "name": "Longsword",
       "renderable": {
-        "glyph" : "/",
-        "fg" : "#FFAAFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "/",
+        "fg": "#FFAAFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "weapon" : {
-        "range" : "melee",
+      "weapon": {
+        "range": "melee",
         "attribute": "Might",
         "base_damage": "1d4+1,",
         "hit_bonus": 0
       }
     },
     {
-      "id" : "Battleaxe",
-      "name" : "Battleaxe",
+      "id": "Battleaxe",
+      "name": "Battleaxe",
       "renderable": {
-        "glyph" : "¶",
-        "fg" : "#FF55FF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "¶",
+        "fg": "#FF55FF",
+        "bg": "#000000",
+        "order": 2
       },
-      "weapon" : {
-        "range" : "melee",
+      "weapon": {
+        "range": "melee",
         "attribute": "Might",
         "base_damage": "1d6+3,",
         "hit_bonus": 0
       }
     },
     {
-      "id" : "Shield",
-      "name" : "Shield",
+      "id": "Shield",
+      "name": "Shield",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#00AAFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#00AAFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Shield",
+      "wearable": {
+        "slot": "Shield",
         "armor_class": 1.0
       }
     },
     {
-      "id" : "TowerShield",
-      "name" : "Tower Shield",
+      "id": "TowerShield",
+      "name": "Tower Shield",
       "renderable": {
-        "glyph" : "[",
-        "fg" : "#00FFFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "[",
+        "fg": "#00FFFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "wearable" : {
-        "slot" : "Shield",
+      "wearable": {
+        "slot": "Shield",
         "armor_class": 1.0
       }
     },
     {
-      "id" : "Meat",
-      "name" : "Meat",
+      "id": "RawMeat",
+      "name": "Raw Meat",
       "renderable": {
-        "glyph" : "%",
-        "fg" : "#00FF00",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "%",
+        "fg": "#00FF00",
+        "bg": "#000000",
+        "order": 2
       },
-      "consumable" : {
-        "effects" : {
-          "food": ""
+      "consumable": {
+        "effects": {
+          "food": "50"
         }
       }
     },
     {
-      "id" : "Hide",
-      "name" : "Hide",
+      "id": "Hide",
+      "name": "Hide",
       "renderable": {
-        "glyph" : "ß",
-        "fg" : "#A52A2A",
-        "bg" : "#000000",
-        "order" : 2
-      }    
+        "glyph": "ß",
+        "fg": "#A52A2A",
+        "bg": "#000000",
+        "order": 2
+      }
+    },
+    {
+      "id": "Shortsword",
+      "name": "Shortsword",
+      "renderable": {
+        "glyph": "/",
+        "fg": "#FFAAFF",
+        "bg": "#000000",
+        "order": 2
+      },
+      "weapon": {
+        "range": "melee",
+        "attribute": "Might",
+        "base_damage": "1d6",
+        "hit_bonus": 0
+      }
+    },
+    {
+      "id": "LeatherArmor",
+      "name": "Leather Armor",
+      "renderable": {
+        "glyph": "[",
+        "fg": "#00FF00",
+        "bg": "#000000",
+        "order": 2
+      },
+      "wearable": {
+        "slot": "Torso",
+        "armor_class": 1.0
+      }
+    },
+    {
+      "id": "LeatherBoots",
+      "name": "Leather Boots",
+      "renderable": {
+        "glyph": "[",
+        "fg": "#00FF00",
+        "bg": "#000000",
+        "order": 2
+      },
+      "wearable": {
+        "slot": "Feet",
+        "armor_class": 0.2
+      }
     }
   ],
-  "mobs" : [
+  "mobs": [
     {
-      "id" : "Blacksmith",
-      "name" : "Blacksmith",
+      "id": "Blacksmith",
+      "name": "Blacksmith",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#EE82EE",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#EE82EE",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "vendor",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "vendor",
       "attributes": {},
-      "equipped" : [ "Battleaxe", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Battleaxe",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Clothier",
-      "name" : "Clothier",
+      "id": "Clothier",
+      "name": "Clothier",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#EE82EE",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#EE82EE",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "vendor",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "vendor",
       "attributes": {},
-      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Alchemist",
-      "name" : "Alchemist",
+      "id": "Alchemist",
+      "name": "Alchemist",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#EE82EE",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#EE82EE",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "vendor",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "vendor",
       "attributes": {},
-      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Cudgel",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Mom",
-      "name" : "Mom",
+      "id": "Mom",
+      "name": "Mom",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#FFAAAA",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#FFAAAA",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "equipped" : [ "Longsword", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Longsword",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Peasant",
-      "name" : "Peasant",
+      "id": "Peasant",
+      "name": "Peasant",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#999999",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#999999",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Bartender",
-      "name" : "Bartender",
+      "id": "Bartender",
+      "name": "Bartender",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#EE82EE",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#EE82EE",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "vendor",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "vendor",
       "attributes": {
         "intelligence": 13
       },
       "skills": {
         "Melee": 2
       },
-      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Cudgel",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "ShadySalesman",
-      "name" : "Shady Salesman",
+      "id": "ShadySalesman",
+      "name": "Shady Salesman",
       "renderable": {
-        "glyph" : "h",
-        "fg" : "#EE82EE",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "h",
+        "fg": "#EE82EE",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "vendor",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "vendor",
       "attributes": {},
-      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Cudgel",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Patron",
-      "name" : "Patron",
+      "id": "Patron",
+      "name": "Patron",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#AAAAAA",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#AAAAAA",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "quips": ["Fancy seeing you here again.", "Hey kid, next one is on you!", "One day I'll leave this town in my dust!", "How's the treasure hunt going, kid?"],
-      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
+      "quips": [
+        "Fancy seeing you here again.",
+        "Hey kid, next one is on you!",
+        "One day I'll leave this town in my dust!",
+        "How's the treasure hunt going, kid?"
+      ],
+      "equipped": [
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Priest",
-      "name" : "Priest",
+      "id": "Priest",
+      "name": "Priest",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#EE82EE",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#EE82EE",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Parishioner",
-      "name" : "Parishioner",
+      "id": "Parishioner",
+      "name": "Parishioner",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#AAAAAA",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#AAAAAA",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Cudgel",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "DockWorker",
-      "name" : "Dock Worker",
+      "id": "DockWorker",
+      "name": "Dock Worker",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#999999",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#999999",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "quips" : [ "Lovely day, eh?", "Good day for sailing, I'd say.","Nice weather", "Hello" ],
-      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
+      "quips": [
+        "Lovely day, eh?",
+        "Good day for sailing, I'd say.",
+        "Nice weather",
+        "Hello"
+      ],
+      "equipped": [
+        "Cudgel",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Fisher",
-      "name" : "Fisher",
+      "id": "Fisher",
+      "name": "Fisher",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#999999",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#999999",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
       "attributes": {},
-      "quips" : [ "They're biting today!", "I caught something, but it wasn't a fish!", "Looks like rain", "Let me tell ya 'bout the 15 foot catfish I seen one time..." ],
-      "equipped" : [ "Dagger", "ClothTunic", "ClothPants", "Slippers" ]
+      "quips": [
+        "They're biting today!",
+        "I caught something, but it wasn't a fish!",
+        "Looks like rain",
+        "Let me tell ya 'bout the 15 foot catfish I seen one time..."
+      ],
+      "equipped": [
+        "Dagger",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Pirate",
-      "name" : "Pirate",
+      "id": "Pirate",
+      "name": "Pirate",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#aa9999",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#aa9999",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
-      "quips" : [ "Arrr", "Grog!", "Booze!" ],
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
+      "quips": [
+        "Arrr",
+        "Grog!",
+        "Booze!"
+      ],
       "attributes": {},
-      "equipped" : [ "Cudgel", "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "Cudgel",
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Drunk",
-      "name" : "Drunk",
+      "id": "Drunk",
+      "name": "Drunk",
       "renderable": {
-        "glyph" : "☺",
-        "fg" : "#aa9999",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "☺",
+        "fg": "#aa9999",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 4,
-      "ai" : "bystander",
-      "quips" : [ "We're'd I put me rum?!", "Wanna drink? You're buyin'!", "Spare a copper?" ],
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "bystander",
+      "quips": [
+        "We're'd I put me rum?!",
+        "Wanna drink? You're buyin'!",
+        "Spare a copper?"
+      ],
       "attributes": {},
-      "equipped" : [ "ClothTunic", "ClothPants", "Slippers" ]
+      "equipped": [
+        "ClothTunic",
+        "ClothPants",
+        "Slippers"
+      ]
     },
     {
-      "id" : "Rat",
-      "name" : "Rat",
+      "id": "Rat",
+      "name": "Rat",
       "renderable": {
-        "glyph" : "r",
-        "fg" : "#6b4b5a",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "r",
+        "fg": "#6b4b5a",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 8,
+      "blocks_tile": true,
+      "vision_range": 8,
       "ai": "melee",
       "attributes": {
         "might": 3,
         "fitness": 3
       },
-      "skills" : {
+      "skills": {
         "Melee": -1,
         "Defense": -1
       },
-      "natural" : {
+      "natural": {
         "armor_class": 11,
         "attacks": [
-          { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+          {
+            "name": "bite",
+            "hit_bonus": 0,
+            "damage": "1d4"
+          }
         ]
       }
     },
     {
-      "id" : "Wolf",
-      "name" : "Wolf",
+      "id": "Wolf",
+      "name": "Wolf",
       "renderable": {
-        "glyph" : "w",
-        "fg" : "#678691",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "w",
+        "fg": "#678691",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 8,
-      "ai": "melee",
+      "blocks_tile": true,
+      "vision_range": 8,
+      "ai": "carnivore",
+      "hunting": [
+        "deer",
+        "player"
+      ],
       "attributes": {
         "might": 3,
         "fitness": 3
       },
-      "skills" : {
+      "skills": {
         "Melee": -1,
         "Defense": -1
       },
-      "natural" : {
+      "natural": {
         "armor_class": 12,
         "attacks": [
-          { "name":  "bite", "hit_bonus":  0, "damage": "1d6" }
+          {
+            "name": "bite",
+            "hit_bonus": 0,
+            "damage": "1d6"
+          }
         ]
       },
-      "loot_table": "Animal"
+      "loot_table": "animal"
     },
     {
-      "id" : "Fox",
-      "name" : "Fox",
+      "id": "Fox",
+      "name": "Fox",
       "renderable": {
-        "glyph" : "f",
-        "fg" : "#C77140",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "f",
+        "fg": "#C77140",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 8,
-      "ai": "melee",
+      "blocks_tile": true,
+      "vision_range": 8,
+      "ai": "carnivore",
+      "hunting": [
+        "rat",
+        "player"
+      ],
       "attributes": {
         "might": 3,
         "fitness": 3
       },
-      "skills" : {
+      "skills": {
         "Melee": -1,
         "Defense": -1
       },
-      "natural" : {
+      "natural": {
         "armor_class": 11,
         "attacks": [
-          { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+          {
+            "name": "bite",
+            "hit_bonus": 0,
+            "damage": "1d4"
+          }
         ]
       }
     },
     {
-      "id" : "Deer",
-      "name" : "Deer",
+      "id": "Deer",
+      "name": "Deer",
       "renderable": {
-        "glyph" : "d",
-        "fg" : "#FFFF00",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "d",
+        "fg": "#FFFF00",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 8,
-      "ai": "bystander",
+      "blocks_tile": true,
+      "vision_range": 8,
+      "ai": "herbivore",
       "attributes": {
         "might": 3,
         "fitness": 3
       },
-      "skills" : {
+      "skills": {
         "Melee": -1,
         "Defense": -1
       },
-      "natural" : {
+      "natural": {
         "armor_class": 11,
         "attacks": [
-          { "name":  "bite", "hit_bonus":  0, "damage": "1d4" }
+          {
+            "name": "bite",
+            "hit_bonus": 0,
+            "damage": "1d4"
+          }
         ]
       },
-      "loot_table": "Animal"
+      "loot_table": "animal"
     },
     {
-      "id" : "Cat",
-      "name" : "Cat",
+      "id": "Cat",
+      "name": "Cat",
       "renderable": {
-        "glyph" : "c",
-        "fg" : "#68F72A",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "c",
+        "fg": "#68F72A",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 8,
-      "ai": "bystander",
+      "blocks_tile": true,
+      "vision_range": 8,
+      "ai": "carnivore",
+      "hunting": [
+        "rat"
+      ],
       "attributes": {
         "might": 3,
         "fitness": 3,
         "quickness": 13
       },
-      "skills" : {
+      "skills": {
         "Melee": -1,
         "Defense": -1
       },
-      "natural" : {
+      "natural": {
         "armor_class": 11,
         "attacks": [
-          { "name":  "claw", "hit_bonus":  0, "damage": "1d4" }
+          {
+            "name": "claw",
+            "hit_bonus": 0,
+            "damage": "1d4"
+          }
         ]
       }
     },
     {
-      "id" : "Ogur",
-      "name" : "Ogur",
+      "id": "Ogur",
+      "name": "Ogur",
       "renderable": {
-        "glyph" : "o",
-        "fg" : "#808000",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "o",
+        "fg": "#808000",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 8,
+      "blocks_tile": true,
+      "vision_range": 8,
       "ai": "melee",
       "attributes": {
         "might": 8,
-        "fitness":12 
+        "fitness": 12
       },
-      "skills" : {
+      "skills": {
         "Melee": 1,
         "Defense": 2
       },
-      "equipped" : [ "ClothTunic", "ClothPants", "Dagger" ]
+      "equipped": [
+        "ClothTunic",
+        "ClothPants",
+        "Dagger"
+      ]
     },
     {
-      "id" : "Bisat",
-      "name" : "Bisat",
+      "id": "Bisat",
+      "name": "Bisat",
       "renderable": {
-        "glyph" : "b",
-        "fg" : "#cd853f",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "b",
+        "fg": "#cd853f",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-    "vision_range" : 8,
+      "blocks_tile": true,
+      "vision_range": 8,
       "ai": "melee",
       "attributes": {
         "might": 4,
-        "fitness":10,
+        "fitness": 10,
         "quickness": 12
       },
-      "skills" : {
+      "skills": {
         "Melee": 0,
         "Defense": 0
       },
-      "equipped" : [ "ClothPants", "Stick" ]
+      "equipped": [
+        "ClothPants",
+        "Stick"
+      ]
     },
     {
-      "id" : "Spectre",
-      "name" : "Spectre",
+      "id": "Spectre",
+      "name": "Spectre",
       "renderable": {
-        "glyph" : "s",
-        "fg" : "#93a7db",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "s",
+        "fg": "#93a7db",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 10,
+      "blocks_tile": true,
+      "vision_range": 10,
       "ai": "melee",
       "attributes": {
         "might": 12,
@@ -822,255 +994,421 @@
         "intelligence": 11,
         "quickness": 9
       },
-      "skills" : {
+      "skills": {
         "Melee": 1,
         "Defense": 0,
         "Magic": 2
       }
     },
     {
-      "id" : "TukkaWarrior",
-      "name" : "Tukka Warrior",
+      "id": "TukkaWarrior",
+      "name": "Tukka Warrior",
       "renderable": {
-        "glyph" : "t",
-        "fg" : "#76c491",
-        "bg" : "#000000",
-        "order" : 1
+        "glyph": "t",
+        "fg": "#76c491",
+        "bg": "#000000",
+        "order": 1
       },
-      "blocks_tile" : true,
-      "vision_range" : 6,
+      "blocks_tile": true,
+      "vision_range": 6,
       "ai": "melee",
       "attributes": {
         "might": 7,
         "fitness": 12,
         "intelligence": 6,
-        "quickness": 7 
+        "quickness": 7
       },
-      "skills" : {
+      "skills": {
         "Melee": 2,
-        "Magic": -1 
+        "Magic": -1
       }
+    },
+    {
+      "id": "Bandit",
+      "name": "Bandit",
+      "renderable": {
+        "glyph": "☻",
+        "fg": "#FF0000",
+        "bg": "#000000",
+        "order": 1
+      },
+      "blocks_tile": true,
+      "vision_range": 4,
+      "ai": "melee",
+      "quips": [
+        "Stand and deliver!",
+        "Alright, hand it over"
+      ],
+      "attributes": {},
+      "equipped": [
+        "Shortsword",
+        "Shield",
+        "LeatherArmor",
+        "LeatherBoots"
+      ]
     }
   ],
-  "props" : [
+  "props": [
     {
-      "id" : "Anvil",
-      "name" : "Anvil",
+      "id": "Anvil",
+      "name": "Anvil",
       "renderable": {
-        "glyph" : "╔",
-        "fg" : "#AAAAAA",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "╔",
+        "fg": "#AAAAAA",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "WaterTrough",
-      "name" : "Water Trough",
+      "id": "WaterTrough",
+      "name": "Water Trough",
       "renderable": {
-        "glyph" : "•",
-        "fg" : "#5555FF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "•",
+        "fg": "#5555FF",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "WeaponRack",
-      "name" : "Weapon Rack",
+      "id": "WeaponRack",
+      "name": "Weapon Rack",
       "renderable": {
-        "glyph" : "π",
-        "fg" : "#FFD700",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "π",
+        "fg": "#FFD700",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "ArmorStand",
-      "name" : "Armor Stand",
+      "id": "ArmorStand",
+      "name": "Armor Stand",
       "renderable": {
-        "glyph" : "⌠",
-        "fg" : "#FFFFFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "⌠",
+        "fg": "#FFFFFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "ChemistrySet",
-      "name" : "Chemistry Set",
+      "id": "ChemistrySet",
+      "name": "Chemistry Set",
       "renderable": {
-        "glyph" : "δ",
-        "fg" : "#00FFFF",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "δ",
+        "fg": "#00FFFF",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "DeadThing",
-      "name" : "Dead Thing",
+      "id": "DeadThing",
+      "name": "Dead Thing",
       "renderable": {
-        "glyph" : "☻",
-        "fg" : "#AA0000",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "☻",
+        "fg": "#AA0000",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Cabinet",
-      "name" : "Cabinet",
+      "id": "Cabinet",
+      "name": "Cabinet",
       "renderable": {
-        "glyph" : "∩",
-        "fg" : "#805A46",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "∩",
+        "fg": "#805A46",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Bed",
-      "name" : "Bed",
+      "id": "Bed",
+      "name": "Bed",
       "renderable": {
-        "glyph" : "8",
-        "fg" : "#805A46",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "8",
+        "fg": "#805A46",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Loom",
-      "name" : "Loom",
+      "id": "Loom",
+      "name": "Loom",
       "renderable": {
-        "glyph" : "≡",
-        "fg" : "#805A46",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "≡",
+        "fg": "#805A46",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "HideRack",
-      "name" : "Hide Rack",
+      "id": "HideRack",
+      "name": "Hide Rack",
       "renderable": {
-        "glyph" : "π",
-        "fg" : "#805A46",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "π",
+        "fg": "#805A46",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Keg",
-      "name" : "Keg",
+      "id": "Keg",
+      "name": "Keg",
       "renderable": {
-        "glyph" : "φ",
-        "fg" : "#AAAAAA",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "φ",
+        "fg": "#AAAAAA",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Table",
-      "name" : "Table",
+      "id": "Table",
+      "name": "Table",
       "renderable": {
-        "glyph" : "╦",
-        "fg" : "#AAAAAA",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "╦",
+        "fg": "#AAAAAA",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Chair",
-      "name" : "Chair",
+      "id": "Chair",
+      "name": "Chair",
       "renderable": {
-        "glyph" : "└",
-        "fg" : "#AAAAAA",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "└",
+        "fg": "#AAAAAA",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "Candle",
-      "name" : "Candle",
+      "id": "Candle",
+      "name": "Candle",
       "renderable": {
-        "glyph" : "Ä",
-        "fg" : "#FFA500",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "Ä",
+        "fg": "#FFA500",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false
+      "hidden": false
     },
     {
-      "id" : "BearTrap",
-      "name" : "Bear Trap",
+      "id": "BearTrap",
+      "name": "Bear Trap",
       "renderable": {
-        "glyph" : "^",
-        "fg" : "#FF0000",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "^",
+        "fg": "#FF0000",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : true,
-      "entry_trigger" : {
-        "effects" : {
-          "damage" : "6",
-          "single_activation" : "1"
+      "hidden": true,
+      "entry_trigger": {
+        "effects": {
+          "damage": "6",
+          "single_activation": "1"
         }
       }
     },
     {
-      "id" : "Door",
-      "name" : "Door",
+      "id": "Door",
+      "name": "Door",
       "renderable": {
-        "glyph" : "+",
-        "fg" : "#805A46",
-        "bg" : "#000000",
-        "order" : 2
+        "glyph": "+",
+        "fg": "#805A46",
+        "bg": "#000000",
+        "order": 2
       },
-      "hidden" : false,
-      "blocks_tile" : true,
-      "blocks_visibility" : true,
-      "door_open" : true
+      "hidden": false,
+      "blocks_tile": true,
+      "blocks_visibility": true,
+      "door_open": true
     }
   ],
-  "spawn_table" : [
-    { "id" : "Rat", "weight" : 15, "min_depth" : 2, "max_depth" : 3 },
-    { "id" : "Wolf", "weight" : 13, "min_depth" : 2, "max_depth" : 3 },
-    { "id" : "Fox", "weight" : 15, "min_depth" : 2, "max_depth" : 3 },
-    { "id" : "Deer", "weight" : 14, "min_depth" : 2, "max_depth" : 3 },
-    { "id" : "Cat", "weight" : 5, "min_depth" : 2, "max_depth" : 3 },
-    { "id" : "Bisat", "weight" : 10, "min_depth" : 3, "max_depth" : 100 },
-    { "id" : "Ogur", "weight" : 3, "min_depth" : 3, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "id" : "Spectre", "weight" : 1, "min_depth" : 5, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "id" : "TukkaWarrior", "weight" : 3, "min_depth" : 7, "max_depth" : 100 },
-    { "id" : "HealthPotion", "weight" : 7, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "FireballScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "id" : "ConfusionScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100, "add_map_depth_to_weight" : true },
-    { "id" : "MagicMissileScroll", "weight" : 4, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "MagicMappingScroll", "weight" : 1, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "Dagger", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "Shield", "weight" : 3, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "Longsword", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
-    { "id" : "Battleaxe", "weight" : 1, "min_depth" : 2, "max_depth" : 100 },
-    { "id" : "TowerShield", "weight" : 1, "min_depth" : 1, "max_depth" : 100 },
-    { "id" : "Sandwich", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "ChickenLeg", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "GobletOfWine", "weight" : 8, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "MagicMappingScroll", "weight" : 2, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "BearTrap", "weight" : 5, "min_depth" : 0, "max_depth" : 100 },
-    { "id" : "Artefact", "weight" : 1, "min_depth" : 2, "max_depth" : 100 }
+  "spawn_table": [
+    {
+      "id": "Rat",
+      "weight": 15,
+      "min_depth": 2,
+      "max_depth": 3
+    },
+    {
+      "id": "Wolf",
+      "weight": 13,
+      "min_depth": 2,
+      "max_depth": 3
+    },
+    {
+      "id": "Fox",
+      "weight": 15,
+      "min_depth": 2,
+      "max_depth": 3
+    },
+    {
+      "id": "Deer",
+      "weight": 14,
+      "min_depth": 2,
+      "max_depth": 3
+    },
+    {
+      "id": "Cat",
+      "weight": 5,
+      "min_depth": 2,
+      "max_depth": 3
+    },
+    {
+      "id": "Bandit",
+      "weight": 9,
+      "min_depth": 2,
+      "max_depth": 3
+    },
+    {
+      "id": "Bisat",
+      "weight": 10,
+      "min_depth": 3,
+      "max_depth": 100
+    },
+    {
+      "id": "Ogur",
+      "weight": 3,
+      "min_depth": 3,
+      "max_depth": 100,
+      "add_map_depth_to_weight": true
+    },
+    {
+      "id": "Spectre",
+      "weight": 1,
+      "min_depth": 5,
+      "max_depth": 100,
+      "add_map_depth_to_weight": true
+    },
+    {
+      "id": "TukkaWarrior",
+      "weight": 3,
+      "min_depth": 7,
+      "max_depth": 100
+    },
+    {
+      "id": "HealthPotion",
+      "weight": 7,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "FireballScroll",
+      "weight": 2,
+      "min_depth": 0,
+      "max_depth": 100,
+      "add_map_depth_to_weight": true
+    },
+    {
+      "id": "ConfusionScroll",
+      "weight": 2,
+      "min_depth": 0,
+      "max_depth": 100,
+      "add_map_depth_to_weight": true
+    },
+    {
+      "id": "MagicMissileScroll",
+      "weight": 4,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "MagicMappingScroll",
+      "weight": 1,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "Dagger",
+      "weight": 3,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "Shield",
+      "weight": 3,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "Longsword",
+      "weight": 1,
+      "min_depth": 1,
+      "max_depth": 100
+    },
+    {
+      "id": "Battleaxe",
+      "weight": 1,
+      "min_depth": 2,
+      "max_depth": 100
+    },
+    {
+      "id": "TowerShield",
+      "weight": 1,
+      "min_depth": 1,
+      "max_depth": 100
+    },
+    {
+      "id": "Sandwich",
+      "weight": 8,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "ChickenLeg",
+      "weight": 5,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "GobletOfWine",
+      "weight": 8,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "MagicMappingScroll",
+      "weight": 2,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "BearTrap",
+      "weight": 5,
+      "min_depth": 0,
+      "max_depth": 100
+    },
+    {
+      "id": "Artefact",
+      "weight": 1,
+      "min_depth": 2,
+      "max_depth": 100
+    }
   ],
   "loot_tables": [
-    { "name": "Animal",
+    {
+      "name": "animal",
       "drops": [
-        { "name": "Hide", "weight": 10 },
-        { "name": "Meat", "weight": 10 }
+        {
+          "name": "Hide",
+          "weight": 10
+        },
+        {
+          "name": "RawMeat",
+          "weight": 10
+        }
       ]
     }
   ]

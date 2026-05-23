@@ -10,13 +10,13 @@ use specs::saveload::{
 use specs::{Builder, Entity, Join, World, WorldExt};
 
 use crate::components::{
-    AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Confusion,
-    Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable, Hidden,
-    HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper, MeleeWeapon, Monster,
-    Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position, ProvidesFood,
-    ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation,
-    Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
-    WantsToUnequipItem, WantsToUseItem, Wearable,
+    AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
+    Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable,
+    Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper,
+    MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position,
+    ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe,
+    SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee,
+    WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 
 macro_rules! serialize_individually {
@@ -114,7 +114,9 @@ pub fn save_game(ecs: &mut World) {
             Skills,
             Pools,
             NaturalAttackDefense,
-            LootTable
+            LootTable,
+            Carnivore,
+            Herbivore
         );
     }
     ecs.delete_entity(savehelper)
@@ -194,7 +196,9 @@ pub fn load_game(ecs: &mut World) {
             Skills,
             Pools,
             NaturalAttackDefense,
-            LootTable
+            LootTable,
+            Carnivore,
+            Herbivore
         );
     }
     let mut deleteme: Option<Entity> = None;

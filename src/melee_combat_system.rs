@@ -3,8 +3,11 @@ use bracket_lib::prelude::to_cp437;
 use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 
-use crate::components::{Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon, Name, NaturalAttackDefense, Pools, Position, Skill, Skills, SufferDamage, WantsToMelee, Wearable};
 use crate::components::WeaponAttribute::Might;
+use crate::components::{
+    Attributes, EquipmentSlot, Equipped, HungerClock, HungerState, MeleeWeapon, Name,
+    NaturalAttackDefense, Pools, Position, Skill, Skills, SufferDamage, WantsToMelee, Wearable,
+};
 use crate::gamelog::GameLog;
 use crate::gamesystem::skill_bonus;
 use crate::particle_system::ParticleBuilder;
@@ -28,7 +31,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, Equipped>,
         ReadStorage<'a, MeleeWeapon>,
         ReadStorage<'a, Wearable>,
-        ReadStorage<'a, NaturalAttackDefense>
+        ReadStorage<'a, NaturalAttackDefense>,
     );
     fn run(&mut self, data: Self::SystemData) {
         let (
@@ -47,25 +50,32 @@ impl<'a> System<'a> for MeleeCombatSystem {
             equipped_items,
             melee_weapons,
             wearables,
-            natural
+            natural,
         ) = data;
 
-
-
-        for (entity, wants_melee, name, attacker_attrs, attacker_skills, attacker_pools) in (&entities, &wants_melee, &names, &attributes, &skills, &pools).join() {
+        for (entity, wants_melee, name, attacker_attrs, attacker_skills, attacker_pools) in (
+            &entities,
+            &wants_melee,
+            &names,
+            &attributes,
+            &skills,
+            &pools,
+        )
+            .join()
+        {
             let mut weapon = MeleeWeapon {
                 attribute: Might,
                 hit_bonus: 0,
                 damage_n_dice: 1,
                 damage_die_type: 4,
-                damage_bonus: 0
+                damage_bonus: 0,
             };
             if let Some(nat) = natural.get(entity) {
                 if !nat.attacks.is_empty() {
                     let attack_idx = if nat.attacks.len() == 1 {
                         0
                     } else {
-                        rng.roll_dice(1, nat.attacks.len() as i32) as usize -1
+                        rng.roll_dice(1, nat.attacks.len() as i32) as usize - 1
                     };
                     weapon.hit_bonus = nat.attacks[attack_idx].hit_bonus;
                     weapon.damage_n_dice = nat.attacks[attack_idx].damage_n_dice;
@@ -73,12 +83,15 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     weapon.damage_bonus = nat.attacks[attack_idx].damage_bonus;
                 }
             }
-            for(wielded, melee) in (&equipped_items, &melee_weapons).join() {
+            for (wielded, melee) in (&equipped_items, &melee_weapons).join() {
                 if wielded.owner == entity && wielded.slot == EquipmentSlot::Melee {
                     weapon = melee.clone();
                 }
             }
-            let target_pools = pools.get(wants_melee.target).unwrap();
+            let target_pools = pools.get(wants_melee.target).expect(&format!(
+                "Expected a mana pool, but target was {:?}",
+                names.get(wants_melee.target).unwrap().name
+            ));
             let target_attrs = attributes.get(wants_melee.target).unwrap();
             let target_skills = skills.get(wants_melee.target).unwrap();
             if attacker_pools.hit_points.current > 0 && target_pools.hit_points.current > 0 {
@@ -94,63 +107,69 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         status_hit_bonus += 1;
                     }
                 }
-                let modified_hit_roll = natural_roll +
-                    attribute_hit_bonus +
-                    skill_hit_bonus +
-                    weapon_hit_bonus +
-                    status_hit_bonus;
+                let modified_hit_roll = natural_roll
+                    + attribute_hit_bonus
+                    + skill_hit_bonus
+                    + weapon_hit_bonus
+                    + status_hit_bonus;
 
-                let base_armor_class = natural.get(wants_melee.target).map_or(
-                    10,
-                    |n|n.armor_class.unwrap_or(10)
-                );
-                let armor_quickness_bonus =  target_attrs.quickness.bonus;
+                let base_armor_class = natural
+                    .get(wants_melee.target)
+                    .map_or(10, |n| n.armor_class.unwrap_or(10));
+                let armor_quickness_bonus = target_attrs.quickness.bonus;
                 let armor_skill_bonus = skill_bonus(Skill::Defense, &*target_skills);
                 let mut armor_item_bonus = 0.0;
                 for (wielded, armor) in (&equipped_items, &wearables).join() {
-                   if wielded.owner == wants_melee.target {
-                       armor_item_bonus += armor.armor_class;
-                   }
+                    if wielded.owner == wants_melee.target {
+                        armor_item_bonus += armor.armor_class;
+                    }
                 }
-                let armor_class = base_armor_class +
-                    armor_quickness_bonus +
-                    armor_skill_bonus +
-                    armor_item_bonus as i32;
+                let armor_class = base_armor_class
+                    + armor_quickness_bonus
+                    + armor_skill_bonus
+                    + armor_item_bonus as i32;
 
                 // Target is hit if not crit fail AND either natural 20 or modified role is greater
                 // than armor class
                 if natural_roll != 1 && (natural_roll == 20 || modified_hit_roll > armor_class) {
-                    let base_damage = rng.roll_dice(
-                        weapon.damage_n_dice,
-                        weapon.damage_die_type
-                    );
+                    let base_damage = rng.roll_dice(weapon.damage_n_dice, weapon.damage_die_type);
                     let attr_damage_bonus = attacker_attrs.might.bonus;
                     let skill_damage_bonus = skill_hit_bonus; // save computation from above
-                    let weapon_damage_bonus =  weapon.hit_bonus;
+                    let weapon_damage_bonus = weapon.hit_bonus;
 
                     let damage = i32::max(
                         0,
-                        base_damage +
-                            attr_damage_bonus +
-                            skill_hit_bonus +
-                            skill_damage_bonus +
-                            weapon_damage_bonus
+                        base_damage
+                            + attr_damage_bonus
+                            + skill_hit_bonus
+                            + skill_damage_bonus
+                            + weapon_damage_bonus,
                     );
                     SufferDamage::new_damage(&mut inflict_damage, wants_melee.target, damage);
-                    gamelog.entries.push(
-                        format!("{} hits {} for {} hp.", &name.name, &target_name.name, damage)
-                    );
+                    gamelog.entries.push(format!(
+                        "{} hits {} for {} hp.",
+                        &name.name, &target_name.name, damage
+                    ));
                 } else if natural_roll == 1 {
-                    gamelog.entries.push(
-                        format!("{} tries to hit {}, but misses.", &name.name, &target_name.name)
-                    );
+                    gamelog.entries.push(format!(
+                        "{} tries to hit {}, but misses.",
+                        &name.name, &target_name.name
+                    ));
                 } else {
-                    gamelog.entries.push(
-                        format!("{} hits {}, but it does no damage.", &name.name, &target_name.name)
-                    );
+                    gamelog.entries.push(format!(
+                        "{} hits {}, but it does no damage.",
+                        &name.name, &target_name.name
+                    ));
                 }
                 if let Some(pos) = positions.get(wants_melee.target) {
-                    particle_builder.request(pos.x, pos.y, RGB::named(ORANGE), RGB::named(BLACK), to_cp437('!'), 200.0);
+                    particle_builder.request(
+                        pos.x,
+                        pos.y,
+                        RGB::named(ORANGE),
+                        RGB::named(BLACK),
+                        to_cp437('!'),
+                        200.0,
+                    );
                 }
             }
         }

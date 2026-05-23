@@ -4,7 +4,6 @@ use crate::map_builders::{
     area_starting_points::{AreaStartingPoint, XStart, YStart},
     cellular_automata::CellularAutomataBuilder,
     cull_unreachable::CullUnreachable,
-    distant_exit::DistantExit,
     noise::NoiseBuilder,
     voronoi_spawning::VoronoiSpawning,
     yellow_brick_road::YellowBrickRoad,

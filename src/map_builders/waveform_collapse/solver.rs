@@ -3,9 +3,8 @@ use std::collections::HashSet;
 use bracket_lib::prelude::console;
 use bracket_lib::random::RandomNumberGenerator;
 
-use crate::map::{Map, TileType};
+use crate::map::Map;
 use crate::map_builders::waveform_collapse::common::MapChunk;
-use crate::map_builders::waveform_collapse::constraints::build_patterns;
 
 pub struct Solver {
     constraints: Vec<MapChunk>,

@@ -1,7 +1,6 @@
 use bracket_lib::prelude::RandomNumberGenerator;
-use specs::prelude::*;
 
-use crate::{map::TileType, rect::Rect};
+use crate::map::TileType;
 
 use super::{BuilderMap, InitialMapBuilder};
 
