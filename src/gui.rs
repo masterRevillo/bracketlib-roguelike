@@ -1,5 +1,5 @@
 use bracket_lib::color::{
-    BLACK, BLUE, CYAN, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHEAT, WHITE, YELLOW,
+    BLACK, BLUE, CYAN, GOLD, GREEN, GREY, MAGENTA, ORANGE, RED, RGB, WHEAT, WHITE, YELLOW,
 };
 use bracket_lib::prelude::{
     letter_to_option, to_cp437, BTerm, DijkstraMap, DistanceAlg, Point, VirtualKeyCode,
@@ -647,8 +647,11 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         "Mana:   {}/{}",
         player_pools.mana.current, player_pools.mana.max
     );
+    let lvl = format!("Level:   {}", player_pools.level);
+    let xp_lvl_start = (player_pools.level - 1) * 1000;
     ctx.print_color(VIEWPORT_X, 1, white, black, &health);
     ctx.print_color(VIEWPORT_X, 2, white, black, &mana);
+    ctx.print_color(VIEWPORT_X, 3, white, black, &lvl);
     ctx.draw_bar_horizontal(
         VIEWPORT_X + 14,
         1,
@@ -665,6 +668,15 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         player_pools.mana.current,
         player_pools.mana.max,
         RGB::named(BLUE),
+        RGB::named(BLACK),
+    );
+    ctx.draw_bar_horizontal(
+        VIEWPORT_X + 14,
+        3,
+        14,
+        player_pools.xp - xp_lvl_start,
+        1000,
+        RGB::named(GOLD),
         RGB::named(BLACK),
     );
 
