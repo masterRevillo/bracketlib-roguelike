@@ -1,4 +1,3 @@
-use bracket_lib::noise::{FastNoise, NoiseType};
 use bracket_lib::prelude::RandomNumberGenerator;
 
 use crate::map::TileType;

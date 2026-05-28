@@ -17,11 +17,11 @@ use crate::camera::render_debug_map;
 use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
     Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable,
-    Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper,
-    MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position,
-    ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe,
-    SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee,
-    WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
+    Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable,
+    MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools,
+    Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper,
+    SerializeMe, SingleActivation, Skills, Species, SufferDamage, Vendor, Viewshed,
+    WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
@@ -501,6 +501,7 @@ fn main() -> BError {
     state.ecs.register::<Bystander>();
     state.ecs.register::<Vendor>();
     state.ecs.register::<Name>();
+    state.ecs.register::<Species>();
     state.ecs.register::<BlocksTile>();
     state.ecs.register::<WantsToMelee>();
     state.ecs.register::<SufferDamage>();
@@ -542,6 +543,7 @@ fn main() -> BError {
     state.ecs.register::<LootTable>();
     state.ecs.register::<Carnivore>();
     state.ecs.register::<Herbivore>();
+    state.ecs.register::<Fears>();
 
     raws::load_raws();
 

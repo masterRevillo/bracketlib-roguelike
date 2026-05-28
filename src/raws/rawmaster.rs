@@ -11,10 +11,10 @@ use specs::{Builder, Entity, EntityBuilder, World, WorldExt};
 use crate::components::{
     AreaOfEffect, Artefact, Attribute, Attributes, BlocksTile, BlocksVisibility, Bystander,
     Carnivore, Confusion, Consumable, Door, EntryTrigger, EquipmentSlot, Equippable, Equipped,
-    Herbivore, Hidden, InBackpack, InflictsDamage, LootTable, MagicMapper, MeleeWeapon, Monster,
-    Name, NaturalAttack, NaturalAttackDefense, Pool, Pools, Position, ProvidesFood,
-    ProvidesHealing, Quips, Ranged, SerializeMe, SingleActivation, Skill, Skills, Vendor, Viewshed,
-    WeaponAttribute, Wearable,
+    Fears, Herbivore, Hidden, InBackpack, InflictsDamage, LootTable, MagicMapper, MeleeWeapon,
+    Monster, Name, NaturalAttack, NaturalAttackDefense, Pool, Pools, Position, ProvidesFood,
+    ProvidesHealing, Quips, Ranged, SerializeMe, SingleActivation, Skill, Skills, Species, Vendor,
+    Viewshed, WeaponAttribute, Wearable,
 };
 use crate::gamesystem::{attr_bonus, mana_at_level, npc_hp};
 use crate::random_tables::RandomTable;
@@ -276,6 +276,10 @@ pub fn spawn_named_mob(
 
         eb = spawn_position(pos, eb, key.clone(), raws);
 
+        eb = eb.with(Species {
+            species: mob_template.species.clone(),
+        });
+
         if let Some(renderable) = &mob_template.renderable {
             eb = eb.with(get_renderable_component(renderable));
         }
@@ -288,13 +292,19 @@ pub fn spawn_named_mob(
 
         eb = eb.with(name);
 
+        if let Some(fears) = &mob_template.fears {
+            eb = eb.with(Fears {
+                fears: fears.clone(),
+            });
+        }
+
         match mob_template.ai.as_ref() {
             "melee" => eb = eb.with(Monster {}),
             "bystander" => eb = eb.with(Bystander {}),
             "vendor" => eb = eb.with(Vendor {}),
             "carnivore" => {
                 eb = eb.with(Carnivore {
-                    hunting: mob_template.hunting.clone().expect(
+                    hunting: mob_template.hunts.clone().expect(
                         format!(
                             "You must provide a hunted list for carnivore {}",
                             mob_template.name

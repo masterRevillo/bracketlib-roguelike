@@ -191,10 +191,10 @@ pub fn level_builder(
     height: i32,
 ) -> BuilderChain {
     match new_depth {
-        // 1 => town_builder(new_depth, rng, width, height),
-        // 2 => forest_builder(new_depth, rng, width, height),
-        // _ => random_builder(new_depth, rng, width, height),
-        _ => debug_map_builder(new_depth, rng, width, height),
+        1 => town_builder(new_depth, rng, width, height),
+        2 => forest_builder(new_depth, rng, width, height),
+        _ => random_builder(new_depth, rng, width, height),
+        // _ => debug_map_builder(new_depth, rng, width, height),
     }
 }
 

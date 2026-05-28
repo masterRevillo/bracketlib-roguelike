@@ -8,7 +8,7 @@ use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 use crate::components::{
     Attribute, Attributes, HungerClock, HungerState, Name, Player, Pool, Pools, Position,
-    Renderable, SerializeMe, Skill, Skills, Viewshed,
+    Renderable, SerializeMe, Skill, Skills, Species, Viewshed,
 };
 use crate::gamesystem::{attr_bonus, mana_at_level, player_hp_at_level};
 use crate::map::tiletype::TileType;
@@ -50,6 +50,9 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         })
         .with(Name {
             name: "Player".to_string(),
+        })
+        .with(Species {
+            species: "human".to_string(),
         })
         .with(HungerClock {
             state: HungerState::WellFed,

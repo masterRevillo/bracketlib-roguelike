@@ -5,7 +5,7 @@ use specs::error::NoError;
 use specs::prelude::*;
 use specs::saveload::ConvertSaveload;
 use specs::saveload::Marker;
-use specs::{Join, WriteStorage};
+use specs::WriteStorage;
 use specs_derive::*;
 use std::collections::HashMap;
 
@@ -39,6 +39,11 @@ pub struct Vendor {}
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Species {
+    pub species: String,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
@@ -309,4 +314,9 @@ pub struct Herbivore {}
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Carnivore {
     pub hunting: Vec<String>,
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Fears {
+    pub fears: Vec<String>,
 }

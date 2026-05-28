@@ -12,11 +12,11 @@ use specs::{Builder, Entity, Join, World, WorldExt};
 use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
     Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable,
-    Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable, MagicMapper,
-    MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools, Position,
-    ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper, SerializeMe,
-    SingleActivation, Skills, SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee,
-    WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
+    Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable,
+    MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools,
+    Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper,
+    SerializeMe, SingleActivation, Skills, Species, SufferDamage, Vendor, Viewshed,
+    WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 
 macro_rules! serialize_individually {
@@ -75,6 +75,7 @@ pub fn save_game(ecs: &mut World) {
             Viewshed,
             Monster,
             Name,
+            Species,
             BlocksTile,
             SufferDamage,
             WantsToMelee,
@@ -116,7 +117,8 @@ pub fn save_game(ecs: &mut World) {
             NaturalAttackDefense,
             LootTable,
             Carnivore,
-            Herbivore
+            Herbivore,
+            Fears
         );
     }
     ecs.delete_entity(savehelper)
@@ -157,6 +159,7 @@ pub fn load_game(ecs: &mut World) {
             Viewshed,
             Monster,
             Name,
+            Species,
             BlocksTile,
             SufferDamage,
             WantsToMelee,
@@ -198,7 +201,8 @@ pub fn load_game(ecs: &mut World) {
             NaturalAttackDefense,
             LootTable,
             Carnivore,
-            Herbivore
+            Herbivore,
+            Fears
         );
     }
     let mut deleteme: Option<Entity> = None;

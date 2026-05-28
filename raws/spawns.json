@@ -450,6 +450,7 @@
     {
       "id": "Blacksmith",
       "name": "Blacksmith",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#EE82EE",
@@ -470,6 +471,7 @@
     {
       "id": "Clothier",
       "name": "Clothier",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#EE82EE",
@@ -489,6 +491,7 @@
     {
       "id": "Alchemist",
       "name": "Alchemist",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#EE82EE",
@@ -509,6 +512,7 @@
     {
       "id": "Mom",
       "name": "Mom",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#FFAAAA",
@@ -529,6 +533,7 @@
     {
       "id": "Peasant",
       "name": "Peasant",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#999999",
@@ -548,6 +553,7 @@
     {
       "id": "Bartender",
       "name": "Bartender",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#EE82EE",
@@ -573,6 +579,7 @@
     {
       "id": "ShadySalesman",
       "name": "Shady Salesman",
+      "species": "human",
       "renderable": {
         "glyph": "h",
         "fg": "#EE82EE",
@@ -593,6 +600,7 @@
     {
       "id": "Patron",
       "name": "Patron",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#AAAAAA",
@@ -618,6 +626,7 @@
     {
       "id": "Priest",
       "name": "Priest",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#EE82EE",
@@ -637,6 +646,7 @@
     {
       "id": "Parishioner",
       "name": "Parishioner",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#AAAAAA",
@@ -657,6 +667,7 @@
     {
       "id": "DockWorker",
       "name": "Dock Worker",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#999999",
@@ -683,6 +694,7 @@
     {
       "id": "Fisher",
       "name": "Fisher",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#999999",
@@ -709,6 +721,7 @@
     {
       "id": "Pirate",
       "name": "Pirate",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#aa9999",
@@ -732,8 +745,9 @@
       ]
     },
     {
-      "id": "Drunk",
+      "id": "drunk",
       "name": "Drunk",
+      "species": "human",
       "renderable": {
         "glyph": "☺",
         "fg": "#aa9999",
@@ -756,8 +770,9 @@
       ]
     },
     {
-      "id": "Rat",
+      "id": "rat",
       "name": "Rat",
+      "species": "rat",
       "renderable": {
         "glyph": "r",
         "fg": "#6b4b5a",
@@ -771,6 +786,11 @@
         "might": 3,
         "fitness": 3
       },
+      "fears": [
+        "dog",
+        "cat",
+        "fox"
+      ],
       "skills": {
         "Melee": -1,
         "Defense": -1
@@ -787,8 +807,9 @@
       }
     },
     {
-      "id": "Wolf",
+      "id": "wolf",
       "name": "Wolf",
+      "species": "wolf",
       "renderable": {
         "glyph": "w",
         "fg": "#678691",
@@ -798,7 +819,7 @@
       "blocks_tile": true,
       "vision_range": 8,
       "ai": "carnivore",
-      "hunting": [
+      "hunts": [
         "deer",
         "player"
       ],
@@ -823,8 +844,9 @@
       "loot_table": "animal"
     },
     {
-      "id": "Fox",
+      "id": "fox",
       "name": "Fox",
+      "species": "fox",
       "renderable": {
         "glyph": "f",
         "fg": "#C77140",
@@ -834,9 +856,12 @@
       "blocks_tile": true,
       "vision_range": 8,
       "ai": "carnivore",
-      "hunting": [
+      "hunts": [
         "rat",
         "player"
+      ],
+      "fears": [
+        "dog"
       ],
       "attributes": {
         "might": 3,
@@ -858,8 +883,9 @@
       }
     },
     {
-      "id": "Deer",
+      "id": "deer",
       "name": "Deer",
+      "species": "deer",
       "renderable": {
         "glyph": "d",
         "fg": "#FFFF00",
@@ -873,6 +899,10 @@
         "might": 3,
         "fitness": 3
       },
+      "fears": [
+        "human",
+        "wolf"
+      ],
       "skills": {
         "Melee": -1,
         "Defense": -1
@@ -890,8 +920,9 @@
       "loot_table": "animal"
     },
     {
-      "id": "Cat",
+      "id": "cat",
       "name": "Cat",
+      "species": "cat",
       "renderable": {
         "glyph": "c",
         "fg": "#68F72A",
@@ -901,8 +932,11 @@
       "blocks_tile": true,
       "vision_range": 8,
       "ai": "carnivore",
-      "hunting": [
+      "hunts": [
         "rat"
+      ],
+      "fears": [
+        "dog"
       ],
       "attributes": {
         "might": 3,
@@ -927,6 +961,7 @@
     {
       "id": "Ogur",
       "name": "Ogur",
+      "species": "ogur",
       "renderable": {
         "glyph": "o",
         "fg": "#808000",
@@ -953,6 +988,7 @@
     {
       "id": "Bisat",
       "name": "Bisat",
+      "species": "bisat",
       "renderable": {
         "glyph": "b",
         "fg": "#cd853f",
@@ -979,6 +1015,7 @@
     {
       "id": "Spectre",
       "name": "Spectre",
+      "species": "spectre",
       "renderable": {
         "glyph": "s",
         "fg": "#93a7db",
@@ -1003,6 +1040,7 @@
     {
       "id": "TukkaWarrior",
       "name": "Tukka Warrior",
+      "species": "tukka",
       "renderable": {
         "glyph": "t",
         "fg": "#76c491",
@@ -1026,6 +1064,7 @@
     {
       "id": "Bandit",
       "name": "Bandit",
+      "species": "human",
       "renderable": {
         "glyph": "☻",
         "fg": "#FF0000",
@@ -1237,31 +1276,31 @@
   ],
   "spawn_table": [
     {
-      "id": "Rat",
+      "id": "rat",
       "weight": 15,
       "min_depth": 2,
       "max_depth": 3
     },
     {
-      "id": "Wolf",
+      "id": "wolf",
       "weight": 13,
       "min_depth": 2,
       "max_depth": 3
     },
     {
-      "id": "Fox",
+      "id": "fox",
       "weight": 15,
       "min_depth": 2,
       "max_depth": 3
     },
     {
-      "id": "Deer",
+      "id": "deer",
       "weight": 14,
       "min_depth": 2,
       "max_depth": 3
     },
     {
-      "id": "Cat",
+      "id": "cat",
       "weight": 5,
       "min_depth": 2,
       "max_depth": 3

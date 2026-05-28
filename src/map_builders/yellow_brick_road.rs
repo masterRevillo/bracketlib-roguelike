@@ -1,7 +1,7 @@
 use std::i32;
 
 use bracket_lib::{
-    prelude::{a_star_search, DistanceAlg, Point, Tile},
+    prelude::{a_star_search, DistanceAlg, Point},
     random::RandomNumberGenerator,
 };
 

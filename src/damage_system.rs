@@ -4,8 +4,8 @@ use bracket_lib::random::RandomNumberGenerator;
 use specs::prelude::*;
 
 use crate::components::{
-    BlocksTile, Carnivore, Equipped, Herbivore, InBackpack, LootTable, Monster, Name, Player,
-    Pools, Position, Renderable, SufferDamage,
+    BlocksTile, Carnivore, Equipped, Fears, Herbivore, InBackpack, LootTable, Monster, Name,
+    Player, Pools, Position, Renderable, SufferDamage,
 };
 use crate::gamelog::GameLog;
 use crate::map::Map;
@@ -139,12 +139,14 @@ impl DamageSystem {
         let mut blockers = ecs.write_storage::<BlocksTile>();
         let mut herbivore = ecs.write_storage::<Herbivore>();
         let mut carnivore = ecs.write_storage::<Carnivore>();
+        let mut fears = ecs.write_storage::<Fears>();
         for victim in &dead {
             monsters.remove(*victim);
             blockers.remove(*victim);
             pools.remove(*victim);
             herbivore.remove(*victim);
             carnivore.remove(*victim);
+            fears.remove(*victim);
         }
         !&dead.is_empty()
     }
