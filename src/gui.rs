@@ -940,3 +940,43 @@ pub fn game_over(ctx: &mut BTerm) -> GameOverResult {
         Some(_) => GameOverResult::QuitToMenu,
     }
 }
+
+pub enum MenuResult {
+    NoResponse,
+    NumberedResponse(i32),
+    Cancel,
+}
+
+pub fn show_debug_menu(arg: &mut State, ctx: &mut BTerm) -> MenuResult {
+    let count = 3;
+    let y = (25 - (count / 2)) as i32;
+    ctx.draw_box(
+        15,
+        y - 2,
+        31,
+        (count + 3) as i32,
+        RGB::named(WHITE),
+        RGB::named(BLACK),
+    );
+    ctx.print_color(18, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "Debuggin");
+    ctx.print_color(
+        18,
+        y + count,
+        RGB::named(YELLOW),
+        RGB::named(BLACK),
+        "ESCAPE to cancel",
+    );
+
+    ctx.print(21, y, "Teleport to exit");
+    ctx.print(21, y + 1, "Reveal entire map");
+
+    match ctx.key {
+        None => MenuResult::NoResponse,
+        Some(key) => match key {
+            VirtualKeyCode::T => MenuResult::NumberedResponse(0),
+            VirtualKeyCode::R => MenuResult::NumberedResponse(1),
+            VirtualKeyCode::Escape => MenuResult::Cancel,
+            _ => MenuResult::NoResponse,
+        },
+    }
+}

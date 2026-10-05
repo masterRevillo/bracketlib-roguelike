@@ -16,16 +16,19 @@ use crate::bystander_ai_system::BystanderAI;
 use crate::camera::render_debug_map;
 use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
-    Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable,
-    Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable,
-    MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools,
-    Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper,
-    SerializeMe, SingleActivation, Skills, Species, SufferDamage, Vendor, Viewshed,
-    WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
+    Confusion, Consumable, DMSerializationHelper, Door, EntityMoved, EntryTrigger, Equippable,
+    Equipped, Examinable, Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item,
+    LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, OtherLevelPosition,
+    ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged,
+    Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species, SufferDamage,
+    Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem,
+    WantsToUseItem, Wearable,
 };
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
-use crate::map::Map;
+use crate::gui::MenuResult;
+use crate::map::dungeon::{freeze_level_entities, thaw_level_entities, MasterDungeonMap};
+use crate::map::{level_transition, Map};
 use crate::map_indexing_system::MapIndexingSystem;
 use crate::melee_combat_system::MeleeCombatSystem;
 use crate::monster_ai_system::MonsterAI;
@@ -84,7 +87,7 @@ const SHOW_MAPGEN_VISUALIZATION: bool = false;
 const DEBUGGING: bool = false;
 
 const SCREEN_X: i32 = 120;
-const SCREEN_Y: i32 = 100;
+const SCREEN_Y: i32 = 75;
 
 const MAP_X: i32 = 150;
 const MAP_Y: i32 = 100;
@@ -111,11 +114,13 @@ pub enum RunState {
     MainMenu { menu_selection: MainMenuSelection },
     SaveGame,
     NextLevel,
+    PreviousLevel,
     ShowRemoveItem,
     GameOver,
     MagicMapReveal { row: i32 },
     // MapGeneration,
     ShowMapVisualization,
+    ShowDebugMenu,
 }
 
 struct State {
@@ -159,41 +164,16 @@ impl State {
         self.ecs.maintain();
     }
 
-    fn generate_world_map(&mut self, new_depth: i32) {
+    fn generate_world_map(&mut self, new_depth: i32, offset: i32) {
         self.mapgen_index = 0;
         self.mapgen_timer = 0.0;
         self.mapgen_history.clear();
-        let mut rng = self.ecs.write_resource::<RandomNumberGenerator>();
-        let mut builder = map_builders::level_builder(new_depth, &mut rng, MAP_X, MAP_Y);
-        builder.build_map(&mut rng);
-        drop(rng);
-        self.mapgen_history = builder.build_data.history.clone();
-        let player_start;
-        {
-            let mut map_resource = self.ecs.write_resource::<Map>();
-            *map_resource = builder.build_data.map.clone();
-            player_start = builder
-                .build_data
-                .starting_position
-                .as_mut()
-                .unwrap()
-                .clone();
-        }
-        builder.spawn_entities(&mut self.ecs);
-        let (player_x, player_y) = (player_start.x, player_start.y);
-        let mut player_pos = self.ecs.write_resource::<Point>();
-        *player_pos = Point::new(player_x, player_y);
-        let mut position_component = self.ecs.write_storage::<Position>();
-        let player_entity = self.ecs.fetch::<Entity>();
-        let player_pos_comp = position_component.get_mut(*player_entity);
-        if let Some(player_pos_comp) = player_pos_comp {
-            player_pos_comp.x = player_x;
-            player_pos_comp.y = player_y;
-        }
-        let mut viewshed_comp = self.ecs.write_storage::<Viewshed>();
-        let vs = viewshed_comp.get_mut(*player_entity);
-        if let Some(vs) = vs {
-            vs.dirty = true;
+
+        let map_building_info = level_transition(&mut self.ecs, new_depth, offset);
+        if let Some(history) = map_building_info {
+            self.mapgen_history = history;
+        } else {
+            thaw_level_entities(&mut self.ecs);
         }
     }
 
@@ -230,6 +210,11 @@ impl State {
         to_delete
     }
 
+    /// Clears out/resets things in the ecs after a game over it:
+    /// - deletes all entities
+    /// - respawns a new player at a temporary location
+    /// - generates a new empty master dungeon map
+    /// - generates a wold map
     pub fn game_over_cleanup(&mut self) {
         let mut to_delete = Vec::new();
         for e in self.ecs.entities().join() {
@@ -243,28 +228,20 @@ impl State {
             let mut player_entity_writer = self.ecs.write_resource::<Entity>();
             *player_entity_writer = p_entity;
         }
-        self.generate_world_map(1);
+
+        self.ecs.insert(MasterDungeonMap::new());
+
+        self.generate_world_map(1, 0);
     }
 
-    fn goto_next_level(&mut self) {
-        let to_delete = self.entities_to_remove_on_level_change();
-        for target in to_delete {
-            self.ecs
-                .delete_entity(target)
-                .expect("Unable to delete entity");
-        }
+    fn goto_level(&mut self, offset: i32) {
+        freeze_level_entities(&mut self.ecs);
 
-        let current_depth;
-        {
-            let worldmap_resources = self.ecs.write_resource::<Map>();
-            current_depth = worldmap_resources.depth;
-        }
-        self.generate_world_map(current_depth + 1);
+        let current_depth = self.ecs.fetch::<Map>().depth;
+        self.generate_world_map(current_depth + offset, offset);
 
         let mut gamelog = self.ecs.fetch_mut::<GameLog>();
-        gamelog
-            .entries
-            .push("You descend to the next level".to_string());
+        gamelog.entries.push("You change level".to_string());
     }
 }
 
@@ -426,7 +403,11 @@ impl GameState for State {
                 };
             }
             RunState::NextLevel => {
-                self.goto_next_level();
+                self.goto_level(1);
+                new_runstate = RunState::PreRun;
+            }
+            RunState::PreviousLevel => {
+                self.goto_level(-1);
                 new_runstate = RunState::PreRun;
             }
             RunState::ShowRemoveItem => {
@@ -470,6 +451,21 @@ impl GameState for State {
                     new_runstate = RunState::MagicMapReveal { row: row + 1 }
                 }
             }
+            RunState::ShowDebugMenu => {
+                let result = gui::show_debug_menu(self, ctx);
+                match result {
+                    MenuResult::Cancel => new_runstate = RunState::AwaitingInput,
+                    MenuResult::NoResponse => {}
+                    MenuResult::NumberedResponse(0) => {
+                        self.goto_level(1);
+                        new_runstate = RunState::PreRun;
+                    }
+                    MenuResult::NumberedResponse(1) => {
+                        new_runstate = RunState::MagicMapReveal { row: 0 };
+                    }
+                    _ => panic!("Received an invalid menu result"),
+                }
+            }
         }
         {
             let mut runwriter = self.ecs.write_resource::<RunState>();
@@ -494,6 +490,7 @@ fn main() -> BError {
         mapgen_timer: 0.0,
     };
     state.ecs.register::<Position>();
+    state.ecs.register::<OtherLevelPosition>();
     state.ecs.register::<Renderable>();
     state.ecs.register::<Player>();
     state.ecs.register::<Viewshed>();
@@ -519,6 +516,7 @@ fn main() -> BError {
     state.ecs.register::<Confusion>();
     state.ecs.register::<SimpleMarker<SerializeMe>>();
     state.ecs.register::<SerializationHelper>();
+    state.ecs.register::<DMSerializationHelper>();
     state.ecs.register::<Examinable>();
     state.ecs.register::<Equippable>();
     state.ecs.register::<Equipped>();
@@ -554,7 +552,9 @@ fn main() -> BError {
     state.ecs.insert(RexAssets::new());
     state.ecs.insert(RandomNumberGenerator::new());
 
+    state.ecs.insert(MasterDungeonMap::new());
     state.ecs.insert(Map::new(1, 64, 64, "New Map"));
+
     state.ecs.insert(Point::new(0, 0));
     let player_entity = player(&mut state.ecs, 0, 0);
     state.ecs.insert(player_entity);
@@ -565,18 +565,18 @@ fn main() -> BError {
         entries: vec!["Welcome to the Halls of Ruztoo".to_string()],
     });
 
-    state.generate_world_map(1);
+    state.generate_world_map(1, 0);
 
     println!("{:?}", *configs);
 
     let mut bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
         .with_title("Rusty Roguelike V2")
-        .with_tile_dimensions(12, 12)
+        .with_tile_dimensions(10, 10)
         .with_fps_cap(120.)
         .with_fitscreen(false)
         .build()?;
-    bterm.with_post_scanlines(true);
-    bterm.screen_burn_color(RGB::named(WHITE));
+    // bterm.with_post_scanlines(true);
+    // bterm.screen_burn_color(RGB::named(WHITE));
 
     main_loop(bterm, state)
 }

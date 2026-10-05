@@ -11,13 +11,15 @@ use specs::{Builder, Entity, Join, World, WorldExt};
 
 use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
-    Confusion, Consumable, Door, EntityMoved, EntryTrigger, Equippable, Equipped, Examinable,
-    Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item, LootTable,
-    MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, ParticleLifetime, Player, Pools,
-    Position, ProvidesFood, ProvidesHealing, Quips, Ranged, Renderable, SerializationHelper,
-    SerializeMe, SingleActivation, Skills, Species, SufferDamage, Vendor, Viewshed,
-    WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem, WantsToUseItem, Wearable,
+    Confusion, Consumable, DMSerializationHelper, Door, EntityMoved, EntryTrigger, Equippable,
+    Equipped, Examinable, Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item,
+    LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, OtherLevelPosition,
+    ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged,
+    Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species, SufferDamage,
+    Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem,
+    WantsToUseItem, Wearable,
 };
+use crate::map::dungeon::MasterDungeonMap;
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
@@ -51,9 +53,17 @@ macro_rules! deserialize_individually {
 pub fn save_game(ecs: &mut World) {
     // create helper
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
+    let dungeon_master = ecs.get_mut::<MasterDungeonMap>().unwrap().clone();
     let savehelper = ecs
         .create_entity()
         .with(SerializationHelper { map: mapcopy })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+    let savehelper2 = ecs
+        .create_entity()
+        .with(DMSerializationHelper {
+            map: dungeon_master,
+        })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
     // do the serializing
@@ -118,11 +128,15 @@ pub fn save_game(ecs: &mut World) {
             LootTable,
             Carnivore,
             Herbivore,
-            Fears
+            Fears,
+            OtherLevelPosition,
+            DMSerializationHelper
         );
     }
     ecs.delete_entity(savehelper)
-        .expect("Couldn't clean up helper")
+        .expect("Couldn't clean up helper");
+    ecs.delete_entity(savehelper2)
+        .expect("Couldn't clean up helper");
 }
 
 pub fn does_save_exist() -> bool {
@@ -175,6 +189,7 @@ pub fn load_game(ecs: &mut World) {
             WantsToUseItem,
             WantsToDropItem,
             SerializationHelper,
+            DMSerializationHelper,
             Examinable,
             Artefact,
             Equippable,
@@ -202,13 +217,16 @@ pub fn load_game(ecs: &mut World) {
             LootTable,
             Carnivore,
             Herbivore,
-            Fears
+            Fears,
+            OtherLevelPosition
         );
     }
     let mut deleteme: Option<Entity> = None;
+    let mut deleteme2: Option<Entity> = None;
     {
         let entities = ecs.entities();
         let helper = ecs.read_storage::<SerializationHelper>();
+        let helper2 = ecs.read_storage::<DMSerializationHelper>();
         let player = ecs.read_storage::<Player>();
         let position = ecs.read_storage::<Position>();
         for (e, h) in (&entities, &helper).join() {
@@ -218,6 +236,11 @@ pub fn load_game(ecs: &mut World) {
                 vec![vec![Vec::new(); worldmap.height as usize]; worldmap.width as usize];
             deleteme = Some(e);
         }
+        for (e, h) in (&entities, &helper2).join() {
+            let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
+            *dungeon_master = h.map.clone();
+            deleteme2 = Some(e);
+        }
         for (e, _p, pos) in (&entities, &player, &position).join() {
             let mut ppos = ecs.write_resource::<Point>();
             *ppos = Point::new(pos.x, pos.y);
@@ -226,6 +249,8 @@ pub fn load_game(ecs: &mut World) {
         }
     }
     ecs.delete_entity(deleteme.unwrap())
+        .expect("Unable to delete helper");
+    ecs.delete_entity(deleteme2.unwrap())
         .expect("Unable to delete helper");
 }
 

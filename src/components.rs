@@ -9,6 +9,7 @@ use specs::WriteStorage;
 use specs_derive::*;
 use std::collections::HashMap;
 
+use crate::map::dungeon::MasterDungeonMap;
 use crate::map::Map;
 
 pub struct SerializeMe;
@@ -17,6 +18,14 @@ pub struct SerializeMe;
 pub struct Position {
     pub x: i32,
     pub y: i32,
+}
+
+/// Used to store the position of an item not at the current level
+#[derive(Component, ConvertSaveload, Clone, Debug)]
+pub struct OtherLevelPosition {
+    pub x: i32,
+    pub y: i32,
+    pub depth: i32,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
@@ -151,6 +160,11 @@ pub struct Confusion {
 #[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct SerializationHelper {
     pub map: Map,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct DMSerializationHelper {
+    pub map: MasterDungeonMap,
 }
 
 #[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]

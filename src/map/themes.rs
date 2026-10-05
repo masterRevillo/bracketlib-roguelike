@@ -11,6 +11,7 @@ use crate::map::{Map, TileType};
 pub fn tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg) = match map.depth {
         2 => get_forest_glyph(x, y, map),
+        3 => get_limestone_cavern_glyph(x, y, map),
         _ => get_tile_glyph_default(x, y, map),
     };
 
@@ -54,10 +55,6 @@ fn get_forest_glyph(x: usize, y: usize, map: &Map) -> (u16, RGB, RGB) {
             );
             bg = RGB::from_u8(0, 80, 20);
         }
-        (TileType::DownStairs, _) => {
-            glyph = to_cp437('>');
-            fg = RGB::from_f32(0., 1.0, 1.0);
-        }
         (TileType::Bridge, _) => {
             glyph = to_cp437('|');
             fg = RGB::named(CHOCOLATE);
@@ -78,17 +75,6 @@ fn get_forest_glyph(x: usize, y: usize, map: &Map) -> (u16, RGB, RGB) {
             fg = RGB::named(CYAN);
             bg = RGB::named(MEDIUM_AQUAMARINE);
         }
-        (TileType::DeepWater, _) => {
-            glyph = to_cp437('≈');
-            fg = RGB::from_f32(0.1 * noise, 0.1 * noise, 0.6 * noise);
-            //100, 149, 237
-            bg = RGB::from_f32(0.45 * noise, 0.55 * noise, 0.9 * noise);
-        }
-        (TileType::WoodFloor, _) => {
-            glyph = to_cp437('.');
-            fg = RGB::named(CHOCOLATE);
-            bg = RGB::named(CHOCOLATE2);
-        }
         (TileType::Gravel, _) => {
             glyph = to_cp437('\'');
             fg = RGB::named(LIGHT_SLATE);
@@ -98,6 +84,49 @@ fn get_forest_glyph(x: usize, y: usize, map: &Map) -> (u16, RGB, RGB) {
             glyph = to_cp437('#');
             fg = RGB::from_u8(91, 128, 125);
             bg = RGB::from_u8(91, 168, 110);
+        }
+        _ => {
+            let default = get_tile_glyph_default(x, y, map);
+            glyph = default.0;
+            fg = default.1;
+            bg = default.2;
+        }
+    }
+    (glyph, fg, bg)
+}
+
+fn get_limestone_cavern_glyph(x: usize, y: usize, map: &Map) -> (u16, RGB, RGB) {
+    let glyph;
+    let mut fg;
+    let mut bg = RGB::from_f32(0., 0., 0.);
+    let noise = map.noise[x][y];
+    let noise_b = map.n_height[x][y];
+    let w_noise = map.w_noise[x][y];
+
+    match (map.tiles[x][y], noise + noise_b) {
+        (TileType::Floor, _) => {
+            glyph = to_cp437(' ');
+            let scaler = 0.75;
+            fg = RGB::from_u8(20, 20, 0);
+            bg = RGB::from_u8(
+                200 + (100.0 * noise * scaler) as u8,
+                150 + (100.0 * noise * scaler) as u8,
+                50 + (100.0 * noise * scaler) as u8,
+            );
+        }
+        (TileType::Wall, _) => {
+            glyph = to_cp437('▒');
+            fg = RGB::from_u8(
+                150 + (100.0 * w_noise * 0.5) as u8,
+                75 + (100.0 * w_noise * 0.5) as u8,
+                25 + (100.0 * w_noise * 0.5) as u8,
+            );
+        }
+        _ => {
+            let default = get_tile_glyph_default(x, y, map);
+            glyph = default.0;
+            fg = default.1;
+            bg = default.2;
         }
     }
     (glyph, fg, bg)
@@ -136,6 +165,11 @@ fn get_tile_glyph_default(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, 
             glyph = to_cp437('>');
             fg = RGB::from_f32(0., 1.0, 1.0);
         }
+
+        (TileType::UpStairs, _) => {
+            glyph = to_cp437('<');
+            fg = RGB::from_f32(0., 1.0, 1.0);
+        }
         (TileType::Bridge, _) => {
             glyph = to_cp437('|');
             fg = RGB::named(CHOCOLATE);
@@ -176,6 +210,14 @@ fn get_tile_glyph_default(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, 
             glyph = to_cp437('#');
             fg = RGB::from_u8(91, 128, 125);
             bg = RGB::from_u8(91, 168, 110);
+        }
+        (TileType::Stalagmite, _) => {
+            glyph = to_cp437('╥');
+            fg = RGB::from_u8(200, 100, 100);
+        }
+        (TileType::Stalactite, _) => {
+            glyph = to_cp437('╨');
+            fg = RGB::from_u8(200, 100, 100);
         }
     }
     (glyph, fg, bg)
