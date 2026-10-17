@@ -18,11 +18,11 @@ use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
     Confusion, Consumable, DMSerializationHelper, Door, EntityMoved, EntryTrigger, Equippable,
     Equipped, Examinable, Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item,
-    LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, OtherLevelPosition,
-    ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged,
-    Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species, SufferDamage,
-    Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem,
-    WantsToUseItem, Wearable,
+    LightSource, LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense,
+    OtherLevelPosition, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing,
+    Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species,
+    SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
+    WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
@@ -61,6 +61,7 @@ mod gamesystem;
 mod gui;
 mod hunger_system;
 mod inventory_system;
+mod lighting_system;
 mod map;
 pub mod map_builders;
 mod map_indexing_system;
@@ -161,6 +162,8 @@ impl State {
         particle_system.run_now(&self.ecs);
         let mut hunger_system = HungerSystem {};
         hunger_system.run_now(&self.ecs);
+        let mut lighting = lighting_system::LightingSystem {};
+        lighting.run_now(&self.ecs);
         self.ecs.maintain();
     }
 
@@ -542,6 +545,7 @@ fn main() -> BError {
     state.ecs.register::<Carnivore>();
     state.ecs.register::<Herbivore>();
     state.ecs.register::<Fears>();
+    state.ecs.register::<LightSource>();
 
     raws::load_raws();
 
@@ -571,7 +575,7 @@ fn main() -> BError {
 
     let mut bterm = BTermBuilder::simple(SCREEN_X, SCREEN_Y)?
         .with_title("Rusty Roguelike V2")
-        .with_tile_dimensions(10, 10)
+        .with_tile_dimensions(11, 11)
         .with_fps_cap(120.)
         .with_fitscreen(false)
         .build()?;

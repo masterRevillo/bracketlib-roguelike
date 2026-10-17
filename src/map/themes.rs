@@ -22,6 +22,9 @@ pub fn tile_glyph(x: usize, y: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     if !map.visible_tiles[x][y] {
         fg = fg.lerp(RGB::named(BLACK), 0.5);
         bg = bg.lerp(RGB::named(BLACK), 0.7);
+    } else if !map.outdoors {
+        fg = fg * map.light[x][y];
+        bg = bg * map.light[x][y];
     }
 
     (glyph, fg, bg)

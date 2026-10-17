@@ -339,3 +339,9 @@ pub struct Carnivore {
 pub struct Fears {
     pub fears: Vec<String>,
 }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct LightSource {
+    pub color: RGB,
+    pub range: i32,
+}

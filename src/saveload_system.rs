@@ -13,11 +13,11 @@ use crate::components::{
     AreaOfEffect, Artefact, Attributes, BlocksTile, BlocksVisibility, Bystander, Carnivore,
     Confusion, Consumable, DMSerializationHelper, Door, EntityMoved, EntryTrigger, Equippable,
     Equipped, Examinable, Fears, Herbivore, Hidden, HungerClock, InBackpack, InflictsDamage, Item,
-    LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense, OtherLevelPosition,
-    ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing, Quips, Ranged,
-    Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species, SufferDamage,
-    Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem, WantsToUnequipItem,
-    WantsToUseItem, Wearable,
+    LightSource, LootTable, MagicMapper, MeleeWeapon, Monster, Name, NaturalAttackDefense,
+    OtherLevelPosition, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing,
+    Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species,
+    SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
+    WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::map::dungeon::MasterDungeonMap;
 
@@ -130,7 +130,8 @@ pub fn save_game(ecs: &mut World) {
             Herbivore,
             Fears,
             OtherLevelPosition,
-            DMSerializationHelper
+            DMSerializationHelper,
+            LightSource
         );
     }
     ecs.delete_entity(savehelper)
@@ -218,7 +219,8 @@ pub fn load_game(ecs: &mut World) {
             Carnivore,
             Herbivore,
             Fears,
-            OtherLevelPosition
+            OtherLevelPosition,
+            LightSource
         );
     }
     let mut deleteme: Option<Entity> = None;

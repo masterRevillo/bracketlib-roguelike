@@ -7,8 +7,8 @@ use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
 use crate::components::{
-    Attribute, Attributes, HungerClock, HungerState, Name, Player, Pool, Pools, Position,
-    Renderable, SerializeMe, Skill, Skills, Species, Viewshed,
+    Attribute, Attributes, HungerClock, HungerState, LightSource, Name, Player, Pool, Pools,
+    Position, Renderable, SerializeMe, Skill, Skills, Species, Viewshed,
 };
 use crate::gamesystem::{attr_bonus, mana_at_level, player_hp_at_level};
 use crate::map::tiletype::TileType;
@@ -92,6 +92,10 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             },
             xp: 0,
             level: 1,
+        })
+        .with(LightSource {
+            color: RGB::from_f32(1.0, 1.0, 0.5),
+            range: 8,
         })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();

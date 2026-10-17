@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use std::{mem, usize};
 
 use bracket_lib::algorithm_traits::{Algorithm2D, BaseMap, SmallVec};
+use bracket_lib::color::RGB;
 use bracket_lib::geometry::{DistanceAlg, Point};
 use bracket_lib::random::RandomNumberGenerator;
 use serde::{Deserialize, Serialize};
@@ -38,6 +39,8 @@ pub struct Map {
     pub n_temp: Vec<Vec<f32>>,
     pub n_humid: Vec<Vec<f32>>,
     pub n_biome: Vec<Vec<f32>>,
+    pub outdoors: bool,
+    pub light: Vec<Vec<RGB>>,
 
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
@@ -133,6 +136,8 @@ impl Map {
             n_temp: vec![vec![0.; height as usize]; width as usize],
             n_humid: vec![vec![0.; height as usize]; width as usize],
             n_biome: vec![vec![0.; height as usize]; width as usize],
+            outdoors: true,
+            light: vec![vec![RGB::from_f32(0., 0., 0.); height as usize]; width as usize],
         }
     }
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
