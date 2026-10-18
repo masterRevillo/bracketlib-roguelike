@@ -22,7 +22,7 @@ use crate::components::{
     OtherLevelPosition, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing,
     Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species,
     SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
-    WantsToUnequipItem, WantsToUseItem, Wearable,
+    WantsToPlaceBlock, WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::damage_system::DamageSystem;
 use crate::gamelog::GameLog;
@@ -52,6 +52,7 @@ use crate::{
 };
 
 mod animal_ai_system;
+mod block_placing_system;
 mod bystander_ai_system;
 mod camera;
 mod components;
@@ -164,6 +165,8 @@ impl State {
         hunger_system.run_now(&self.ecs);
         let mut lighting = lighting_system::LightingSystem {};
         lighting.run_now(&self.ecs);
+        let mut block_placing = block_placing_system::BlockPlacingSystem {};
+        block_placing.run_now(&self.ecs);
         self.ecs.maintain();
     }
 
@@ -546,6 +549,7 @@ fn main() -> BError {
     state.ecs.register::<Herbivore>();
     state.ecs.register::<Fears>();
     state.ecs.register::<LightSource>();
+    state.ecs.register::<WantsToPlaceBlock>();
 
     raws::load_raws();
 

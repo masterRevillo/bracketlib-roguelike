@@ -17,7 +17,7 @@ use crate::components::{
     OtherLevelPosition, ParticleLifetime, Player, Pools, Position, ProvidesFood, ProvidesHealing,
     Quips, Ranged, Renderable, SerializationHelper, SerializeMe, SingleActivation, Skills, Species,
     SufferDamage, Vendor, Viewshed, WantsToDropItem, WantsToMelee, WantsToPickUpItem,
-    WantsToUnequipItem, WantsToUseItem, Wearable,
+    WantsToPlaceBlock, WantsToUnequipItem, WantsToUseItem, Wearable,
 };
 use crate::map::dungeon::MasterDungeonMap;
 
@@ -131,7 +131,8 @@ pub fn save_game(ecs: &mut World) {
             Fears,
             OtherLevelPosition,
             DMSerializationHelper,
-            LightSource
+            LightSource,
+            WantsToPlaceBlock
         );
     }
     ecs.delete_entity(savehelper)
@@ -220,7 +221,8 @@ pub fn load_game(ecs: &mut World) {
             Herbivore,
             Fears,
             OtherLevelPosition,
-            LightSource
+            LightSource,
+            WantsToPlaceBlock
         );
     }
     let mut deleteme: Option<Entity> = None;

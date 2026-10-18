@@ -8,7 +8,7 @@ use specs::{Join, World};
 use crate::components::{
     BlocksTile, BlocksVisibility, Bystander, Consumable, Door, EntityMoved, HungerClock,
     HungerState, InBackpack, Item, Monster, Player, Pools, Position, Ranged, Renderable, Vendor,
-    Viewshed, WantsToMelee, WantsToPickUpItem, WantsToUseItem,
+    Viewshed, WantsToMelee, WantsToPickUpItem, WantsToPlaceBlock, WantsToUseItem,
 };
 use crate::gamelog::GameLog;
 use crate::map::tiletype::TileType;
@@ -33,6 +33,7 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             return use_consumable_hotkey(gs, key - 1);
         }
     }
+
     match ctx.key {
         None => return RunState::AwaitingInput,
         Some(key) => match key {
@@ -47,7 +48,13 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::Y => return try_move_player(-1, -1, &mut gs.ecs),
             VirtualKeyCode::U => return try_move_player(1, -1, &mut gs.ecs),
             VirtualKeyCode::N => return try_move_player(1, 1, &mut gs.ecs),
-            VirtualKeyCode::B => return try_move_player(-1, 1, &mut gs.ecs),
+            VirtualKeyCode::B => {
+                if ctx.shift {
+                    return try_place_block(1, 0, &mut gs.ecs);
+                } else {
+                    return try_move_player(-1, 1, &mut gs.ecs);
+                }
+            }
             VirtualKeyCode::Space => return skip_turn(&mut gs.ecs),
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
@@ -176,6 +183,35 @@ fn try_previous_level(ecs: &mut World) -> bool {
             .push("There is no way up from here".to_string());
         false
     }
+}
+
+pub fn try_place_block(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
+    let mut positions = ecs.write_storage::<Position>();
+    let players = ecs.write_storage::<Player>();
+    let entities = ecs.entities();
+    let mut wants_place_block = ecs.write_storage::<WantsToPlaceBlock>();
+    let map = ecs.fetch::<Map>();
+
+    let mut result = RunState::AwaitingInput;
+
+    for (entity, _p, pos) in (&entities, &players, &mut positions).join() {
+        let (dest_x, dest_y) = (pos.x + delta_x, pos.y + delta_y);
+        if !map.is_tile_in_bounds(dest_x, dest_y) {
+            return RunState::AwaitingInput;
+        }
+
+        wants_place_block
+            .insert(
+                entity,
+                WantsToPlaceBlock {
+                    target: Point::new(dest_x, dest_y),
+                },
+            )
+            .expect("Failed to add target");
+        result = RunState::MonsterTurn;
+    }
+
+    result
 }
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {

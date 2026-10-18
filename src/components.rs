@@ -73,6 +73,11 @@ pub struct WantsToMelee {
 }
 
 #[derive(Component, Debug, ConvertSaveload, Clone)]
+pub struct WantsToPlaceBlock {
+    pub target: Point,
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct SufferDamage {
     pub amount: Vec<(i32, bool)>,
 }

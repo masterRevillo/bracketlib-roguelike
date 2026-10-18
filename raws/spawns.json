@@ -1084,7 +1084,11 @@
         "Shield",
         "LeatherArmor",
         "LeatherBoots"
-      ]
+      ],
+      "light": {
+        "range": 6,
+        "color": "#FFFF55"
+      }
     },
     {
       "id": "Bat",
@@ -1176,6 +1180,10 @@
             "damage": "1d8"
           }
         ]
+      },
+      "light": {
+        "range": 4,
+        "color": "#550000"
       }
     }
   ],
@@ -1399,7 +1407,7 @@
     },
     {
       "id": "Bandit",
-      "weight": 9,
+      "weight": 4,
       "min_depth": 2,
       "max_depth": 3
     },
@@ -1417,7 +1425,7 @@
     },
     {
       "id": "SlimeCube",
-      "weight": 3,
+      "weight": 6,
       "min_depth": 3,
       "max_depth": 3
     },

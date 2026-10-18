@@ -23,6 +23,7 @@ pub struct Mob {
     pub equipped: Option<Vec<String>>,
     pub natural: Option<MobNatural>,
     pub loot_table: Option<String>,
+    pub light: Option<MobLight>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -44,4 +45,10 @@ pub struct MobAttributes {
     pub fitness: Option<i32>,
     pub quickness: Option<i32>,
     pub intelligence: Option<i32>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MobLight {
+    pub range: i32,
+    pub color: String,
 }
