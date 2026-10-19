@@ -608,6 +608,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let box_gray = RGB::from_hex("#999999").expect("fail");
     let black = RGB::named(BLACK);
     let white = RGB::named(WHITE);
+    {
+        let runstate = ecs.fetch::<RunState>();
+        if let RunState::BuildMode { .. } = *runstate {
+            draw_hollow_box(ctx, 0, 0, 12, 3, box_gray, black);
+            ctx.print_color(1, 2, white, black, "Build Mode");
+        }
+    }
 
     // boarders
     draw_hollow_box(ctx, 0, 0, SCREEN_X - 1, SCREEN_Y - 1, box_gray, black);

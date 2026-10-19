@@ -33,7 +33,7 @@ use crate::map_indexing_system::MapIndexingSystem;
 use crate::melee_combat_system::MeleeCombatSystem;
 use crate::monster_ai_system::MonsterAI;
 use crate::particle_system::ParticleSpawnSystem;
-use crate::player::player_input;
+use crate::player::{handle_player_input_build_mode, player_input};
 use crate::rex_assets::RexAssets;
 use crate::spawner::player;
 use crate::trigger_system::TriggerSystem;
@@ -108,6 +108,7 @@ lazy_static! {
 pub enum RunState {
     AwaitingInput,
     PreRun,
+    BuildMode { direction: TargetDirection },
     PlayerTurn,
     MonsterTurn,
     ShowInventory,
@@ -123,6 +124,14 @@ pub enum RunState {
     // MapGeneration,
     ShowMapVisualization,
     ShowDebugMenu,
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum TargetDirection {
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 struct State {
@@ -471,6 +480,9 @@ impl GameState for State {
                     }
                     _ => panic!("Received an invalid menu result"),
                 }
+            }
+            RunState::BuildMode { direction } => {
+                new_runstate = handle_player_input_build_mode(self, ctx, direction);
             }
         }
         {

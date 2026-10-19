@@ -13,7 +13,7 @@ use crate::components::{
 use crate::gamelog::GameLog;
 use crate::map::tiletype::TileType;
 use crate::map::Map;
-use crate::{RunState, State};
+use crate::{RunState, State, TargetDirection};
 
 pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     if ctx.shift && ctx.key.is_some() {
@@ -50,7 +50,9 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::N => return try_move_player(1, 1, &mut gs.ecs),
             VirtualKeyCode::B => {
                 if ctx.shift {
-                    return try_place_block(1, 0, &mut gs.ecs);
+                    return RunState::BuildMode {
+                        direction: TargetDirection::Right,
+                    };
                 } else {
                     return try_move_player(-1, 1, &mut gs.ecs);
                 }
@@ -76,6 +78,36 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
         },
     }
     RunState::PlayerTurn
+}
+
+pub fn handle_player_input_build_mode(
+    gs: &mut State,
+    ctx: &mut BTerm,
+    target_direction: TargetDirection,
+) -> RunState {
+    match ctx.key {
+        None => RunState::BuildMode {
+            direction: target_direction,
+        },
+        Some(key) => match key {
+            VirtualKeyCode::H => RunState::BuildMode {
+                direction: TargetDirection::Left,
+            },
+            VirtualKeyCode::J => RunState::BuildMode {
+                direction: TargetDirection::Down,
+            },
+
+            VirtualKeyCode::K => RunState::BuildMode {
+                direction: TargetDirection::Up,
+            },
+            VirtualKeyCode::L => RunState::BuildMode {
+                direction: TargetDirection::Right,
+            },
+            VirtualKeyCode::Space => try_place_block(target_direction, &mut gs.ecs),
+
+            _ => player_input(gs, ctx),
+        },
+    }
 }
 
 fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
@@ -185,7 +217,13 @@ fn try_previous_level(ecs: &mut World) -> bool {
     }
 }
 
-pub fn try_place_block(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
+pub fn try_place_block(target_direction: TargetDirection, ecs: &mut World) -> RunState {
+    let (delta_x, delta_y) = match target_direction {
+        TargetDirection::Left => (-1, 0),
+        TargetDirection::Right => (1, 0),
+        TargetDirection::Up => (0, 1),
+        TargetDirection::Down => (0, -1),
+    };
     let mut positions = ecs.write_storage::<Position>();
     let players = ecs.write_storage::<Player>();
     let entities = ecs.entities();
